@@ -26,7 +26,6 @@ shared can be booked via the app.
 This app will significantly reduce the administrative workload at driving schools and improve
 communication between learner drivers and driving instructors. The efficient
 and vehicle management, the driving school will become more productive and better organized.
-better organized.
 
 
 # Packages in this project
