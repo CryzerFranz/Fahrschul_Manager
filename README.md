@@ -36,4 +36,4 @@ better organized.
 * awesome_snackbar_content: https://pub.dev/packages/awesome_snackbar_content
 
 ## APIs (have to look)
-*  Vehicle API (vPIC): _JSON Format vehicle list_
+*  https://www.carqueryapi.com/api/0.3/?cmd=getMakes -> _JSON Format vehicle list_
