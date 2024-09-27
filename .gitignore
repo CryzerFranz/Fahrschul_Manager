@@ -266,6 +266,11 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# macOS related (specific to Flutter Desktop projects)
+macos/Flutter/ephemeral/
+macos/Flutter/Flutter.podspec
+macos/Flutter/Flutter.framework
+macos/Flutter/GeneratedPluginRegistrant.swift
 
 ### https://raw.github.com/github/gitignore//Global/Xcode.gitignore
 
