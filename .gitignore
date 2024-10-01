@@ -18,6 +18,9 @@
 *.iws
 .idea/
 
+# Android/Gradle.properties
+./android/gradle.properties
+
 # Visual Studio Code related
 .vscode/
 
