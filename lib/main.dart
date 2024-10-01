@@ -1,15 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  const keyApplicationId = 'piwTtUk7GuAZ4sMACtPjvUH5ZUxcE3ysT8LUeMue';
-  const keyClientKey = 'mV4nzjgbHBvTwCOHepBhLKJ7HCu3Fnf6nF6C4qoZ';
+
   const keyParseServerUrl = 'https://parseapi.back4app.com';
-  await Parse().initialize(keyApplicationId, keyParseServerUrl,
-      clientKey: keyClientKey, debug: true);
-  runApp(MyApp());
+
+  final String? _clientKey = null;//await getApplicationID();
+  final String? _applicationID = await getApplicationID();
+
+  if(_applicationID != null && _clientKey != null)
+  {
+    await Parse().initialize(
+      _applicationID, 
+      keyParseServerUrl,
+      clientKey: _clientKey, 
+      debug: true
+    );
+    runApp(MyApp());
+  }
+  else{
+    runApp(ErrorApp());
+  }
+
 }
+
+
+Future<String?> getApplicationID() async {
+  const platform = MethodChannel('com.example.fahrschul_manager/keys');
+  try {
+    final String applicationID = await platform.invokeMethod('getGradleApplicationIDValue'); // Match Kotlin method name
+    return applicationID;
+  } on PlatformException catch (e) {
+    return null; 
+  }
+}
+
+Future<String?> getClientID() async {
+  const platform = MethodChannel('com.example.fahrschul_manager/keys');
+  try {
+    final String clientID = await platform.invokeMethod('getGradleClientIDValue'); // Match Kotlin method name
+    return clientID;
+  } on PlatformException catch (e) {
+    return null; 
+  }
+}
+
+class ErrorApp extends StatelessWidget {
+   @override
+   Widget build(BuildContext context) {
+     return MaterialApp(
+       title: 'Internal Error',
+       theme: ThemeData(
+         primarySwatch: Colors.red,
+         visualDensity: VisualDensity.adaptivePlatformDensity,
+       ),
+       home:const Scaffold(body: Center(child: Text("!Internal Error!", style: TextStyle(color: Colors.red)))),
+     );
+   }
+ }
 
 class MyApp extends StatelessWidget {
    @override
