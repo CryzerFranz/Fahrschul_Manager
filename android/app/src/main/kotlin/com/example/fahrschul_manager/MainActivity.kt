@@ -22,10 +22,7 @@ class MainActivity: FlutterActivity() {
                 } else {
                     result.error("UNAVAILABLE", "Gradle-Wert nicht verfügbar.", null)
                 }
-            } else {
-                result.notImplemented()
-            }
-            if (call.method == "getGradleClientIDValue") {
+            }else if (call.method == "getGradleClientIDValue") {
                 val clientID = getGradleClientIDValue()
                 if (clientID != null) {
                     result.success(clientID)
