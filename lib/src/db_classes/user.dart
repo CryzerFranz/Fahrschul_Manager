@@ -49,7 +49,7 @@ Future<ParseUser?> getParseUserFromId(String objectId) async
 /// ### Exception:
 /// - **[FormatException]** : Übergebene Parameter passen nicht zum erwartetem Format.
 /// - **[Exception]** : Etwas ist beim registrieren schief gelaufen.
-Future<String> createUser(final String eMail, final String password, {bool returnId = true}) async {
+Future<String> createUser(final String eMail, final String password) async {
   if(eMail.isEmpty || password.isEmpty)
   {
     throw const FormatException("Empty values are not allowed");

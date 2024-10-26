@@ -1,4 +1,3 @@
-import 'package:fahrschul_manager/src/db_classes/ort.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
