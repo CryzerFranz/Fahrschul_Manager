@@ -112,12 +112,12 @@ Future<ParseObject?> getFahrschuleWithId(String id) async{
 /// - **`String` [name]** : name der Fahrschule
 /// 
 /// ### Return value:
-/// - **[String]** : objectId der Fahrschule
+/// - **[ParseObject]** : Fahrschule Objekt
 /// 
 /// ### Exceptions:
 /// - **[FormatException]**
 /// - **[Exception]**
-Future<String> createFahrschule(String name) async {
+Future<ParseObject> createFahrschule(String name) async {
   if(name.isEmpty)
   {
     throw const FormatException("Name cannot be empty");
@@ -132,7 +132,7 @@ Future<String> createFahrschule(String name) async {
     throw Exception(response.error?.message);
   }
   logger.i("Fahrschule created successfully. ObjectId: ${response.result.objectId}");
-  return response.result.objectId;
+  return response.result as ParseObject;
 }
 
 /// Erstellt eine Fahrschule und speichert die zugehörigen Informationen.
@@ -164,13 +164,8 @@ Future<void> fahrschuleRegistration(
   String name) async {
   try{
     //Fahrschule erstellen
-    final fahrschulObjectId = await createFahrschule(fahrschulName);
-    //Fahrschule ParseObject 
-    final fahrschulObject = await getFahrschuleWithId(fahrschulObjectId);
-    if(fahrschulObject == null)
-    {
-      throw const FormatException("Fahrschule null exception");
-    }
+    final fahrschulObject = await createFahrschule(fahrschulName);
+   
     //Eintrag in Zuordnung_Ort_Fahrschule erstellen
     await registerOrtFromFahrschule(fahrschulObject, ortObject, strasse, hausnummer);
     await createFahrlehrer(vorname, name, eMail, fahrschulObject, password);
