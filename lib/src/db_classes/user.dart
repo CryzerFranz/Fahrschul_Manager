@@ -39,6 +39,16 @@ Future<ParseUser?> getParseUserFromId(String objectId) async {
   }
 }
 
+/// Holt den `_User`/`ParseUser` vom lokalen Speicher
+///
+///
+/// ### Return value:
+/// - **[ParseUser?]** : 
+Future<ParseUser?> getLocalStorageUser() async {
+  final currentUser = await ParseUser.currentUser() as ParseUser?;
+  return currentUser;
+}
+
 /// Erstellt einen ParseUser (_User).
 ///
 /// ### Parameters:
