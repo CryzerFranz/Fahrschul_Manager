@@ -39,6 +39,16 @@ Future<ParseUser?> getParseUserFromId(String objectId) async {
   }
 }
 
+/// Holt den `_User`/`ParseUser` vom lokalen Speicher
+///
+///
+/// ### Return value:
+/// - **[ParseUser?]** : 
+Future<ParseUser?> getLocalStorageUser() async {
+  final currentUser = await ParseUser.currentUser() as ParseUser?;
+  return currentUser;
+}
+
 /// Erstellt einen ParseUser (_User).
 ///
 /// ### Parameters:
@@ -114,7 +124,7 @@ Future<ParseObject> createFahrlehrer(String vorname, String name, String eMail,
     }
     if(!createSession)
     {
-      await logout(parseUser);
+       await parseUser.logout();
     }
   
     return response.result as ParseObject;
@@ -124,7 +134,7 @@ Future<ParseObject> createFahrlehrer(String vorname, String name, String eMail,
 }
 
 // Fahrschüler sektion
-//TODO implementation
+
 /// Erstellt einen neuen Eintrag in `Fahrschueler`.
 ///
 /// ### Parameters:
@@ -173,8 +183,8 @@ Future<ParseObject> createFahrschueler(String vorname, String name, String eMail
     if (!response.success) {
       throw Exception(response.error?.message);
     }
+    await parseUser.logout();
 
-    await logout(parseUser);
     return response.result as ParseObject;
   } catch (e) {
     throw Exception("Error: createFahrschueler -> $e");
