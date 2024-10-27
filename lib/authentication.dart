@@ -1,14 +1,17 @@
+import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 /// Beendet die Session vom user
 ///
-/// ### Parameter:
-/// - **`ParseObject` [user]** : der `ParseUser` der ausgeloggt werden soll.
-///
 /// ### Return value:
 /// - **`bool` **
-Future<bool> logout(ParseUser user) async {
+Future<bool> logout() async {
   try {
+    final user = await getLocalStorageUser();
+    if(user == null)
+    {
+      return true;
+    }
     if (user.sessionToken != null) {
       await user.logout();
     }
@@ -21,12 +24,14 @@ Future<bool> logout(ParseUser user) async {
 /// Startet die Session vom user
 ///
 /// ### Parameter:
-/// - **`ParseObject` [user]** : der `ParseUser` der eingeloggt werden soll.
+/// - **`String` [eMail]** : E-Mail vom User.
+/// - **`String` [password]** : Passwort vom User.
 ///
 /// ### Return value:
 /// - **`bool` **
-Future<bool> login(ParseUser user) async {
+Future<bool> login(String eMail, String password) async {
   try {
+    final user = ParseUser(eMail, password, eMail);
     await user.login();
     return true;
   } catch (e) {
