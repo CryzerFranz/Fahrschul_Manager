@@ -27,6 +27,11 @@ This app will significantly reduce the administrative workload at driving school
 communication between learner drivers and driving instructors. The efficient
 and vehicle management, the driving school will become more productive and better organized.
 
+# Database schema
+
+![grafik](https://github.com/user-attachments/assets/ceaefebc-2d77-468e-9154-a3fafa5276aa)
+
+
 
 # Packages in this project
 
