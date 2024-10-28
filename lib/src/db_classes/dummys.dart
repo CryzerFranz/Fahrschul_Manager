@@ -3,22 +3,21 @@
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 // Fahrschule
-
+/// ### Dummys `Fahrschule`
 final dummyFahrschule_01 = ParseObject("Fahrschule")
   ..set('Name', "Test_Fahrschule_1");
-
 final dummyFahrschule_02 = ParseObject("Fahrschule")
   ..set('Name', "Test_Fahrschule_2");
 
 // Status
-
+/// ### Dummys `Status`
 final dummyStatusAktiv = ParseObject('Status')..set("Typ", "Aktiv");
 final dummyStatusPassiv = ParseObject('Status')..set("Typ", "Passiv");
 final dummyStatusNot = ParseObject('Status')..set("Typ", "Nicht zugewiesen");
 final dummyStatusEnd = ParseObject('Status')..set("Typ", "Abgeschlossen");
 
 // User
-
+/// ### Dummys `ParseUser`
 final dummyParseUser_01 =
     ParseUser("luis.schulte@gmail.com", "Test.12345", "luis.schulte@gmail.com");
 final dummyParseUser_02 = ParseUser(
@@ -39,7 +38,7 @@ final dummyParseUser_09 =
     ParseUser("lukas.heisi@gmail.com", "Test.12345", "lukas.heisi@gmail.com");
 
 // Fahrschueler
-
+/// ### Dummys `Fahrschueler`
 final dummyFahrschueler_01 = ParseObject('Fahrschueler')
   ..set('Name', "Schulte")
   ..set('Vorname', "Luis")
@@ -49,7 +48,6 @@ final dummyFahrschueler_01 = ParseObject('Fahrschueler')
   ..set('Status', dummyStatusNot)
   ..set('Fahrschule', dummyFahrschule_01)
   ..set('Fahrlehrer', null);
-
 final dummyFahrschueler_02 = ParseObject('Fahrschueler')
   ..set('Name', "mehmet")
   ..set('Vorname', "kanak")
@@ -59,7 +57,6 @@ final dummyFahrschueler_02 = ParseObject('Fahrschueler')
   ..set('Status', dummyStatusAktiv)
   ..set('Fahrschule', dummyFahrschule_01)
   ..set('Fahrlehrer', dummyFahrlehrer_01);
-
 final dummyFahrschueler_03 = ParseObject('Fahrschueler')
   ..set('Name', "jonas")
   ..set('Vorname', "bier")
@@ -69,7 +66,6 @@ final dummyFahrschueler_03 = ParseObject('Fahrschueler')
   ..set('Status', dummyStatusAktiv)
   ..set('Fahrschule', dummyFahrschule_01)
   ..set('Fahrlehrer', dummyFahrlehrer_01);
-
 final dummyFahrschueler_04 = ParseObject('Fahrschueler')
   ..set('Name', "tuska")
   ..set('Vorname', "lol")
@@ -81,20 +77,19 @@ final dummyFahrschueler_04 = ParseObject('Fahrschueler')
   ..set('Fahrlehrer', dummyFahrlehrer_01);
 
 // Fahrlehrer
+/// ### Dummys `Fahrlehrer`
 final dummyFahrlehrer_01 = ParseObject('Fahrlehrer')
   ..set('Name', "chris")
   ..set('Fahrschule', dummyFahrschule_01)
   ..set('Vorname', "kloskopf")
   ..set('Email', "chris.kloskopf@gmail.com")
   ..set('UserObject', dummyParseUser_02);
-
 final dummyFahrlehrer_02 = ParseObject('Fahrlehrer')
   ..set('Name', "paleyron")
   ..set('Fahrschule', dummyFahrschule_01)
   ..set('Vorname', "schulte")
   ..set('Email', "paleyron.schulte@gmail.com")
   ..set('UserObject', dummyParseUser_03);
-
 final dummyFahrlehrer_03 = ParseObject('Fahrlehrer')
   ..set('Name', "kaka")
   ..set('Fahrschule', dummyFahrschule_02)
@@ -103,42 +98,37 @@ final dummyFahrlehrer_03 = ParseObject('Fahrlehrer')
   ..set('UserObject', dummyParseUser_04);
 
 // Ort
-
+/// ### Dummys `Ort`
 final dummyOrtForchheim = ParseObject("Ort")
   ..set("Name", "Forchheim")
   ..set("PLZ", "91301");
-
 final dummyOrtErlangen = ParseObject("Ort")
   ..set("Name", "Erlangen")
   ..set("PLZ", "91052");
-
 final dummyOrtBamberg = ParseObject("Ort")
   ..set("Name", "Bamberg")
   ..set("PLZ", "96047");
 
 // Zuordnung_Ort_Fahrschule
-
+/// ### Dummys `Zuordnung_Ort_Fahrschule`
 // ignore: non_constant_identifier_names
 final dummyFahrschule_01_ort_01 = ParseObject('Zuordnung_Ort_Fahrschule')
   ..set('Ort', dummyOrtForchheim)
   ..set('Fahrschule', dummyFahrschule_01)
   ..set('Strasse', "Neuenberg")
   ..set('Hausnummer', "21");
-
 // ignore: non_constant_identifier_names
 final dummyFahrschule_01_ort_02 = ParseObject('Zuordnung_Ort_Fahrschule')
   ..set('Ort', dummyOrtForchheim)
   ..set('Fahrschule', dummyFahrschule_01)
   ..set('Strasse', "BambergerStr")
   ..set('Hausnummer', "99");
-
 // ignore: non_constant_identifier_names
 final dummyFahrschule_01_ort_03 = ParseObject('Zuordnung_Ort_Fahrschule')
   ..set('Ort', dummyOrtBamberg)
   ..set('Fahrschule', dummyFahrschule_01)
   ..set('Strasse', "berlinerRing")
   ..set('Hausnummer', "50a");
-
 // ignore: non_constant_identifier_names
 final dummyFahrschule_02_ort_01 = ParseObject('Zuordnung_Ort_Fahrschule')
   ..set('Ort', dummyOrtErlangen)
@@ -148,28 +138,24 @@ final dummyFahrschule_02_ort_01 = ParseObject('Zuordnung_Ort_Fahrschule')
 
 
 // Marke
-
+/// ### Dummys `Marke`
 final dummySeat = ParseObject("Marke")
   ..set('Name', "Seat");
-
 final dummyRenault = ParseObject("Marke")
   ..set('Name', "Renault");
-
 final dummyAudi = ParseObject("Marke")
   ..set('Name', "Audi");
 
 // Getriebe
-
+/// ### Dummys `Getriebe`
 final dummySchalter = ParseObject("Getriebe")
   ..set('Typ', "Manuell");
-
 final dummyAutomatik = ParseObject("Getriebe")
   ..set('Typ', "Automatik");
 
 // Fahrzeugtyp
-
+/// ### Dummys `Fahrzeugtyp`
 final dummyLimousine = ParseObject("Fahrzeugtyp")
   ..set('Typ', "Limousine");
-
 final dummyKombi = ParseObject("Fahrzeugtyp")
   ..set('Typ', "Kombi");

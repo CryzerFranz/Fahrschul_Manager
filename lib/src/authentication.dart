@@ -3,7 +3,7 @@ import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
-/// Beendet die Session vom user
+/// Beendet die Benutzersitzung, entfernt alle Routen im Navigator und leitet zur Login-Seite zurück.
 ///
 /// ### Parameter:
 /// - **`BuildContext` [context]** : `BuildContext` vom `Widget`.
