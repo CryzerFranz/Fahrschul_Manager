@@ -3,7 +3,6 @@
 // Fahrlehrer
 // Fahrschueler
 
-import 'package:fahrschul_manager/authentication.dart';
 import 'package:fahrschul_manager/src/db_classes/status.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
