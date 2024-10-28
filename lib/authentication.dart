@@ -1,19 +1,32 @@
+import 'package:fahrschul_manager/main.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
+import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 /// Beendet die Session vom user
 ///
+/// ### Parameter:
+/// - **`BuildContext` [context]** : `BuildContext` vom `Widget`.
+///
 /// ### Return value:
 /// - **`bool` **
-Future<bool> logout() async {
+Future<bool> logout(BuildContext context) async {
   try {
     final user = await getLocalStorageUser();
-    if(user == null)
-    {
+    if (user == null) {
       return true;
     }
     if (user.sessionToken != null) {
-      await user.logout();
+      final response = await user.logout();
+      if (response.success) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => MyApp()), //TODO: Anstatt MyApp() sollte LoginPage() sein.
+          (Route<dynamic> route) => false,
+        );
+      } else {
+        throw Exception();
+      }
     }
     return true;
   } catch (e) {
