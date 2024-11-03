@@ -1,191 +1,352 @@
-// user.dart beinhaltet funktionen für folgende Datenbankklassen:
-// _User
-// Fahrlehrer
-// Fahrschueler
-
-import 'package:fahrschul_manager/src/db_classes/status.dart';
+import 'package:fahrschul_manager/main.dart';
+import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
-// _User sektion
+// TEST singleton klasse
 
-/// Erhalte einen ParseUser (_User).
+/// Die `Benutzer`-Klasse verwaltet die Benutzerauthentifizierung und die Benutzerrolle
+/// innerhalb der Anwendung. Sie implementiert ein Singleton-Muster, um sicherzustellen,
+/// dass nur eine Instanz der Klasse während der gesamten Lebensdauer der Anwendung
+/// existiert.
 ///
-/// ### Parameters:
+/// ### Eigenschaften:
+/// - **Private Variablen**:
+///   - `_isLogged` : Gibt an, ob der Benutzer angemeldet ist.
+///   - `_isFahrlehrer` : Speichert, ob der Benutzer ein Fahrlehrer ist.
+///   - `_fahrschule` : Referenz auf die Fahrschule des Benutzers.
+///   - `_dbUser` : Speichert das Benutzerobjekt aus der Datenbank.
+///   - `_parseUser` : Speichert das aktuelle `ParseUser`-Objekt.
 ///
-/// - **`String` [objectId]** : objectId vom `ParseUser`.
+/// - **Öffentliche Getter**:
+///   - `isFahrlehrer` : Gibt an, ob der Benutzer ein Fahrlehrer ist.
+///   - `fahrschule` : Gibt die Fahrschule des Benutzers zurück.
+///   - `parseUser` : Gibt das aktuelle `ParseUser`-Objekt zurück.
+///   - `dbUser` : Gibt das Benutzerobjekt aus der Datenbank zurück.
+///   - `dbUserId` : Gibt die ID des Benutzerobjekts zurück.
 ///
-/// ### Return value:
-/// - **[ParseUser?]** : `ParseUser` || `null`
+/// ### Methoden:
+/// - `initialize(ParseUser user)` : Initialisiert den Zustand des Benutzers und
+///   überprüft dessen Authentifizierung.
 ///
-/// ### Exception:
-/// - **[FormatException]** : Übergebene Parameter passen nicht zum erwartetem Format.
-Future<ParseUser?> getParseUserFromId(String objectId) async {
-  try {
-    if (objectId.isEmpty) {
-      throw const FormatException("Empty values are not allowed");
-    }
-    final query = QueryBuilder<ParseUser>(ParseUser.forQuery())
-      ..whereEqualTo('objectId', objectId);
-
-    final response = await query.query();
-
-    if (response.success && response.results != null && response.results!.isNotEmpty) {
-      return response.results!.first as ParseUser;
-    }
-    return null;
-  } catch (e) {
-    throw Exception("Error: getParseUserFromId -> $e");
-  }
-}
-
-/// Holt den `_User`/`ParseUser` vom lokalen Speicher
+/// - `_setUser()` : Setzt das Benutzerobjekt basierend auf der Rolle des aktuellen Benutzers.
 ///
+/// - `clear()` : Setzt alle Benutzerdaten und Sitzungsinformationen zurück.
 ///
-/// ### Return value:
-/// - **[ParseUser?]** : 
-Future<ParseUser?> getLocalStorageUser() async {
-  final currentUser = await ParseUser.currentUser() as ParseUser?;
-  return currentUser;
-}
-
-/// Erstellt einen ParseUser (_User).
+/// - `_clearNavigator()` : Leert den Navigator-Stack und navigiert zur Startseite.
 ///
-/// ### Parameters:
+/// - `logout()` : Loggt den aktuellen Benutzer aus und bereinigt die lokale Benutzersitzung.
 ///
-/// - **`String` [eMail]** : E-Mail adresse vom Benutzer, sowie auch der Username.
-/// - **`String` [password]** : Passwort des Benutzers.
+/// - `login()` : Loggt den Benutzer mit den aktuellen Anmeldeinformationen ein.
 ///
-/// ### Return value:
-/// - **[ParseUser]** : Gibt den ParseUser zurück.
+/// - `updateAll()` : Aktualisiert den aktuellen Benutzerstatus und überprüft die Benutzerrolle.
 ///
-/// ### Exception:
-/// - **[FormatException]** : Übergebene Parameter passen nicht zum erwartetem Format.
-/// - **[Exception]** : Etwas ist beim registrieren schief gelaufen.
-Future<ParseUser> createUser(final String eMail, final String password) async {
-  try {
-    if (eMail.isEmpty || password.isEmpty) {
-      throw const FormatException("Empty values are not allowed");
-    }
-
-    // user eMail as username
-    final user = ParseUser.createUser(eMail, password, eMail);
-    var response = await user.signUp();
-
-    if (!response.success) {
-      throw Exception(response.error!.message);
-    }
-    return response.results?.first as ParseUser;
-  } catch (e) {
-    throw Exception("Error: createUser -> $e");
-  }
-}
-
-// Fahrlehrer sektion
-
-/// Erstellt einen neuen Eintrag in `Fahrlehrer`.
+/// - `_checkIsUserFahrlehrer()` : Überprüft, ob der aktuelle Benutzer die Rolle "Fahrlehrer" besitzt.
 ///
-/// ### Parameters:
+/// - `_updateParseUser()` : Aktualisiert den aktuellen `ParseUser`-Status vom Server.
 ///
-/// - **`String` [vorname]** : Vorname des Fahrlehrers.
-/// - **`String` [name]** : Name des Fahrlehrers.
-/// - **`String` [eMail]** : E-Mail adresse vom Fahrlehrer.
-/// - **`String` [ParseObject]** : Das ParseObject Fahrschule zudem der Fahrlehrer gehört.
-/// - **`String` [password]** : Passwort des Benutzers.
-/// - **`bool` [createSession]** : **OPTIONAL** Default: `false`. Erstellt eine Session bei `true`
+/// - `getUserRoles()` : Ruft die Rollen des aktuell eingeloggten Benutzers ab.
 ///
-/// ### Return value:
-/// - **[ParseObject]** : Gibt Fahrlehrer als Objekt zurück.
+/// - `hasUserLogged()` : Überprüft, ob der Benutzer aktuell eingeloggt ist.
 ///
-/// ### Exception:
-/// - **[FormatException]** : Übergebene Parameter passen nicht zum erwartetem Format.
-/// - **[Exception]** : Etwas ist beim registrieren schief gelaufen.
-Future<ParseObject> createFahrlehrer(String vorname, String name, String eMail,
-    final ParseObject fahrschulObject, final String password,
-    {bool createSession = false}) async {
-  if (eMail.isEmpty || vorname.isEmpty || name.isEmpty) {
-    throw const FormatException("Empty values are not allowed");
-  }
-
-  try {
-    final parseUser = await createUser(eMail, password);
-
-    final fahrlehrerObj = ParseObject('Fahrlehrer')
-      ..set('Name', name)
-      ..set('Fahrschule', fahrschulObject)
-      ..set('Vorname', vorname)
-      ..set('Email', eMail)
-      ..set('UserObject', parseUser);
-
-    final ParseResponse response = await fahrlehrerObj.save();
-
-    if (!response.success) {
-      throw Exception(response.error?.message);
-    }
-    if(!createSession)
-    {
-       await parseUser.logout();
-    }
+/// ### Ausnahmebehandlung:
+/// Einige Methoden in dieser Klasse können Ausnahmen werfen oder fangen,
+/// insbesondere beim Abrufen von Benutzerdaten oder beim Login/Logout-Prozess.
+class Benutzer {
+  //TODO
   
-    return response.result as ParseObject;
-  } catch (e) {
-    throw Exception("Error: createFahrlehrer -> $e");
-  }
-}
+  // Private constructor for singleton
+  Benutzer._internal();
 
-// Fahrschüler sektion
+  // Singleton instance
+  static final Benutzer _instance = Benutzer._internal();
 
-/// Erstellt einen neuen Eintrag in `Fahrschueler`.
-///
-/// ### Parameters:
-///
-/// - **`String` [vorname]** : Vorname des Fahrschülers.
-/// - **`String` [name]** : Name des Fahrschülers.
-/// - **`String` [eMail]** : E-Mail adresse vom Fahrschüler.
-/// - **`String` [password]** : Passwort des Benutzers.
-/// - **`ParseObject` [fahrschule]** : Fahrschule zudem der Fahrschüler gehört.
-/// - **`ParseObject?` [fahrlehrer]** : **OPTIONAL** weisst dem Fahrschüler einen Fahrlehrer zu.
-/// 
-///
-/// ### Return value:
-/// - **[ParseObject]** : Gibt Fahrschueler als Objekt zurück.
-///
-/// ### Exception:
-/// - **[FormatException]** : Übergebene Parameter passen nicht zum erwartetem Format.
-/// - **[Exception]** : Etwas ist beim registrieren schief gelaufen.
-Future<ParseObject> createFahrschueler(String vorname, String name, String eMail, final String password, final ParseObject fahrschule, {ParseObject? fahrlehrer}) async {
-  if (eMail.isEmpty || vorname.isEmpty || name.isEmpty || password.isEmpty) {
-    throw const FormatException("Empty values are not allowed");
-  }
+  // Factory constructor to provide the same instance
+  factory Benutzer() => _instance;
 
-  try {
-    ParseObject? status;
-    if(fahrlehrer == null)
-    {
-      status = await getStatus("Nicht zugewiesen");
+  // Private variables
+  bool _isLogged = false;
+  bool? _isFahrlehrer = false;
+  ParseObject? _fahrschule;
+  ParseObject? _dbUser;
+  ParseUser? _parseUser;
+
+  // Public getters for accessing private variables
+  bool? get isFahrlehrer => _isFahrlehrer;
+  ParseObject? get fahrschule => _fahrschule;
+  ParseUser? get parseUser => _parseUser;
+  ParseObject? get dbUser => _dbUser;
+
+  // Public getters
+  String? get dbUserId => _dbUser?.objectId;
+
+  /// Initialisiert den Zustand des Benutzers und überprüft dessen Authentifizierung.
+  ///
+  /// Diese Methode setzt den aktuellen Benutzer und überprüft, ob der Benutzer
+  /// angemeldet ist. Wenn der Benutzer erfolgreich eingeloggt ist, wird dessen Rolle
+  /// ermittelt und die zugehörigen Benutzerdaten werden gesetzt. Bei einem
+  /// ungültigen Benutzer wird eine Ausnahme ausgelöst.
+  ///
+  /// ### Parameter:
+  /// - **`ParseUser user`** : Der Benutzer, der zur Initialisierung verwendet wird.
+  ///
+  /// ### Rückgabewert:
+  /// - **[Future<bool>]** : Gibt `true` zurück, wenn der Benutzer erfolgreich
+  ///   initialisiert wurde, andernfalls `false`.
+  ///
+  /// ### Ausnahme:
+  /// - **[Exception]** : Wird geworfen, wenn der Benutzer ungültig ist,
+  ///   d.h. `_dbUser` ist `null`.
+  Future<bool> initialize({required ParseUser user}) async {
+    _parseUser = user;
+    if (await hasUserLogged()) {
+      _isLogged = true;
+      _isFahrlehrer = await _checkIsUserFahrlehrer();
+      await _setUser();
+      if (_dbUser == null) {
+        throw Exception("Invalid user");
+      }
+      _fahrschule = _dbUser!.get<ParseObject>('Fahrschule');
+      return true;
     }
-    status = await getStatus("Passiv");
+    _isLogged = false;
+    _fahrschule = null;
+    _isFahrlehrer = null;
+    return false;
+  }
 
-    final parseUser = await createUser(eMail, password);
-
-    final fahrschuelerObj = ParseObject('Fahrschueler')
-      ..set('Name', name)
-      ..set('Vorname', vorname)
-      ..set('Email', eMail)
-      ..set('UserObject', parseUser)
-      ..set('Gesamtfahrstunden', 0)
-      ..set('Status', status!)
-      ..set('Fahrschule', fahrschule)
-      ..set('Fahrlehrer', fahrlehrer);
-
-    final ParseResponse response = await fahrschuelerObj.save();
-
-    if (!response.success) {
-      throw Exception(response.error?.message);
+  //TODO TEST
+  /// Setzt das Benutzerobjekt basierend auf der Rolle des aktuellen Benutzers.
+  ///
+  /// Diese Methode ermittelt das `ParseObject` des Benutzers entweder aus der
+  /// `Fahrlehrer`- oder `Fahrschueler`-Klasse, basierend auf der Benutzerrolle,
+  /// und speichert es in `_dbUser`. Falls keine gültigen Benutzerdaten gefunden
+  /// werden, werden die Benutzerdaten zurückgesetzt.
+  ///
+  /// ### Rückgabewert:
+  /// - **[Future<void>]** : Diese Methode gibt keinen Wert zurück.
+  ///
+  /// ### Seiteneffekte:
+  /// - Setzt `_dbUser` auf das ermittelte `ParseObject` oder ruft `clear()` auf,
+  ///   falls keine Ergebnisse gefunden werden.
+  ///
+  /// ### Ausnahme:
+  /// - Diese Methode wirft keine expliziten Ausnahmen.
+  Future<void> _setUser() async {
+    if (_isFahrlehrer != null && _parseUser != null) {
+      final QueryBuilder<ParseObject> parseQuery;
+      if (_isFahrlehrer!) {
+        parseQuery = QueryBuilder<ParseObject>(ParseObject('Fahrlehrer'))
+          ..whereContains('UserObject', _parseUser!.objectId!);
+      } else {
+        parseQuery = QueryBuilder<ParseObject>(ParseObject('Fahrschueler'))
+          ..whereContains('UserObject', _parseUser!.objectId!);
+      }
+      final apiResponse = await parseQuery.query();
+      if (apiResponse.success &&
+          apiResponse.results != null &&
+          apiResponse.results!.isNotEmpty) {
+        _dbUser = apiResponse.results!.first as ParseObject;
+        return;
+      }
     }
-    await parseUser.logout();
+    await clear();
+  }
 
-    return response.result as ParseObject;
-  } catch (e) {
-    throw Exception("Error: createFahrschueler -> $e");
+  /// Setzt alle Benutzerdaten und Sitzungsinformationen zurück.
+  ///
+  /// Diese Methode löscht die aktuellen Benutzerdaten und setzt die relevanten
+  /// Variablen auf ihren Anfangszustand, um die Sitzung zu beenden.
+  ///
+  /// ### Rückgabewert:
+  /// - **[Future<void>]** : Diese Methode gibt keinen Wert zurück.
+  Future<void> clear() async {
+    _isFahrlehrer = null;
+    _fahrschule = null;
+    _parseUser = null;
+    _isLogged = false;
+  }
+
+  /// Leert den Navigator-Stack und navigiert zur Startseite.
+  ///
+  /// Diese Methode entfernt alle bisherigen Seiten aus dem Navigator-Stack und
+  /// leitet den Benutzer zur definierten Startseite weiter.
+  ///
+  /// ### Rückgabewert:
+  /// - **[void]** : Diese Methode gibt keinen Wert zurück.
+  ///
+  /// ### Hinweis:
+  /// - Aktuell navigiert die Methode zur `MyApp()`-Seite. Zukünftig sollte hier
+  ///   die `LoginPage()` verwendet werden (siehe TODO).
+  void _clearNavigator() {
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(
+          builder: (context) =>
+              MyApp()), //TODO: Anstatt MyApp() sollte LoginPage() sein.
+      (Route<dynamic> route) => false,
+    );
+  }
+
+  /// Loggt den aktuellen Benutzer aus und bereinigt die lokale Benutzersitzung.
+  ///
+  /// Diese Methode beendet die aktuelle Benutzersitzung und entfernt alle
+  /// lokalen Benutzerdaten, falls ein Benutzer eingeloggt ist.
+  ///
+  /// ### Rückgabewert:
+  /// - **[Future<void>]** : Diese Methode gibt keinen Wert zurück.
+  ///
+  /// ### Ausnahme:
+  /// - Diese Methode fängt Ausnahmen ab und wirft keine expliziten Fehler, falls der Logout fehlschlägt.
+  Future<void> logout() async {
+    try {
+      if (_parseUser != null) {
+        if (_parseUser!.sessionToken != null) {
+          final response = await _parseUser!.logout();
+          if (!response.success) {
+            throw ();
+          }
+          await clear();
+        }
+      }
+      _clearNavigator();
+    } catch (e) {
+      return;
+    }
+  }
+
+  /// Loggt den Benutzer mit den aktuellen Anmeldeinformationen ein.
+  ///
+  /// Diese Methode führt den Login-Prozess für den aktuellen Benutzer durch und gibt
+  /// das Ergebnis des Login-Versuchs zurück.
+  ///
+  /// ### Rückgabewert:
+  /// - **[Future<bool>]** : Gibt `true` zurück, wenn der Login erfolgreich war,
+  ///   andernfalls `false`.
+  ///
+  /// ### Ausnahme:
+  /// - Diese Methode fängt Ausnahmen ab und gibt `false` zurück, falls der Login fehlschlägt.
+  Future<bool> login() async {
+    try {
+      await _parseUser!.login();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+//TODO
+  Future<void> updateAll() async {
+    await _updateParseUser();
+    await _checkIsUserFahrlehrer();
+  }
+
+  /// Überprüft, ob der aktuelle Benutzer die Rolle "Fahrlehrer" besitzt.
+  ///
+  /// Diese Methode durchsucht die Rollen des aktuellen Benutzers und gibt `true` zurück,
+  /// wenn eine der Rollen den Namen "Fahrlehrer" trägt.
+  ///
+  /// ### Rückgabewert:
+  /// - **[Future<bool>]** : Gibt `true` zurück, falls der Benutzer die Rolle "Fahrlehrer" hat,
+  ///   andernfalls `false`.
+  ///
+  /// ### Ausnahme:
+  /// - Diese Methode wirft keine expliziten Ausnahmen.
+  Future<bool> _checkIsUserFahrlehrer() async {
+    List<ParseObject> roleList = await getUserRoles();
+    for (var roles in roleList) {
+      if (roles.get<String>('name') == "Fahrlehrer") {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// Aktualisiert den aktuellen `ParseUser`-Status vom Server.
+  ///
+  /// Diese Methode synchronisiert den aktuellen Benutzerstatus, indem sie eine Anfrage an den Server
+  /// sendet, um sicherzustellen, dass der Benutzer noch gültig eingeloggt ist. Falls der Benutzer
+  /// nicht mehr gültig ist, wird die Methode `logout()` aufgerufen, um den Benutzer auszuloggen.
+  ///
+  /// ### Rückgabewert:
+  /// - **[Future<void>]** : Diese Methode gibt keinen Wert zurück.
+  ///
+  /// ### Ausnahme:
+  /// - Diese Methode wirft keine expliziten Ausnahmen, nutzt jedoch `logout()`, falls der Server
+  ///   den Benutzer als nicht mehr gültig betrachtet.
+  Future<void> _updateParseUser() async {
+    final ParseResponse? parseResponse =
+        await ParseUser.getCurrentUserFromServer(_parseUser!.sessionToken!);
+    if (parseResponse?.success != null &&
+        parseResponse!.success &&
+        parseResponse.results != null) {
+      _parseUser = parseResponse.results!.first as ParseUser;
+    } else {
+      logout();
+    }
+  }
+
+  /// Ruft die Rollen des aktuell eingeloggten Benutzers ab.
+  ///
+  /// Diese Methode führt eine Abfrage auf der `_Role`-Klasse durch, um eine Liste der Rollen
+  /// zu erhalten, die dem aktuellen Benutzer zugeordnet sind.
+  ///
+  /// ### Rückgabewert:
+  /// - **[Future<List<ParseObject>>]** : Gibt eine Liste von `ParseObject`-Instanzen zurück,
+  ///   die die Rollen des Benutzers repräsentieren. Wenn der Benutzer keine Rollen besitzt
+  ///   oder nicht eingeloggt ist, wird eine leere Liste zurückgegeben.
+  ///
+  /// ### Ausnahme:
+  /// - **[Exception]** : Wird geworfen, falls die Abfrage fehlschlägt, mit der Meldung
+  ///   `"Error: getUserRoles -> Query failed"`.
+  Future<List<ParseObject>> getUserRoles() async {
+    try {
+      if (!_isLogged) {
+        _clearNavigator();
+      } else {
+        // Create a query on the _Role class
+        final QueryBuilder<ParseObject> roleQuery =
+            QueryBuilder<ParseObject>(ParseObject('_Role'))
+              ..whereContainedIn('users', [_parseUser]);
+
+        // Execute the query
+        final ParseResponse response = await roleQuery.query();
+
+        if (response.success && response.results != null) {
+          // If successful, response.results will contain the list of roles
+          return response.results as List<ParseObject>;
+        }
+      }
+      return [];
+    } catch (e) {
+      throw Exception("Error: getUserRols -> Query failed");
+    }
+  }
+
+  /// Überprüft, ob der Benutzer aktuell eingeloggt ist.
+  ///
+  /// Diese Methode überprüft, ob ein gültiges `ParseUser`-Objekt existiert und
+  /// der Benutzer durch ein gültiges Session-Token authentifiziert ist. Falls ja,
+  /// wird das Benutzerobjekt mit dem aktuellen Status vom Server aktualisiert.
+  ///
+  /// ### Rückgabewert:
+  /// - **[Future<bool>]** : Gibt `true` zurück, wenn der Benutzer eingeloggt ist,
+  ///   andernfalls `false`.
+  ///
+  /// ### Ausnahme:
+  /// - Diese Methode wirft keine Ausnahmen, jedoch kann sie `false` zurückgeben,
+  ///   falls der Benutzer ausgeloggt wird.
+  Future<bool> hasUserLogged() async {
+    if (_parseUser != null && _parseUser?.sessionToken != null) {
+      final ParseResponse? parseResponse =
+          await ParseUser.getCurrentUserFromServer(_parseUser!.sessionToken!);
+      if (parseResponse?.success != null &&
+          parseResponse!.success &&
+          parseResponse.results != null) {
+        _parseUser = parseResponse.results!.first;
+        return true;
+      }
+      await _parseUser!.logout();
+      //_parseUser = null;
+    }
+    return false;
   }
 }
