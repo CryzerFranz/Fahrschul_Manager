@@ -1,1 +1,1 @@
-export '../../src/authentication.dart';
+export '../../src/registration.dart';
