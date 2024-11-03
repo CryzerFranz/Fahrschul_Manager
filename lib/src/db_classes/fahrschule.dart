@@ -135,42 +135,4 @@ Future<ParseObject> createFahrschule(String name) async {
   return response.result as ParseObject;
 }
 
-/// Erstellt eine Fahrschule und speichert die zugehörigen Informationen.
-///
-/// Dabei wird ein Eintrag in `Zuordnung_Ort_Fahrschule` erstellt.
-/// Der Ort wird von der Datenbank abgefragt.
-/// Zusätzlich wird ein Fahrlehrer erstellt, der die Fahrschule erstellt hat bzw. zu dieser gehört.
-///
-/// ### Parameters:
-/// - **`String` [fahrschulName]**: Name für die Fahrschule.
-/// - **`ParseObject` [ortObject]**: objectId vom Ort.
-/// - **`String` [strasse]**: Für die dazugehörige Straße.
-/// - **`String` [hausnummer]**: Für die dazugehörige Hausnummer.
-/// - **`String` [eMail]**: E-Mail adresse des Benutzers.
-/// - **`String` [password]**: Passwort des Benutzers.
-/// - **`String` [vorname]**: Vorname des Benutzers.
-/// - **`String` [name]**: Name des Benutzers.
-/// 
-/// ### Exceptions:
-/// - **[Exception]**
-Future<void> fahrschuleRegistration(
-  String fahrschulName,
-  ParseObject ortObject,
-  String strasse,
-  String hausnummer,
-  String eMail,
-  String password,
-  String vorname,
-  String name) async {
-  try{
-    //Fahrschule erstellen
-    final fahrschulObject = await createFahrschule(fahrschulName);
-   
-    //Eintrag in Zuordnung_Ort_Fahrschule erstellen
-    await registerOrtFromFahrschule(fahrschulObject, ortObject, strasse, hausnummer);
-    await createFahrlehrer(vorname, name, eMail, fahrschulObject, password);
-  } catch (e)
-  {
-    throw e.toString();
-  }
-}
+
