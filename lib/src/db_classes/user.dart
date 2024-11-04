@@ -53,7 +53,7 @@ import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 /// insbesondere beim Abrufen von Benutzerdaten oder beim Login/Logout-Prozess.
 class Benutzer {
   //TODO
-  
+
   // Private constructor for singleton
   Benutzer._internal();
 
@@ -96,14 +96,14 @@ class Benutzer {
   /// ### Ausnahme:
   /// - **[Exception]** : Wird geworfen, wenn der Benutzer ungültig ist,
   ///   d.h. `_dbUser` ist `null`.
-  Future<bool> initialize({required ParseUser user}) async {
+  Future<bool> initialize({required ParseUser? user}) async {
     _parseUser = user;
     if (await hasUserLogged()) {
       _isLogged = true;
       _isFahrlehrer = await _checkIsUserFahrlehrer();
       await _setUser();
       if (_dbUser == null) {
-        throw Exception("Invalid user");
+        return false;
       }
       _fahrschule = _dbUser!.get<ParseObject>('Fahrschule');
       return true;
@@ -141,6 +141,7 @@ class Benutzer {
         parseQuery = QueryBuilder<ParseObject>(ParseObject('Fahrschueler'))
           ..whereContains('UserObject', _parseUser!.objectId!);
       }
+      parseQuery.includeObject(['Fahrschule']);
       final apiResponse = await parseQuery.query();
       if (apiResponse.success &&
           apiResponse.results != null &&
@@ -192,25 +193,22 @@ class Benutzer {
   /// lokalen Benutzerdaten, falls ein Benutzer eingeloggt ist.
   ///
   /// ### Rückgabewert:
-  /// - **[Future<void>]** : Diese Methode gibt keinen Wert zurück.
+  /// - **[Future<bool>]** : Diese Methode gibt true oder false zurück.
   ///
   /// ### Ausnahme:
   /// - Diese Methode fängt Ausnahmen ab und wirft keine expliziten Fehler, falls der Logout fehlschlägt.
-  Future<void> logout() async {
-    try {
-      if (_parseUser != null) {
-        if (_parseUser!.sessionToken != null) {
-          final response = await _parseUser!.logout();
-          if (!response.success) {
-            throw ();
-          }
-          await clear();
+  Future<bool> logout() async {
+    if (_parseUser != null) {
+      if (_parseUser!.sessionToken != null) {
+        final response = await _parseUser!.logout();
+        if (!response.success) {
+          return false;
         }
+        await clear();
       }
-      _clearNavigator();
-    } catch (e) {
-      return;
     }
+    _clearNavigator();
+    return true;
   }
 
   /// Loggt den Benutzer mit den aktuellen Anmeldeinformationen ein.
@@ -225,12 +223,18 @@ class Benutzer {
   /// ### Ausnahme:
   /// - Diese Methode fängt Ausnahmen ab und gibt `false` zurück, falls der Login fehlschlägt.
   Future<bool> login() async {
-    try {
-      await _parseUser!.login();
+    final response = await _parseUser!.login();
+    if(response.success){
+      _isLogged = true;
+      _isFahrlehrer = await _checkIsUserFahrlehrer();
+      await _setUser();
+      if (_dbUser == null) {
+        return false;
+      }
+      _fahrschule = _dbUser!.get<ParseObject>('Fahrschule');
       return true;
-    } catch (e) {
-      return false;
     }
+    return false;
   }
 
 //TODO
@@ -272,15 +276,16 @@ class Benutzer {
   /// ### Ausnahme:
   /// - Diese Methode wirft keine expliziten Ausnahmen, nutzt jedoch `logout()`, falls der Server
   ///   den Benutzer als nicht mehr gültig betrachtet.
-  Future<void> _updateParseUser() async {
+  Future<bool> _updateParseUser() async {
     final ParseResponse? parseResponse =
         await ParseUser.getCurrentUserFromServer(_parseUser!.sessionToken!);
     if (parseResponse?.success != null &&
         parseResponse!.success &&
         parseResponse.results != null) {
       _parseUser = parseResponse.results!.first as ParseUser;
+      return true;
     } else {
-      logout();
+      return false;
     }
   }
 
@@ -298,27 +303,23 @@ class Benutzer {
   /// - **[Exception]** : Wird geworfen, falls die Abfrage fehlschlägt, mit der Meldung
   ///   `"Error: getUserRoles -> Query failed"`.
   Future<List<ParseObject>> getUserRoles() async {
-    try {
-      if (!_isLogged) {
-        _clearNavigator();
-      } else {
-        // Create a query on the _Role class
-        final QueryBuilder<ParseObject> roleQuery =
-            QueryBuilder<ParseObject>(ParseObject('_Role'))
-              ..whereContainedIn('users', [_parseUser]);
+    if (!_isLogged) {
+      _clearNavigator();
+    } else {
+      // Create a query on the _Role class
+      final QueryBuilder<ParseObject> roleQuery =
+          QueryBuilder<ParseObject>(ParseObject('_Role'))
+            ..whereContainedIn('users', [_parseUser]);
 
-        // Execute the query
-        final ParseResponse response = await roleQuery.query();
+      // Execute the query
+      final ParseResponse response = await roleQuery.query();
 
-        if (response.success && response.results != null) {
-          // If successful, response.results will contain the list of roles
-          return response.results as List<ParseObject>;
-        }
+      if (response.success && response.results != null) {
+        // If successful, response.results will contain the list of roles
+        return response.results as List<ParseObject>;
       }
-      return [];
-    } catch (e) {
-      throw Exception("Error: getUserRols -> Query failed");
     }
+    return [];
   }
 
   /// Überprüft, ob der Benutzer aktuell eingeloggt ist.
