@@ -145,9 +145,9 @@ Future<ParseObject> createFahrlehrer(String vorname, String name, String eMail,
             "Failed to assign role 'fahrlehrer' to user: ${saveRoleResponse.error!.message}");
       }
     }
-    final isCreated = await Benutzer().initialize(user: parseUser);
+    final isCreated = await Benutzer().login(eMail, password);
     if (!createSession || !isCreated) {
-      await parseUser.logout();
+      await Benutzer().logout();
     }
 
     return response.result as ParseObject;
