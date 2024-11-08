@@ -116,6 +116,7 @@ class Benutzer {
     _parseUser = ParseUser(eMail, password, eMail);
     final response = await _parseUser!.login();
     if(response.success){
+      _isLogged = true;
       return await _initUserSetup();
     }
     return false;
