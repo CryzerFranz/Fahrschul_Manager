@@ -6,6 +6,8 @@ import 'package:fahrschul_manager/src/db_classes/fahrstunde.dart';
 import 'package:fahrschul_manager/src/db_classes/ort.dart';
 import 'package:fahrschul_manager/src/db_classes/status.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
+import 'package:fahrschul_manager/pages/Home_page.dart';
+import 'package:fahrschul_manager/pages/Login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
@@ -228,3 +230,55 @@ Future<String?> getClientID() async {
     return null;
   }
 }
+
+class ErrorApp extends StatelessWidget {
+   @override
+   Widget build(BuildContext context) {
+     return MaterialApp(
+       title: 'Internal Error',
+       theme: ThemeData(
+         primarySwatch: Colors.red,
+         visualDensity: VisualDensity.adaptivePlatformDensity,
+       ),
+       home:const Scaffold(body: Center(child: Text("!Internal Error!", style: TextStyle(color: Colors.red)))),
+     );
+   }
+ }
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      navigatorKey: navigatorKey,
+      title: 'Flutter - Parse Server',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: FutureBuilder<bool>(
+          future: hasUserLogged(),
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+              case ConnectionState.waiting:
+                return Scaffold(
+                  body: Center(
+                    child: Container(
+                        width: 100,
+                        height: 100,
+                        child: CircularProgressIndicator()),
+                  ),
+                );
+              default:
+                if (snapshot.hasData && snapshot.data!) {
+                  return HomePage();
+                } else {
+                  return SignInScreen();
+                }
+            }
+          }),
+    );
+  }
+}
+ 
+ 
