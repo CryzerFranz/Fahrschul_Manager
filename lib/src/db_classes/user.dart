@@ -180,8 +180,11 @@ class Benutzer {
           parseResponse!.success &&
           parseResponse.results != null) {
         _parseUser = parseResponse.results!.first;
-        _isLogged = true;
-        return await _initUserSetup();
+        if(!_isLogged){
+          _isLogged = true;
+          return await _initUserSetup();
+        }
+        return true;
       }
       await logout();
       //_parseUser = null;
