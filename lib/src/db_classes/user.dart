@@ -1,191 +1,190 @@
-// user.dart beinhaltet funktionen für folgende Datenbankklassen:
-// _User
-// Fahrlehrer
-// Fahrschueler
-
-import 'package:fahrschul_manager/src/db_classes/status.dart';
+import 'package:fahrschul_manager/main.dart';
+import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
-// _User sektion
+// TEST singleton klasse
 
-/// Erhalte einen ParseUser (_User).
-///
-/// ### Parameters:
-///
-/// - **`String` [objectId]** : objectId vom `ParseUser`.
-///
-/// ### Return value:
-/// - **[ParseUser?]** : `ParseUser` || `null`
-///
-/// ### Exception:
-/// - **[FormatException]** : Übergebene Parameter passen nicht zum erwartetem Format.
-Future<ParseUser?> getParseUserFromId(String objectId) async {
-  try {
-    if (objectId.isEmpty) {
-      throw const FormatException("Empty values are not allowed");
-    }
-    final query = QueryBuilder<ParseUser>(ParseUser.forQuery())
-      ..whereEqualTo('objectId', objectId);
+/// Die `Benutzer`-Klasse verwaltet die Benutzerauthentifizierung und die Benutzerrolle
+/// innerhalb der Anwendung. Sie implementiert ein Singleton-Muster, um sicherzustellen,
+/// dass nur eine Instanz der Klasse während der gesamten Lebensdauer der Anwendung
+/// existiert.
+class Benutzer {
+  //TODO
 
-    final response = await query.query();
+  // Private constructor for singleton
+  Benutzer._internal();
 
-    if (response.success && response.results != null && response.results!.isNotEmpty) {
-      return response.results!.first as ParseUser;
-    }
-    return null;
-  } catch (e) {
-    throw Exception("Error: getParseUserFromId -> $e");
-  }
-}
+  // Singleton instance
+  static final Benutzer _instance = Benutzer._internal();
 
-/// Holt den `_User`/`ParseUser` vom lokalen Speicher
-///
-///
-/// ### Return value:
-/// - **[ParseUser?]** : 
-Future<ParseUser?> getLocalStorageUser() async {
-  final currentUser = await ParseUser.currentUser() as ParseUser?;
-  return currentUser;
-}
+  // Factory constructor to provide the same instance
+  factory Benutzer() => _instance;
 
-/// Erstellt einen ParseUser (_User).
-///
-/// ### Parameters:
-///
-/// - **`String` [eMail]** : E-Mail adresse vom Benutzer, sowie auch der Username.
-/// - **`String` [password]** : Passwort des Benutzers.
-///
-/// ### Return value:
-/// - **[ParseUser]** : Gibt den ParseUser zurück.
-///
-/// ### Exception:
-/// - **[FormatException]** : Übergebene Parameter passen nicht zum erwartetem Format.
-/// - **[Exception]** : Etwas ist beim registrieren schief gelaufen.
-Future<ParseUser> createUser(final String eMail, final String password) async {
-  try {
-    if (eMail.isEmpty || password.isEmpty) {
-      throw const FormatException("Empty values are not allowed");
-    }
+  // Private variables
+  bool _isLogged = false;
+  bool? _isFahrlehrer = false;
+  ParseObject? _fahrschule;
+  ParseObject? _dbUser;
+  ParseUser? _parseUser;
 
-    // user eMail as username
-    final user = ParseUser.createUser(eMail, password, eMail);
-    var response = await user.signUp();
+  // Public getters for accessing private variables
+  bool? get isFahrlehrer => _isFahrlehrer;
+  ParseObject? get fahrschule => _fahrschule;
+  ParseUser? get parseUser => _parseUser;
+  ParseObject? get dbUser => _dbUser;
 
-    if (!response.success) {
-      throw Exception(response.error!.message);
-    }
-    return response.results?.first as ParseUser;
-  } catch (e) {
-    throw Exception("Error: createUser -> $e");
-  }
-}
+  // Public getters
+  String? get dbUserId => _dbUser?.objectId;
 
-// Fahrlehrer sektion
-
-/// Erstellt einen neuen Eintrag in `Fahrlehrer`.
-///
-/// ### Parameters:
-///
-/// - **`String` [vorname]** : Vorname des Fahrlehrers.
-/// - **`String` [name]** : Name des Fahrlehrers.
-/// - **`String` [eMail]** : E-Mail adresse vom Fahrlehrer.
-/// - **`String` [ParseObject]** : Das ParseObject Fahrschule zudem der Fahrlehrer gehört.
-/// - **`String` [password]** : Passwort des Benutzers.
-/// - **`bool` [createSession]** : **OPTIONAL** Default: `false`. Erstellt eine Session bei `true`
-///
-/// ### Return value:
-/// - **[ParseObject]** : Gibt Fahrlehrer als Objekt zurück.
-///
-/// ### Exception:
-/// - **[FormatException]** : Übergebene Parameter passen nicht zum erwartetem Format.
-/// - **[Exception]** : Etwas ist beim registrieren schief gelaufen.
-Future<ParseObject> createFahrlehrer(String vorname, String name, String eMail,
-    final ParseObject fahrschulObject, final String password,
-    {bool createSession = false}) async {
-  if (eMail.isEmpty || vorname.isEmpty || name.isEmpty) {
-    throw const FormatException("Empty values are not allowed");
+  void initialize() {
+    _isLogged = false;
+    _isFahrlehrer = null;
+    _fahrschule = null;
+    _dbUser = null;
+    _parseUser = null;
   }
 
-  try {
-    final parseUser = await createUser(eMail, password);
-
-    final fahrlehrerObj = ParseObject('Fahrlehrer')
-      ..set('Name', name)
-      ..set('Fahrschule', fahrschulObject)
-      ..set('Vorname', vorname)
-      ..set('Email', eMail)
-      ..set('UserObject', parseUser);
-
-    final ParseResponse response = await fahrlehrerObj.save();
-
-    if (!response.success) {
-      throw Exception(response.error?.message);
+  Future<bool> _setUser() async {
+    if (_isFahrlehrer != null && _parseUser != null) {
+      final QueryBuilder<ParseObject> parseQuery;
+      if (_isFahrlehrer!) {
+        parseQuery = QueryBuilder<ParseObject>(ParseObject('Fahrlehrer'))
+          ..whereContains('UserObject', _parseUser!.objectId!);
+      } else {
+        parseQuery = QueryBuilder<ParseObject>(ParseObject('Fahrschueler'))
+          ..whereContains('UserObject', _parseUser!.objectId!);
+      }
+      parseQuery.includeObject(['Fahrschule']);
+      final apiResponse = await parseQuery.query();
+      if (apiResponse.success &&
+          apiResponse.results != null &&
+          apiResponse.results!.isNotEmpty) {
+        _dbUser = apiResponse.results!.first as ParseObject;
+        return true;
+      }
     }
-    if(!createSession)
+    return false;
+  }
+
+  Future<void> clear() async {
+     _isLogged = false;
+    _isFahrlehrer = null;
+    _fahrschule = null;
+    _dbUser = null;
+    _parseUser = null;
+  }
+
+  void _clearNavigator() {
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(
+          builder: (context) =>
+              MyApp()), //TODO: Anstatt MyApp() sollte LoginPage() sein.
+      (Route<dynamic> route) => false,
+    );
+  }
+
+  Future<bool> logout() async {
+    if (_parseUser != null) {
+      if (_parseUser!.sessionToken != null) {
+        final response = await _parseUser!.logout();
+        if (!response.success) {
+          return false;
+        }
+        await clear();
+      }
+    }
+    _clearNavigator();
+    return true;
+  }
+
+  Future<bool> _initUserSetup() async{
+    if(_parseUser == null || _isLogged != true)
     {
-       await parseUser.logout();
+      return false;
     }
-  
-    return response.result as ParseObject;
-  } catch (e) {
-    throw Exception("Error: createFahrlehrer -> $e");
-  }
-}
-
-// Fahrschüler sektion
-
-/// Erstellt einen neuen Eintrag in `Fahrschueler`.
-///
-/// ### Parameters:
-///
-/// - **`String` [vorname]** : Vorname des Fahrschülers.
-/// - **`String` [name]** : Name des Fahrschülers.
-/// - **`String` [eMail]** : E-Mail adresse vom Fahrschüler.
-/// - **`String` [password]** : Passwort des Benutzers.
-/// - **`ParseObject` [fahrschule]** : Fahrschule zudem der Fahrschüler gehört.
-/// - **`ParseObject?` [fahrlehrer]** : **OPTIONAL** weisst dem Fahrschüler einen Fahrlehrer zu.
-/// 
-///
-/// ### Return value:
-/// - **[ParseObject]** : Gibt Fahrschueler als Objekt zurück.
-///
-/// ### Exception:
-/// - **[FormatException]** : Übergebene Parameter passen nicht zum erwartetem Format.
-/// - **[Exception]** : Etwas ist beim registrieren schief gelaufen.
-Future<ParseObject> createFahrschueler(String vorname, String name, String eMail, final String password, final ParseObject fahrschule, {ParseObject? fahrlehrer}) async {
-  if (eMail.isEmpty || vorname.isEmpty || name.isEmpty || password.isEmpty) {
-    throw const FormatException("Empty values are not allowed");
-  }
-
-  try {
-    ParseObject? status;
-    if(fahrlehrer == null)
+    _isFahrlehrer = await _checkIsUserFahrlehrer();
+    if(!await _setUser())
     {
-      status = await getStatus("Nicht zugewiesen");
+      await clear();
+      return false;
     }
-    status = await getStatus("Passiv");
+    _fahrschule = _dbUser!.get<ParseObject>('Fahrschule');
+    return true;
+  }
 
-    final parseUser = await createUser(eMail, password);
-
-    final fahrschuelerObj = ParseObject('Fahrschueler')
-      ..set('Name', name)
-      ..set('Vorname', vorname)
-      ..set('Email', eMail)
-      ..set('UserObject', parseUser)
-      ..set('Gesamtfahrstunden', 0)
-      ..set('Status', status!)
-      ..set('Fahrschule', fahrschule)
-      ..set('Fahrlehrer', fahrlehrer);
-
-    final ParseResponse response = await fahrschuelerObj.save();
-
-    if (!response.success) {
-      throw Exception(response.error?.message);
+  Future<bool> login(final String eMail, final String password) async {
+    _parseUser = ParseUser(eMail, password, eMail);
+    final response = await _parseUser!.login();
+    if(response.success){
+      return await _initUserSetup();
     }
-    await parseUser.logout();
+    return false;
+  }
 
-    return response.result as ParseObject;
-  } catch (e) {
-    throw Exception("Error: createFahrschueler -> $e");
+//TODO
+  Future<void> updateAll() async {
+    await _updateParseUser();
+    await _checkIsUserFahrlehrer();
+  }
+
+  Future<bool> _checkIsUserFahrlehrer() async {
+    List<ParseObject> roleList = await getUserRoles();
+    for (var roles in roleList) {
+      if (roles.get<String>('name') == "Fahrlehrer") {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<bool> _updateParseUser() async {
+    final ParseResponse? parseResponse =
+        await ParseUser.getCurrentUserFromServer(_parseUser!.sessionToken!);
+    if (parseResponse?.success != null &&
+        parseResponse!.success &&
+        parseResponse.results != null) {
+      _parseUser = parseResponse.results!.first as ParseUser;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<List<ParseObject>> getUserRoles() async {
+    if (!_isLogged) {
+      _clearNavigator();
+    } else {
+      // Create a query on the _Role class
+      final QueryBuilder<ParseObject> roleQuery =
+          QueryBuilder<ParseObject>(ParseObject('_Role'))
+            ..whereContainedIn('users', [_parseUser]);
+
+      // Execute the query
+      final ParseResponse response = await roleQuery.query();
+
+      if (response.success && response.results != null) {
+        // If successful, response.results will contain the list of roles
+        return response.results as List<ParseObject>;
+      }
+    }
+    return [];
+  }
+
+  Future<bool> hasUserLogged() async {
+    _parseUser = await ParseUser.currentUser() as ParseUser?;
+    if (_parseUser != null && _parseUser?.sessionToken != null) {
+      final ParseResponse? parseResponse =
+          await ParseUser.getCurrentUserFromServer(_parseUser!.sessionToken!);
+      if (parseResponse?.success != null &&
+          parseResponse!.success &&
+          parseResponse.results != null) {
+        _parseUser = parseResponse.results!.first;
+        _isLogged = true;
+        return await _initUserSetup();
+      }
+      await logout();
+      //_parseUser = null;
+    }
+    return false;
   }
 }

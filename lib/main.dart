@@ -1,7 +1,17 @@
 //import 'package:fahrschul_manager/src/authentication.dart';
+import 'package:fahrschul_manager/doc/intern/Authentication.dart';
+import 'package:fahrschul_manager/doc/intern/Dummys.dart';
+import 'package:fahrschul_manager/src/db_classes/fahrschule.dart';
+import 'package:fahrschul_manager/src/db_classes/fahrstunde.dart';
+import 'package:fahrschul_manager/src/db_classes/ort.dart';
+import 'package:fahrschul_manager/src/db_classes/status.dart';
+import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
+import 'package:calendar_view/calendar_view.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,207 +21,210 @@ void main() async {
   final String? _clientKey = await getClientID();
   final String? _applicationID = await getApplicationID();
 
-  if(_applicationID != null && _clientKey != null)
-  {
+  if (_applicationID != null && _clientKey != null) {
     await Parse().initialize(
-      _applicationID, 
+      _applicationID,
       keyParseServerUrl,
-      clientKey: _clientKey, 
-      debug: true
+      clientKey: _clientKey,
+      debug: true,
     );
+  //ParseUser? currentUser = await ParseUser("test@gmail","12345678" , "test@gmail");
+  //await currentUser.login();
+
+ //final uquery = QueryBuilder<ParseUser>(ParseUser.forQuery())
+ //     ..whereEqualTo('objectId', currentUser.objectId!);
+
+  //  final ParseResponse response = await uquery.query();
+  // ParseUser User = response.results!.first as ParseUser;
+
+
+
+  //final QueryBuilder<ParseObject> query = QueryBuilder<ParseObject>(ParseObject('_Role'))
+  // ..whereRelatedTo('users', '_User', currentUser.objectId);
+
+  // final QueryBuilder<ParseObject> roleQuery = QueryBuilder<ParseObject>(ParseObject('_Role'))
+  //     ..whereContainedIn('users', [User]);
+
+
+  //final QueryBuilder<ParseObject> query =
+  //        QueryBuilder<ParseObject>(ParseObject('_Role'))           
+  //          ..whereContains('name', 'Fahrlehrer');
+  // final ParseResponse roleResp = await roleQuery.query();
+  // for (var role in roleResp.results!) {
+  //       print('Role: ${(role as ParseObject).get<String>('name')}');
+  //     }
+
+  ParseUser? currentUser = await ParseUser("test@gmail","12345678" , "test@gmail");
+  ParseUser? user = await ParseUser.currentUser() as ParseUser?;
+  bool is342 = await Benutzer().initialize(user: currentUser);
+  bool nowLooged = await Benutzer().login();
+  
+
+  //final user = ParseUser("pp@gmail.com", "12345678", "pp@gmail.com");
+  //final ort = await getOrt("Stuttgart", "70619");
+  //if(ort != null) {
+  //  await fahrschuleRegistration("Luis die 2", ort, "Nuenberg", "A12312", "luis@gmail.com", "ABC12345", "vorname", "name");
+  //}
+
+    //final f = await getFahrschuleWithId("6oyNDpad2A");
+    //await createFahrlehrer("rolen", "tester", "test@gmail", f!, "12345678");
+    //await addFahrstunde(DateTime.utc(2024,12,12), DateTime.utc(2024,12,12,15,15,0), dummyRenault);
+    //final status = await getStatus("Nicht zugewiesen");
+    //print(status?.get('Typ'));
+    
+    //final user = await ParseUser.currentUser() as ParseUser?;
+    //final islog = await logout(user!);
+    //final f = await getFahrschuleWithId("6oyNDpad2A");
+    //final test = await createFahrschueler("test", "login", "pp@gmail.com", "12345678", f!);
+    
     runApp(MyApp());
-  }
-  else{
+  } else {
     runApp(ErrorApp());
   }
-
 }
 
+class MyWidget extends StatelessWidget {
+  const MyWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CalendarControllerProvider(
+      controller: EventController(),
+      child: Scaffold(body: Container(height: 700, child: WeekView())),
+    );
+    // return const Scaffold(body:
+    // MonthView());
+  }
+}
+
+class UserPage extends StatelessWidget {
+  ParseUser? currentUser;
+
+  @override
+  Widget build(BuildContext context) {
+    void doUserLogout() async {
+      var response = await currentUser!.logout();
+      if (response.success) {
+        print("sucess LOGOUT");
+      } else {
+        print("ERROR LOGOUT");
+      }
+    }
+
+    return Scaffold(
+        appBar: AppBar(
+          title: Text('User logged in - Current User'),
+        ),
+        body: FutureBuilder<ParseUser?>(
+            future: getCurrentUser(),
+            builder: (context, snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                case ConnectionState.waiting:
+                  return Center(
+                    child: Container(
+                        width: 100,
+                        height: 100,
+                        child: CircularProgressIndicator()),
+                  );
+                default:
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Center(
+                            child: Text('Hello, ${snapshot.data!.username}')),
+                        SizedBox(
+                          height: 16,
+                        ),
+                        Container(
+                          height: 50,
+                          child: ElevatedButton(
+                            child: const Text('Logout'),
+                            onPressed: () => doUserLogout(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+              }
+            }));
+  }
+}
+
+class ErrorApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Internal Error',
+      theme: ThemeData(
+        primarySwatch: Colors.red,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: const Scaffold(
+          body: Center(
+              child: Text("!Internal Error!",
+                  style: TextStyle(color: Colors.red)))),
+    );
+  }
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      navigatorKey: navigatorKey,
+      title: 'Flutter - Parse Server',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: FutureBuilder<bool>(
+          future: hasUserLogged(),
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+              case ConnectionState.waiting:
+                return Scaffold(
+                  body: Center(
+                    child: Container(
+                        width: 100,
+                        height: 100,
+                        child: CircularProgressIndicator()),
+                  ),
+                );
+              default:
+                if (snapshot.hasData && snapshot.data!) {
+                  return UserPage(); // HOMEPAGE
+                } else {
+                  return MyWidget(); // LOGIN-PAGE
+                }
+            }
+          }),
+    );
+  }
+}
 
 Future<String?> getApplicationID() async {
   const platform = MethodChannel('com.example.fahrschul_manager/keys');
   try {
-    final String applicationID = await platform.invokeMethod('getGradleApplicationIDValue'); // Match Kotlin method name
+    final String applicationID = await platform.invokeMethod(
+        'getGradleApplicationIDValue'); // Match Kotlin method name
     return applicationID;
   } on PlatformException catch (e) {
-    return null; 
+    return null;
   }
 }
 
 Future<String?> getClientID() async {
   const platform = MethodChannel('com.example.fahrschul_manager/keys');
   try {
-    final String clientID = await platform.invokeMethod('getGradleClientIDValue'); // Match Kotlin method name
+    final String clientID = await platform
+        .invokeMethod('getGradleClientIDValue'); // Match Kotlin method name
     return clientID;
   } on PlatformException catch (e) {
-    return null; 
+    return null;
   }
 }
-
-class ErrorApp extends StatelessWidget {
-   @override
-   Widget build(BuildContext context) {
-     return MaterialApp(
-       title: 'Internal Error',
-       theme: ThemeData(
-         primarySwatch: Colors.red,
-         visualDensity: VisualDensity.adaptivePlatformDensity,
-       ),
-       home:const Scaffold(body: Center(child: Text("!Internal Error!", style: TextStyle(color: Colors.red)))),
-     );
-   }
- }
-
-class MyApp extends StatelessWidget {
-   @override
-   Widget build(BuildContext context) {
-     return MaterialApp(
-       title: 'Flutter SignUp',
-       theme: ThemeData(
-         primarySwatch: Colors.blue,
-         visualDensity: VisualDensity.adaptivePlatformDensity,
-       ),
-       home: HomePage(),
-     );
-   }
- }
- 
- class HomePage extends StatefulWidget {
-   @override
-   _HomePageState createState() => _HomePageState();
- }
- 
- class _HomePageState extends State<HomePage> {
-   final controllerUsername = TextEditingController();
-   final controllerPassword = TextEditingController();
-   final controllerEmail = TextEditingController();
- 
-   @override
-   Widget build(BuildContext context) {
-     return Scaffold(
-         appBar: AppBar(
-           title: const Text('Flutter SignUp'),
-         ),
-         body: Center(
-           child: SingleChildScrollView(
-             padding: const EdgeInsets.all(8),
-             child: Column(
-               crossAxisAlignment: CrossAxisAlignment.stretch,
-               children: [
-                 Container(
-                   height: 200,
-                   child: Image.network(
-                       'http://blog.back4app.com/wp-content/uploads/2017/11/logo-b4a-1-768x175-1.png'),
-                 ),
-                 Center(
-                   child: const Text('Flutter on Back4App',
-                       style:
-                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                 ),
-                 SizedBox(
-                   height: 16,
-                 ),
-                 Center(
-                   child: const Text('User registration',
-                      style: TextStyle(fontSize: 16)),
-                 ),
-                 SizedBox(
-                   height: 16,
-                 ),
-                 TextField(
-                   controller: controllerUsername,
-                   keyboardType: TextInputType.text,
-                   textCapitalization: TextCapitalization.none,
-                   autocorrect: false,
-                   decoration: InputDecoration(
-                       border: OutlineInputBorder(
-                           borderSide: BorderSide(color: Colors.black)),
-                       labelText: 'Username'),
-                 ),
-                 SizedBox(
-                   height: 8,
-                 ),
-                 TextField(
-                   controller: controllerEmail,
-                   keyboardType: TextInputType.emailAddress,
-                   textCapitalization: TextCapitalization.none,
-                   autocorrect: false,
-                   decoration: InputDecoration(
-                       border: OutlineInputBorder(
-                           borderSide: BorderSide(color: Colors.black)),
-                       labelText: 'E-mail'),
-                 ),
-                 SizedBox(
-                   height: 8,
-                 ),
-                 TextField(
-                   controller: controllerPassword,
-                   obscureText: true,
-                   keyboardType: TextInputType.text,
-                   textCapitalization: TextCapitalization.none,
-                   autocorrect: false,
-                   decoration: InputDecoration(
-                       border: OutlineInputBorder(
-                           borderSide: BorderSide(color: Colors.black)),
-                       labelText: 'Password'),
-                 ),
-                 SizedBox(
-                   height: 8,
-                 ),
-                 Container(
-                   height: 50,
-                   child: TextButton(
-                     child: const Text('Sign Up'),
-                     onPressed: () => doUserRegistration(),
-                   ),
-                 )
-               ],
-             ),
-           ),
-         ));
-   }
- 
-   void showSuccess() {
-     showDialog(
-       context: context,
-       builder: (BuildContext context) {
-         return AlertDialog(
-           title: const Text("Success!"),
-           content: const Text("User was successfully created!"),
-           actions: <Widget>[
-             new ElevatedButton(
-               child: const Text("OK"),
-               onPressed: () {
-                 Navigator.of(context).pop();
-               },
-             ),
-           ],
-         );
-       },
-     );
-   }
- 
-   void showError(String errorMessage) {
-     showDialog(
-       context: context,
-       builder: (BuildContext context) {
-         return AlertDialog(
-           title: const Text("Error!"),
-           content: Text(errorMessage),
-           actions: <Widget>[
-             new ElevatedButton(
-               child: const Text("OK"),
-               onPressed: () {
-                 Navigator.of(context).pop();
-               },
-             ),
-           ],
-         );
-       },
-     );
-   }
- 
-   void doUserRegistration() async {
- 		//Sigup code here
-   }
- }
