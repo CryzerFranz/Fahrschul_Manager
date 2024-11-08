@@ -39,7 +39,6 @@ Future<String> getOrtObjectID(final String name, final String plz) async
 /// 
 /// ### Parameters:
 /// 
-/// - **`String` [name]** : Ortsname von `Ort`.
 /// - **`String` [plz]** : PLZ von `Ort`.
 /// 
 /// ### Return value:
@@ -47,11 +46,10 @@ Future<String> getOrtObjectID(final String name, final String plz) async
 /// 
 /// ### Exception:
 /// - **[FormatException]** : Übergebene Parameter passen nicht zum erwartetem Format.
-Future<ParseObject?> getOrt(final String name, final String plz) async
+Future<ParseObject?> getOrt(final String plz) async
 {
     final QueryBuilder<ParseObject> parseQuery = QueryBuilder<ParseObject>(ParseObject('Ort'))
     ..whereContains('PLZ', plz)
-    ..whereContains('Name', name)
     ..setLimit(1);
 
     final apiResponse = await parseQuery.query();
