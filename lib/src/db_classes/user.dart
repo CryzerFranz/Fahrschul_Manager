@@ -124,9 +124,37 @@ class Benutzer {
 
 //TODO
   Future<void> updateAll() async {
-    await _updateParseUser();
-    await _checkIsUserFahrlehrer();
+    _isLogged = false;
+    await hasUserLogged();
   }
+
+  Future<List<ParseObject>> getAllFahrschueler() async
+  {
+    if(_isFahrlehrer == null || _dbUser == null)
+    {
+      throw("Invalid User");
+    }
+    if(!_isFahrlehrer!)
+    {
+        throw("Permission denied");
+    }
+
+    final QueryBuilder<ParseObject> parseQuery = QueryBuilder<ParseObject>(ParseObject('Fahrschueler'))
+    ..whereContains('Fahrlehrer', dbUserId!);
+
+    final apiResponse = await parseQuery.query();
+
+    if (!apiResponse.success) 
+    {
+      throw Exception(apiResponse.error?.message);
+    }
+    if(apiResponse.results == null)
+    {
+      return [];
+    }
+
+    return apiResponse.results as List<ParseObject>;
+  } 
 
   Future<bool> _checkIsUserFahrlehrer() async {
     List<ParseObject> roleList = await getUserRoles();
