@@ -1,4 +1,3 @@
-import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 import 'package:logger/logger.dart';
@@ -15,13 +14,10 @@ var logger = Logger(
 /// - **`String` [strasse]** : Name der Straße, wo sich die Fahrschule befindet
 /// - **`String` [hausnummer]** : Hausnummer der Fahrschule
 /// 
-/// ### Return value:
-/// - ** [String]** : objectId
-/// 
 /// ### Exceptions:
 /// - **[FormatException]**
 /// - **[Exception]**
-Future<String> registerOrtFromFahrschule(ParseObject fahrschuleObject, ParseObject ortObject, String strasse, String hausnummer) async{
+Future<void> registerOrtFromFahrschule(ParseObject fahrschuleObject, ParseObject ortObject, String strasse, String hausnummer) async{
   if(strasse.isEmpty || hausnummer.isEmpty)
   {
     throw const FormatException("empty values are not allowed");
@@ -37,11 +33,8 @@ Future<String> registerOrtFromFahrschule(ParseObject fahrschuleObject, ParseObje
 
   if(!response.success)
   {
-    logger.e(response.error?.message);
-    throw Exception(response.error?.message);
+    throw Exception("API ERROR");
   }
-  logger.i("Zuordnung_Ort_Fahrschule created successfully. ObjectId: ${response.result.objectId}");
-  return response.result.objectId;
 }
 
 /// Erhalte einen ParseObject von `Zuordnung_Ort_Fahrschule`.
