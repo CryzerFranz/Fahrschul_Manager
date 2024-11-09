@@ -1,40 +1,5 @@
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
-
-/// Sucht nach dem Objekt `Ort` mit dem exakten fields
-/// 
-/// ### Parameter:
-/// - **`String` [name]** : Ortsname
-/// - **`String` [plz]** : PLZ des Ortes
-/// 
-/// ### Return value:
-/// - **[String]** : objectId des gefunden Ortes
-/// 
-/// ### Exceptions:
-/// - **[FormatException]**
-/// - **[Exception]**
-Future<String> getOrtObjectID(final String name, final String plz) async
-{
-    final QueryBuilder<ParseObject> parseQuery = QueryBuilder<ParseObject>(ParseObject('Ort'))
-    ..whereContains('PLZ', plz)
-    ..whereContains('Name', name)
-    ..keysToReturn(['objectId'])
-    ..setLimit(1);
-
-    final apiResponse = await parseQuery.query();
-
-    if (!apiResponse.success) 
-    {
-      throw Exception(apiResponse.error?.message);
-    }
-    if(apiResponse.results == null || apiResponse.results!.isEmpty)
-    {
-      throw const FormatException("Not Found");
-    }
-
-  return apiResponse.results!.first.get<String>('objectId');
-}
-
 /// Erhalte einen ParseObject von `Ort`.
 /// 
 /// ### Parameters:
