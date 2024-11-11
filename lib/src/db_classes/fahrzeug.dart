@@ -28,6 +28,27 @@ Future<bool> addFahrzeug(
   return true;
 }
 
+//TODO NUR ZUM TESTEN DA WAHRSCHEINLICH
+Future<ParseObject> getFahrzeuge(String id) async {
+    final apiResponse = await ParseObject('Fahrzeug').getObject(id);
+    return apiResponse.results!.first as ParseObject;
+}
+
+//TODO TEST
+Future<List<ParseObject>> getAllFahrzeuge(ParseObject fahrschule) async {
+    final QueryBuilder<ParseObject> parseQuery =
+        QueryBuilder<ParseObject>(ParseObject('Fahrzeug'))
+        ..whereContains("Fahrschule", fahrschule.objectId!);
+
+    final apiResponse = await parseQuery.query();
+
+    if (!apiResponse.success || apiResponse.results == null) {
+      return [];
+    }
+
+    return apiResponse.results as List<ParseObject>;
+}
+
 Future<List<ParseObject>> getAllGetriebe() async {
     final QueryBuilder<ParseObject> parseQuery =
         QueryBuilder<ParseObject>(ParseObject('Getriebe'));
