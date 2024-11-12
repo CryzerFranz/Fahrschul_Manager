@@ -3,10 +3,10 @@ import 'package:fahrschul_manager/doc/intern/User.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 //TODO !!FRONTEND sollte überprüfen das enddatum nicht kleiner als datum ist.!!
-Future<void> addFahrstunde(
-  DateTime datum,
-  DateTime endDatum,
-  String titel, {
+Future<CalendarEventData> addFahrstunde({
+  required DateTime datum,
+  required DateTime endDatum,
+  required String titel, 
   ParseObject? fahrzeug,
   DateTime? pufferZeit,
   ParseObject? fahrschueler,
@@ -31,10 +31,10 @@ Future<void> addFahrstunde(
   }
 
   DateTime dbEndDate = endDatum;
-    if (pufferZeit != null) {
-      dbEndDate = endDatum.add(Duration(minutes: pufferZeit.minute));
-    }
-    termin.set("EndDatum", dbEndDate);
+  if (pufferZeit != null) {
+    dbEndDate = endDatum.add(Duration(minutes: pufferZeit.minute));
+  }
+  termin.set("EndDatum", dbEndDate);
 
   if (fahrschueler != null) {
     termin.set('Fahrschueler', fahrschueler);
@@ -46,6 +46,34 @@ Future<void> addFahrstunde(
   }
 
   // Event erstellen für calender_view package
+  return createEventData(titel: titel, beschreibung: beschreibung, datum: datum, endDatum: endDatum);
+}
+
+CalendarEventData createEventData({
+  required String titel,
+  required DateTime datum,
+  required DateTime endDatum,
+  String? beschreibung,
+}) {
+  return CalendarEventData(
+      title: titel,
+      date: datum,
+      description: beschreibung,
+      endDate: endDatum,
+      startTime: DateTime(
+        datum.year,
+        datum.month,
+        datum.day,
+        datum.hour,
+        datum.minute,
+      ),
+      endTime: DateTime(
+        endDatum.year,
+        endDatum.month,
+        endDatum.day,
+        endDatum.hour,
+        endDatum.minute,
+      ));
 }
 
 Future<List<CalendarEventData>> getUserFahrstunden() async {
@@ -66,31 +94,11 @@ Future<List<CalendarEventData>> getUserFahrstunden() async {
   }
 
   for (var result in apiResponse.results!) {
-    CalendarEventData event;
-    DateTime? endDate = result.get<DateTime?>("EndDatum") as DateTime?;
-
-    event = CalendarEventData(
-        title: result.get<String>("Titel"),
-        date: result.get<DateTime>("Datum"),
-        description: result.get<String?>("Beschreibung"),
-        endDate: endDate,
-        startTime: DateTime(
-          result.get<DateTime>("Datum").year,
-          result.get<DateTime>("Datum").month,
-          result.get<DateTime>("Datum").day,
-          result.get<DateTime>("Datum").hour,
-          result.get<DateTime>("Datum").minute,
-        ),
-         endTime: DateTime(
-          result.get<DateTime>("EndDatum").year,
-          result.get<DateTime>("EndDatum").month,
-          result.get<DateTime>("EndDatum").day,
-          result.get<DateTime>("EndDatum").hour,
-          result.get<DateTime>("EndDatum").minute,
-        )
-    );
-
-    events.add(event);
+    events.add(createEventData(
+        titel: result.get<String>("Titel"),
+        datum: result.get<DateTime>("Datum"),
+        endDatum: result.get<DateTime>("EndDatum"),
+        beschreibung: result.get<String?>("Beschreibung")));
   }
   return events;
 }
