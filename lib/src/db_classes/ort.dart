@@ -30,3 +30,22 @@ Future<ParseObject?> getOrt(final String plz) async
 
   return apiResponse.results!.first as ParseObject;
 }
+
+Future<List<ParseObject>> fetchOrtObjects(final String plz) async
+{
+    final QueryBuilder<ParseObject> parseQuery = QueryBuilder<ParseObject>(ParseObject('Ort'))
+    ..whereContains('PLZ', plz);
+
+    final apiResponse = await parseQuery.query();
+
+    if (!apiResponse.success) 
+    {
+      throw Exception(apiResponse.error?.message);
+    }
+    if(apiResponse.results == null || apiResponse.results!.isEmpty)
+    {
+      return [];
+    }
+
+  return apiResponse.results as List<ParseObject>;
+}
