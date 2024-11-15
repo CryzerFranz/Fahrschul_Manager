@@ -1,28 +1,27 @@
 import 'dart:async';
-import 'dart:math';
 
-import 'package:async_searchable_dropdown/async_searchable_dropdown.dart';
 import 'package:fahrschul_manager/doc/intern/Authentication.dart';
-import 'package:fahrschul_manager/doc/intern/Fahrschule.dart';
 import 'package:fahrschul_manager/doc/intern/Ort.dart';
 import 'package:fahrschul_manager/doc/intern/User.dart';
 import 'package:fahrschul_manager/main.dart';
 import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/Login_page.dart';
+import 'package:fahrschul_manager/src/form_blocs/AsyncFahrschulnameValidationFormBloc.dart';
 import 'package:fahrschul_manager/widgets/decorations.dart';
+import 'package:fahrschul_manager/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
-class SignUpScreen extends StatefulWidget {
-  SignUpScreen({Key? key}) : super(key: key);
+class RegistrationPage extends StatefulWidget {
+  RegistrationPage({Key? key}) : super(key: key);
 
   @override
-  _SignUpScreenState createState() => _SignUpScreenState();
+  _RegistrationPageState createState() => _RegistrationPageState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
+class _RegistrationPageState extends State<RegistrationPage> {
   final _formKeyFirstPage = GlobalKey<FormState>();
   final _formKeySecondPage = GlobalKey<FormState>();
   final PageController _pageController = PageController();
@@ -38,8 +37,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  String? _errorMessageOrt = null;
-  String? _errorMessageFahrschulname = null;
   Timer? _debounce;
 
   List<ParseObject> _results = [];
@@ -48,49 +45,48 @@ class _SignUpScreenState extends State<SignUpScreen> {
   int _currentPage = 0; // Variable to track the current page
 
   void _onSearchChanged() {
-    if (_ortController.text.length >= 3) {
-      if (_debounce?.isActive ?? false) _debounce?.cancel();
+  // Cancel any active debounce timer
+  if (_debounce?.isActive ?? false) _debounce?.cancel();
 
-      _debounce = Timer(const Duration(milliseconds: 500), () {
-        _fetchOrtData(_ortController.text);
-
-        
-        if (_ortController.text.length == 5) {
-          if (_results.isEmpty) {
-            setState(() {
-              _ort = null;
-            });
-          } else {
-            
-            for (var result in _results) {
-              if (result.get<String>('PLZ') == _ortController.text) {
-                setState(() {
-                  _ort = result;
-                });
-                break;
-              }
-            }
-          }
-        }
-      });
-    } else {
+  if (_ortController.text.length == 5) {
+    // Small delay to ensure input is stable before fetching
+    _debounce = Timer(const Duration(milliseconds: 100), () async {
+      await _fetchOrtData(_ortController.text);
+      // Now set _ort based on updated _results, if matching PLZ is found
       setState(() {
-        _results.clear();
+        _ort = _results.firstWhere(
+          (result) => result.get<String>('PLZ') == _ortController.text,
+        );
       });
-    }
+    });
+  } else if (_ortController.text.length >= 3) {
+    // Regular debounce for 3-4 characters
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _fetchOrtData(_ortController.text);
+    });
+  } else {
+    // Clear results and _ort for fewer than 3 characters
+    setState(() {
+      _results.clear();
+      _ort = null;
+    });
   }
+}
 
   // Abrufen der Daten von Parse
-  Future<void> _fetchOrtData(String plz) async {
-    try {
-      List<ParseObject> ortObjects = await fetchOrtObjects(plz);
-      setState(() {
-        // Extrahiere Städtenamen und fülle _results
-        _results = ortObjects;
-      });
-    } catch (e) {
-      print("Fehler beim Abrufen der Daten: $e");
-    }
+  Future<void> _fetchOrtData(String plz) async { 
+   try {
+     List<ParseObject> ortObjects = await fetchOrtObjects(plz);
+     setState(() {
+       // Extrahiere Städtenamen und fülle _results
+       _results = ortObjects;
+     });
+   } catch (e) {
+      MaterialBanner test =  showErrorSnackbar("Fehler beim Abrufen der Daten: $e", "Netzwerk Fehler");
+      ScaffoldMessenger.of(context)
+                  ..hideCurrentMaterialBanner()
+                  ..showMaterialBanner(test);
+   }
   }
 
   @override
@@ -110,16 +106,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _pageController.dispose();
-    _errorMessageOrt =
-        null; // Reset the error message when the widget is disposed
-    _errorMessageFahrschulname = null;
     _debounce?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    //
+        return BlocProvider(
+        create: (context) => AsyncFahrschulnameValidationFormBloc(),
+        child: Builder(builder: (context) {
+          final formBloc = context.read<AsyncFahrschulnameValidationFormBloc>();
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -146,7 +142,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     SizedBox(height: constraints.maxHeight * 0.03),
                     SizedBox(
-                      height: 400,
+                      height: 430,
                       child: PageView(
                         controller: _pageController,
                         onPageChanged: (int page) {
@@ -155,8 +151,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           });
                         },
                         children: [
-                          _buildFirstPage(),
-                          _buildSecondPage(),
+                          _buildFirstPage(formBloc),
+                          _buildSecondPage(formBloc),
                         ],
                       ),
                     ),
@@ -172,14 +168,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
           );
         }),
       ),
-    );
+    );}));
   }
 
-  Widget _buildFirstPage() {
-    return BlocProvider(
-        create: (context) => AsyncFahrschulnameValidationFormBloc(),
-        child: Builder(builder: (context) {
-          final formBloc = context.read<AsyncFahrschulnameValidationFormBloc>();
+  Widget _buildFirstPage(AsyncFahrschulnameValidationFormBloc formBloc) {
           return SingleChildScrollView(
             child: Form(
               key: _formKeyFirstPage,
@@ -187,18 +179,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 TextFieldBlocBuilder(
                   textFieldBloc: formBloc.fahrschulname,
                   suffixButton: SuffixButton.asyncValidating,
-                  decoration: inputDecoration('Fahrschulname', null),
+                  decoration: inputDecoration('Fahrschulname'),
                 ),
                 const SizedBox(height: 16.0),
                 TextFormField(
                   controller: _ortController,
-                  decoration: inputDecoration('PLZ', _errorMessageOrt),
+                  decoration: inputDecoration('PLZ'),
                   keyboardType: TextInputType.number,
                   inputFormatters: [
                     FilteringTextInputFormatter
                         .digitsOnly // Nur Zahlen zulassen
                   ],
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  autovalidateMode: AutovalidateMode.onUnfocus,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Bitte geben Sie eine PLZ ein.';
@@ -224,12 +216,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         _ortController.text = value!.get<String>("PLZ")!;
                       });
                     },
-                    hint: Text("Wählen Sie eine Stadt"),
+                    hint: const Text("Wählen Sie eine Stadt"),
                   ),
                 const SizedBox(height: 16.0),
                 TextFormField(
                   controller: _strasseController,
-                  decoration: inputDecoration('Straße', null),
+                  decoration: inputDecoration('Straße'),
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -241,7 +233,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(height: 16.0),
                 TextFormField(
                   controller: _hausnummerController,
-                  decoration: inputDecoration('Hausnummer', null),
+                  decoration: inputDecoration('Hausnummer'),
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -272,10 +264,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ]),
             ),
           );
-        }));
+        
   }
 
-  Widget _buildSecondPage() {
+  Widget _buildSecondPage(AsyncFahrschulnameValidationFormBloc formBloc) {
     return SingleChildScrollView(
       child: Form(
         key: _formKeySecondPage,
@@ -283,7 +275,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           children: [
             TextFormField(
               controller: _vornameController,
-              decoration: inputDecoration('Vorname', null),
+              decoration: inputDecoration('Vorname'),
               autovalidateMode: AutovalidateMode
                   .onUserInteraction, //TODO: Error Message erstellen
               validator: (value) {
@@ -301,7 +293,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             const SizedBox(height: 16.0),
             TextFormField(
               controller: _nachnameController,
-              decoration: inputDecoration('Nachname', null),
+              decoration: inputDecoration('Nachname'),
               autovalidateMode: AutovalidateMode
                   .onUserInteraction, //TODO: Error Message erstellen
               validator: (value) {
@@ -319,7 +311,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             const SizedBox(height: 16.0),
             TextFormField(
               controller: _emailController,
-              decoration: inputDecoration('E-Mail', null),
+              decoration: inputDecoration('E-Mail'),
               autovalidateMode: AutovalidateMode
                   .onUserInteraction, //TODO: Error Message erstellen
               validator: (value) {
@@ -333,7 +325,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             const SizedBox(height: 16.0),
             TextFormField(
               controller: _passwordController,
-              decoration: inputDecoration('Password', null),
+              decoration: inputDecoration('Password'),
               autovalidateMode: AutovalidateMode
                   .onUserInteraction, //TODO: Error Message erstellen
               validator: (value) {
@@ -354,11 +346,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ElevatedButton(
               onPressed: () async {
                 try {
-                  if (_ort == null) throw ("88");
-                  if (_fahrschulnameController == "Abc") throw (77);
                   //int a = 5;
                   await fahrschuleRegistration(
-                      _fahrschulnameController.text,
+                      formBloc.getFahrschulnameValue()!,
                       _ort!,
                       _strasseController.text,
                       _hausnummerController.text,
@@ -375,33 +365,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     //Fehlerbehandlung wenn der Benutzer nicht eingeloggt ist
                   }
                 } catch (e) {
-                  if (mounted) {
-                    int? indexflag = null;
-                    if (e.toString() == "88") {
-                      indexflag = 0;
-                      setState(() {
-                        _pageController.jumpToPage(indexflag!);
-                        _errorMessageOrt = "Ort nicht gefunden";
-                      });
-                    }
-                    if (indexflag == null) {
-                      //In jede if wo der Fehler auf der zweiten Seite ist
-                      indexflag = 1;
-                    }
-
-                    setState(() {
-                      _pageController.jumpToPage(indexflag!);
-                      _errorMessageOrt = "afaf";
-                    }); //bis hier
-
-                    if (e.toString() == "77") {
-                      indexflag = 0;
-                      setState(() {
-                        _pageController.jumpToPage(indexflag!);
-                        _errorMessageFahrschulname = "Fahrschulname fehler";
-                      });
-                    }
-                  }
+                  //todo hier muss was passieren
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -468,42 +432,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   .withOpacity(0.64),
             ),
       ),
-    );
-  }
-}
-
-class AsyncFahrschulnameValidationFormBloc extends FormBloc<String, String> {
-  final fahrschulname = TextFieldBloc(
-    validators: [
-      FieldBlocValidators.required,
-      (String? value) {
-        if (value == null || value.isEmpty) {
-          return 'Bitte geben Sie einen Fahrschulnamen ein.';
-        }
-        return null;
-      },
-    ],
-    asyncValidatorDebounceTime: const Duration(milliseconds: 300),
-  );
-
-  @override
-  void onSubmitting() async {
-    debugPrint(fahrschulname.value);
-
-    try {
-      await Future<void>.delayed(const Duration(milliseconds: 500));
-
-      emitSuccess();
-    } catch (e) {
-      emitFailure();
-    }
-  }
-
-  AsyncFahrschulnameValidationFormBloc() {
-    addFieldBlocs(fieldBlocs: [fahrschulname]);
-
-    fahrschulname.addAsyncValidators(
-      [checkIfFahrschuleExists],
     );
   }
 }
