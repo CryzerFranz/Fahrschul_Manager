@@ -62,14 +62,14 @@ class SignInScreen extends StatefulWidget {
                       children: [
                         TextFormField(
                           controller: _emailController,
-                          decoration:inputDecoration('E-Mail',null),//TODO: Error Message erstellen
+                          decoration:inputDecoration('E-Mail'),//TODO: Error Message erstellen
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
                           child: TextFormField(
                             obscureText: true,
                             controller: _passwordController,
-                            decoration: inputDecoration("Password",null),//TODO: Error Message erstellen
+                            decoration: inputDecoration("Password"),//TODO: Error Message erstellen
                           ),
                         ),
                         ElevatedButton(
@@ -99,7 +99,7 @@ class SignInScreen extends StatefulWidget {
                         TextButton(
                         onPressed: () {
                           navigatorKey.currentState?.push(
-                            MaterialPageRoute(builder: (context) => SignUpScreen()),
+                            MaterialPageRoute(builder: (context) => RegistrationPage()),
                           );
                         },
                           child: Text.rich(
