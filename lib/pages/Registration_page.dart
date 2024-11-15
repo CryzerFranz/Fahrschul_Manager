@@ -411,7 +411,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SignInScreen()),
+          MaterialPageRoute(builder: (context) => SignInPage()),
         );
       },
       child: Text.rich(

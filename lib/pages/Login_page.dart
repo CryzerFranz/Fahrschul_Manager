@@ -6,13 +6,13 @@ import 'package:fahrschul_manager/pages/Registration_page.dart';
 import 'package:fahrschul_manager/widgets/decorations.dart';
 import 'package:flutter/material.dart';
 
-class SignInScreen extends StatefulWidget {
-  SignInScreen({Key? key}) : super(key: key);
+class SignInPage extends StatefulWidget {
+  SignInPage({Key? key}) : super(key: key);
 
   @override
   _SigninScreenState createState() => _SigninScreenState();
 }
-  class _SigninScreenState extends State<SignInScreen>{
+  class _SigninScreenState extends State<SignInPage>{
   final _formKey = GlobalKey<FormState>();
 
 
