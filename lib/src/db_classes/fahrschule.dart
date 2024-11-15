@@ -128,4 +128,27 @@ Future<ParseObject> createFahrschule(String name) async {
   return response.result as ParseObject;
 }
 
+Future<bool> checkIfFahrschuleExists(String value) async{
+  if(value.isEmpty)
+  {
+    throw const FormatException("empty values are not allowed");
+  }
+
+  final QueryBuilder<ParseObject> parseQuery = QueryBuilder<ParseObject>(ParseObject('Fahrschule'))
+    ..whereEqualTo('Name', value);
+
+  final response = await parseQuery.query();
+
+  if(!response.success)
+  {
+    logger.e(response.error?.message);
+    throw Exception(response.error?.message);
+  }
+  if(response.results == null || response.results!.isEmpty)
+  {
+    return false;
+  }
+   return true;
+}
+
 
