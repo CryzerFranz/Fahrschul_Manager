@@ -1,4 +1,5 @@
 import 'package:fahrschul_manager/main.dart';
+import 'package:fahrschul_manager/pages/Login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
@@ -9,7 +10,6 @@ import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 /// dass nur eine Instanz der Klasse während der gesamten Lebensdauer der Anwendung
 /// existiert.
 class Benutzer {
-  //TODO
 
   // Private constructor for singleton
   Benutzer._internal();
@@ -78,7 +78,7 @@ class Benutzer {
     navigatorKey.currentState?.pushAndRemoveUntil(
       MaterialPageRoute(
           builder: (context) =>
-              MyApp()), //TODO: Anstatt MyApp() sollte LoginPage() sein.
+              SignInPage()),
       (Route<dynamic> route) => false,
     );
   }
