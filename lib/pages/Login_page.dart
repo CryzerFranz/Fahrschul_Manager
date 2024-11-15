@@ -62,14 +62,14 @@ class SignInScreen extends StatefulWidget {
                       children: [
                         TextFormField(
                           controller: _emailController,
-                          decoration:inputDecoration('E-Mail'),
+                          decoration:inputDecoration('E-Mail',null),//TODO: Error Message erstellen
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
                           child: TextFormField(
                             obscureText: true,
                             controller: _passwordController,
-                            decoration: inputDecoration("Password"),
+                            decoration: inputDecoration("Password",null),//TODO: Error Message erstellen
                           ),
                         ),
                         ElevatedButton(
@@ -79,7 +79,11 @@ class SignInScreen extends StatefulWidget {
                             // "luis@gmail.com", "ABC12345"
                               navigatorKey.currentState?.pushReplacement(
                               MaterialPageRoute(builder: (context) => HomePage()),
+
                           );
+                            }
+                            else{
+                              //setState
                             }
                           },
                           style: ElevatedButton.styleFrom(
