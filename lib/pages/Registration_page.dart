@@ -42,14 +42,15 @@ class _RegistrationPageState extends State<RegistrationPage> {
   List<ParseObject> _results = [];
   ParseObject? _ort;
 
-  int _currentPage = 0; // Variable to track the current page
+  int _currentPage = 0;
   bool _isLoadingRegistration = false;
   bool _isLoadingDataForOrt = false;
+  final String _standardDropDownHintText = "Wählen Sie eine Stadt";
+  String? _dropDownHintText;
 
   void _onSearchChanged() {
     // Cancel any active debounce timer
     if (_debounce?.isActive ?? false) _debounce?.cancel();
-
     if (_ortController.text.length == 5) {
       // Small delay to ensure input is stable before fetching
       _debounce = Timer(const Duration(milliseconds: 100), () async {
@@ -61,18 +62,26 @@ class _RegistrationPageState extends State<RegistrationPage> {
               ? _results.firstWhere(
                   (result) => result.get<String>('PLZ') == _ortController.text)
               : null;
+          if (_ort == null) _dropDownHintText = null;
+          else{
+            _dropDownHintText = _ort!.get<String>("Name");
+          }
         });
       });
     } else if (_ortController.text.length >= 3) {
       // Regular debounce for 3-4 characters
       _debounce = Timer(const Duration(milliseconds: 500), () {
         _fetchOrtData(_ortController.text);
+        setState(() {
+          _dropDownHintText = null;
+        });
       });
     } else {
       // Clear results and _ort for fewer than 3 characters
       setState(() {
         _results.clear();
         _ort = null;
+        _dropDownHintText = null;
       });
     }
   }
@@ -203,7 +212,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly // Nur Zahlen zulassen
             ],
-            autovalidateMode: AutovalidateMode.onUnfocus,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Bitte geben Sie eine PLZ ein.';
@@ -214,7 +223,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
               return null;
             },
           ),
-          if (_isLoadingDataForOrt) const CircularProgressIndicator(),
+          const SizedBox(height: 5.0),
+          if (_isLoadingDataForOrt) ...[
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+            ),
+          ],
           if (_results.isNotEmpty && !_isLoadingDataForOrt)
             DropdownButton<ParseObject>(
               isExpanded: true,
@@ -227,10 +241,21 @@ class _RegistrationPageState extends State<RegistrationPage> {
               onChanged: (value) {
                 setState(() {
                   _ort = value;
-                  _ortController.text = value!.get<String>("PLZ")!;
+                  _dropDownHintText = value!.get<String>("Name");
+                  _ortController.text = value.get<String>("PLZ")!;
                 });
               },
-              hint: const Text("Wählen Sie eine Stadt"),
+              hint: Text(_dropDownHintText ?? _standardDropDownHintText),
+              dropdownColor: const Color.fromARGB(184, 89, 255, 95),
+              alignment: Alignment.center,
+              menuMaxHeight: 300,
+              icon: const Icon(Icons.arrow_downward),
+              elevation: 0,
+              underline: Container(
+                height: 2,
+                color: Colors.greenAccent,
+              ),
+              padding: EdgeInsets.only(left: 80, right: 80),
             ),
           const SizedBox(height: 16.0),
           TextFormField(
