@@ -32,10 +32,6 @@ void main() async {
     );
   Benutzer().initialize();
 
-  
-
-
-    
     runApp(MyApp());
   } else {
     runApp(ErrorApp());
