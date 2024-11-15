@@ -34,7 +34,7 @@ Future<ParseObject?> getOrt(final String plz) async
 Future<List<ParseObject>> fetchOrtObjects(final String plz) async
 {
     final QueryBuilder<ParseObject> parseQuery = QueryBuilder<ParseObject>(ParseObject('Ort'))
-    ..whereContains('PLZ', plz);
+    ..whereStartsWith('PLZ', plz);
 
     final apiResponse = await parseQuery.query();
 
