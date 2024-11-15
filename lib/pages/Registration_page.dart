@@ -43,8 +43,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
   ParseObject? _ort;
 
   int _currentPage = 0; // Variable to track the current page
-  bool _isLoading = false;
-
+  bool _isLoadingRegistration = false;
+  bool _isLoadingDataForOrt = false;
 
   void _onSearchChanged() {
     // Cancel any active debounce timer
@@ -56,9 +56,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
         await _fetchOrtData(_ortController.text);
         // Now set _ort based on updated _results, if matching PLZ is found
         setState(() {
-          _ort = _results.firstWhere(
-            (result) => result.get<String>('PLZ') == _ortController.text,
-          );
+          _ort = _results.any(
+                  (result) => result.get<String>('PLZ') == _ortController.text)
+              ? _results.firstWhere(
+                  (result) => result.get<String>('PLZ') == _ortController.text)
+              : null;
         });
       });
     } else if (_ortController.text.length >= 3) {
@@ -78,6 +80,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
   // Abrufen der Daten von Parse
   Future<void> _fetchOrtData(String plz) async {
     try {
+      setState(() {
+        _isLoadingDataForOrt = true;
+      });
       List<ParseObject> ortObjects = await fetchOrtObjects(plz);
       setState(() {
         // Extrahiere Städtenamen und fülle _results
@@ -89,6 +94,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
       ScaffoldMessenger.of(context)
         ..hideCurrentMaterialBanner()
         ..showMaterialBanner(test);
+    } finally {
+      setState(() {
+        _isLoadingDataForOrt = false;
+      });
     }
   }
 
@@ -205,7 +214,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
               return null;
             },
           ),
-          if (_results.isNotEmpty)
+          if (_isLoadingDataForOrt) const CircularProgressIndicator(),
+          if (_results.isNotEmpty && !_isLoadingDataForOrt)
             DropdownButton<ParseObject>(
               isExpanded: true,
               items: _results
@@ -347,13 +357,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
             ),
             const SizedBox(height: 16.0),
             ElevatedButton(
-              onPressed: _isLoading
+              onPressed: _isLoadingRegistration
                   // ignore: dead_code
                   ? null
                   : () async {
                       try {
                         setState(() {
-                          _isLoading = true;
+                          _isLoadingRegistration = true;
                         });
 
                         await fahrschuleRegistration(
@@ -377,7 +387,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         //todo hier muss was passieren
                       } finally {
                         setState(() {
-                          _isLoading = false;
+                          _isLoadingRegistration = false;
                         });
                       }
                     },
@@ -388,7 +398,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 minimumSize: const Size(double.infinity, 48),
                 shape: const StadiumBorder(),
               ),
-              child: _isLoading
+              child: _isLoadingRegistration
                   ? const CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     )
