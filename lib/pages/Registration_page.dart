@@ -49,27 +49,26 @@ class _RegistrationPageState extends State<RegistrationPage> {
   String? _dropDownHintText;
 
   void _onSearchChanged() {
-    // Cancel any active debounce timer
+    // Vorhandene debounce timer zurücksetzen
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     if (_ortController.text.length == 5) {
-      // Small delay to ensure input is stable before fetching
+      // Kleine Verzögerung, um sicherzustellen, dass die Eingabe vor dem Abruf stabil ist
       _debounce = Timer(const Duration(milliseconds: 100), () async {
         await _fetchOrtData(_ortController.text);
-        // Now set _ort based on updated _results, if matching PLZ is found
         setState(() {
           _ort = _results.any(
                   (result) => result.get<String>('PLZ') == _ortController.text)
               ? _results.firstWhere(
                   (result) => result.get<String>('PLZ') == _ortController.text)
               : null;
-          if (_ort == null) _dropDownHintText = null;
-          else{
+          if (_ort == null) {
+            _dropDownHintText = null;
+          } else {
             _dropDownHintText = _ort!.get<String>("Name");
           }
         });
       });
     } else if (_ortController.text.length >= 3) {
-      // Regular debounce for 3-4 characters
       _debounce = Timer(const Duration(milliseconds: 500), () {
         _fetchOrtData(_ortController.text);
         setState(() {
@@ -77,7 +76,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
         });
       });
     } else {
-      // Clear results and _ort for fewer than 3 characters
+      // Alles clearen
       setState(() {
         _results.clear();
         _ort = null;
