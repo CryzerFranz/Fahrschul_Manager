@@ -6,7 +6,7 @@ import 'package:fahrschul_manager/doc/intern/User.dart';
 import 'package:fahrschul_manager/main.dart';
 import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/Login_page.dart';
-import 'package:fahrschul_manager/src/form_blocs/AsyncFahrschulnameValidationFormBloc.dart';
+import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationFirstPageValidationFormBloc.dart';
 import 'package:fahrschul_manager/widgets/decorations.dart';
 import 'package:fahrschul_manager/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
@@ -22,16 +22,10 @@ class RegistrationPage extends StatefulWidget {
 }
 
 class _RegistrationPageState extends State<RegistrationPage> {
-  final _formKeyFirstPage = GlobalKey<FormState>();
   final _formKeySecondPage = GlobalKey<FormState>();
   final PageController _pageController = PageController();
 
   // Form field controllers
-  final TextEditingController _fahrschulnameController =
-      TextEditingController();
-  final TextEditingController _ortController = TextEditingController();
-  final TextEditingController _strasseController = TextEditingController();
-  final TextEditingController _hausnummerController = TextEditingController();
   final TextEditingController _vornameController = TextEditingController();
   final TextEditingController _nachnameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -39,88 +33,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   Timer? _debounce;
 
-  List<ParseObject> _results = [];
-  ParseObject? _ort;
-
   int _currentPage = 0;
   bool _isLoadingRegistration = false;
-  bool _isLoadingDataForOrt = false;
-  final String _standardDropDownHintText = "Wählen Sie eine Stadt";
-  String? _dropDownHintText;
-
-  void _onSearchChanged() {
-    // Vorhandene debounce timer zurücksetzen
-    if (_debounce?.isActive ?? false) _debounce?.cancel();
-    if (_ortController.text.length == 5) {
-      // Kleine Verzögerung, um sicherzustellen, dass die Eingabe vor dem Abruf stabil ist
-      _debounce = Timer(const Duration(milliseconds: 100), () async {
-        await _fetchOrtData(_ortController.text);
-        setState(() {
-          _ort = _results.any(
-                  (result) => result.get<String>('PLZ') == _ortController.text)
-              ? _results.firstWhere(
-                  (result) => result.get<String>('PLZ') == _ortController.text)
-              : null;
-          if (_ort == null) {
-            _dropDownHintText = null;
-          } else {
-            _dropDownHintText = _ort!.get<String>("Name");
-          }
-        });
-      });
-    } else if (_ortController.text.length >= 3) {
-      _debounce = Timer(const Duration(milliseconds: 500), () {
-        _fetchOrtData(_ortController.text);
-        setState(() {
-          _dropDownHintText = null;
-        });
-      });
-    } else {
-      // Alles clearen
-      setState(() {
-        _results.clear();
-        _ort = null;
-        _dropDownHintText = null;
-      });
-    }
-  }
-
-  // Abrufen der Daten von Parse
-  Future<void> _fetchOrtData(String plz) async {
-    try {
-      setState(() {
-        _isLoadingDataForOrt = true;
-      });
-      List<ParseObject> ortObjects = await fetchOrtObjects(plz);
-      setState(() {
-        // Extrahiere Städtenamen und fülle _results
-        _results = ortObjects;
-      });
-    } catch (e) {
-      MaterialBanner test = showErrorSnackbar(
-          "Fehler beim Abrufen der Daten: $e", "Netzwerk Fehler");
-      ScaffoldMessenger.of(context)
-        ..hideCurrentMaterialBanner()
-        ..showMaterialBanner(test);
-    } finally {
-      setState(() {
-        _isLoadingDataForOrt = false;
-      });
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _ortController.addListener(_onSearchChanged);
-  }
 
   @override
   void dispose() {
-    _fahrschulnameController.dispose();
-    _ortController.dispose();
-    _strasseController.dispose();
-    _hausnummerController.dispose();
     _vornameController.dispose();
     _nachnameController.dispose();
     _emailController.dispose();
@@ -133,9 +50,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (context) => AsyncFahrschulnameValidationFormBloc(),
+        create: (context) => AsyncRegistrationFirstPageValidationFormBloc(),
         child: Builder(builder: (context) {
-          final formBloc = context.read<AsyncFahrschulnameValidationFormBloc>();
+          final formBloc =
+              context.read<AsyncRegistrationFirstPageValidationFormBloc>();
           return Scaffold(
             backgroundColor: Colors.white,
             body: SafeArea(
@@ -193,118 +111,90 @@ class _RegistrationPageState extends State<RegistrationPage> {
         }));
   }
 
-  Widget _buildFirstPage(AsyncFahrschulnameValidationFormBloc formBloc) {
-    return SingleChildScrollView(
-      child: Form(
-        key: _formKeyFirstPage,
-        child: Column(children: [
-          TextFieldBlocBuilder(
-            textFieldBloc: formBloc.fahrschulname,
-            suffixButton: SuffixButton.asyncValidating,
-            decoration: inputDecoration('Fahrschulname'),
-          ),
-          const SizedBox(height: 16.0),
-          TextFormField(
-            controller: _ortController,
-            decoration: inputDecoration('PLZ'),
-            keyboardType: TextInputType.number,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly // Nur Zahlen zulassen
-            ],
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Bitte geben Sie eine PLZ ein.';
-              }
-              if (_ort == null) {
-                return 'Bitte wählen Sie eine Stadt aus der Liste.';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 5.0),
-          if (_isLoadingDataForOrt) ...[
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+  Widget _buildFirstPage(
+      AsyncRegistrationFirstPageValidationFormBloc formBloc) {
+    return FormBlocListener<AsyncRegistrationFirstPageValidationFormBloc,
+            String, String>(
+        onSuccess: (context, state) {
+          //Wenn success dann nächste Seite
+          _pageController.nextPage(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        },
+        onFailure: (context, state) {
+          //TODO
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(state.failureResponse!)));
+        },
+        child: SingleChildScrollView(
+          child: Column(children: [
+            TextFieldBlocBuilder(
+              textFieldBloc: formBloc.fahrschulnameBloc,
+              suffixButton: SuffixButton.asyncValidating,
+              decoration: inputDecoration('Fahrschulname'),
             ),
-          ],
-          if (_results.isNotEmpty && !_isLoadingDataForOrt)
-            DropdownButton<ParseObject>(
-              isExpanded: true,
-              items: _results
-                  .map((result) => DropdownMenuItem(
-                        value: result,
-                        child: Text(result.get<String>("Name")!),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  _ort = value;
-                  _dropDownHintText = value!.get<String>("Name");
-                  _ortController.text = value.get<String>("PLZ")!;
-                });
-              },
-              hint: Text(_dropDownHintText ?? _standardDropDownHintText),
-              dropdownColor: const Color.fromARGB(184, 89, 255, 95),
-              alignment: Alignment.center,
-              menuMaxHeight: 300,
-              icon: const Icon(Icons.arrow_downward),
-              elevation: 0,
-              underline: Container(
-                height: 2,
-                color: Colors.greenAccent,
+            const SizedBox(height: 16.0),
+            TextFieldBlocBuilder(
+              textFieldBloc: formBloc.plzBloc,
+              suffixButton: SuffixButton.asyncValidating,
+              decoration: inputDecoration("PLZ"),
+              maxLength: 5,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly // Nur Zahlen zulassen
+              ],
+            ),
+    
+              DropdownFieldBlocBuilder(
+                selectFieldBloc: formBloc.plzDropDownBloc,
+                itemBuilder: (context, value) => FieldItem(
+                  child: Text(value.get<String>("Name")!),
+                ),
+                decoration: const InputDecoration(
+                  labelText: "Stadt wählen",
+                  prefixIcon: Icon(Icons.house_rounded),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.green, width: 2),
+                  ),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.green, width: 1),
+                  ),
+                  // Optional: Customize the hintText or other properties if needed
+                ),
+                onChanged: (value) {
+                  formBloc.plzBloc.changeValue(value!.get<String>("PLZ")!);
+                  formBloc.plzDropDownBloc.selectSuggestion(value);
+                },
               ),
-              padding: EdgeInsets.only(left: 80, right: 80),
+            const SizedBox(height: 16.0),
+            TextFieldBlocBuilder(
+              textFieldBloc: formBloc.strasseBloc,
+              decoration: inputDecoration('Straße'),
             ),
-          const SizedBox(height: 16.0),
-          TextFormField(
-            controller: _strasseController,
-            decoration: inputDecoration('Straße'),
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Bitte geben Sie eine Strasse ein.';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16.0),
-          TextFormField(
-            controller: _hausnummerController,
-            decoration: inputDecoration('Hausnummer'),
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Bitte geben Sie eine Hausnummer ein.';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16.0),
-          ElevatedButton(
-            onPressed: () {
-              if (_formKeyFirstPage.currentState!.validate()) {
-                _pageController.nextPage(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              backgroundColor: const Color(0xFF00BF6D),
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 48),
-              shape: const StadiumBorder(),
+            const SizedBox(height: 16.0),
+            TextFieldBlocBuilder(
+              textFieldBloc: formBloc.hausnummerBloc,
+              decoration: inputDecoration('Hausnummer'),
             ),
-            child: const Text('Weiter'),
-          ),
-        ]),
-      ),
-    );
+            const SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: formBloc.submit,
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: const Color(0xFF00BF6D),
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 48),
+                shape: const StadiumBorder(),
+              ),
+              child: const Text('Weiter'),
+            ),
+          ]),
+        ));
   }
 
-  Widget _buildSecondPage(AsyncFahrschulnameValidationFormBloc formBloc) {
+  Widget _buildSecondPage(
+      AsyncRegistrationFirstPageValidationFormBloc formBloc) {
     return SingleChildScrollView(
       child: Form(
         key: _formKeySecondPage,
@@ -391,10 +281,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         });
 
                         await fahrschuleRegistration(
-                            formBloc.getFahrschulnameValue()!,
-                            _ort!,
-                            _strasseController.text,
-                            _hausnummerController.text,
+                            formBloc.fahrschulnameBloc.value,
+                            formBloc.plzDropDownBloc.value!,
+                            formBloc.strasseBloc.value,
+                            formBloc.hausnummerBloc.value,
                             _emailController.text,
                             _passwordController.text,
                             _vornameController.text,
