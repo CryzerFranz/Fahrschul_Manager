@@ -1,0 +1,128 @@
+import 'package:fahrschul_manager/doc/intern/Fahrschule.dart';
+import 'package:fahrschul_manager/doc/intern/Ort.dart';
+import 'package:flutter_form_bloc/flutter_form_bloc.dart';
+import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
+
+class AsyncRegistrationFirstPageValidationFormBloc extends FormBloc<String, String> {
+  // ------------------------Widget list -------------------------
+  final fahrschulnameBloc = TextFieldBloc(
+    validators: [
+      (String? value) {
+        if (value == null || value.isEmpty) {
+          return 'Bitte geben Sie einen Fahrschulnamen ein.';
+        }
+        return null;
+      },
+    ],
+    asyncValidatorDebounceTime: const Duration(milliseconds: 300),
+  );
+
+  final strasseBloc = TextFieldBloc(
+    validators: [
+      (String? value) {
+        if (value == null || value.isEmpty) {
+          return 'Bitte geben Sie eine Strasse ein.';
+        }
+        return null;
+      },
+    ],
+  );
+
+  final hausnummerBloc = TextFieldBloc(
+    validators: [
+      (String? value) {
+        if (value == null || value.isEmpty) {
+          return 'Bitte geben Sie eine Hausnummer ein.';
+        }
+        return null;
+      },
+    ],
+  );
+
+  final plzBloc = TextFieldBloc(
+    validators: [
+      (String? value) {
+        if (value == null || value.isEmpty) {
+          return 'Bitte geben Sie eine PLZ ein.';
+        }
+        return null;
+      },
+    ],
+    asyncValidatorDebounceTime: const Duration(milliseconds: 300), 
+  );
+
+  final plzDropDownBloc = SelectFieldBloc<ParseObject, String>();
+
+  //------------------------------------------------------------------
+  @override
+  void onSubmitting() async {
+    try {
+      fahrschulnameBloc.validate();
+      strasseBloc.validate();
+      hausnummerBloc.validate();
+      fahrschulnameBloc.validate();
+
+      if(plzBloc.value.length < 5 && plzDropDownBloc.value == null)
+      {
+        plzBloc.addFieldError("Gültige PLZ eingeben oder Stadt auswählen");
+        emitFailure();
+      }
+
+      if(plzBloc.value.length == 5 && plzDropDownBloc.value == null)
+      {
+        List<ParseObject> ortObjects = await fetchOrtObjects(plzBloc.value);
+        if(ortObjects.isEmpty){
+          plzBloc.addFieldError("Gültige PLZ eingeben oder Stadt auswählen");
+          emitFailure();
+        }
+        plzDropDownBloc.updateInitialValue(ortObjects.first);
+      }
+
+
+      // Fahrschulname
+      String? validationError =
+          await validationFahrschulName(fahrschulnameBloc.value);
+      if (validationError != null) {
+        fahrschulnameBloc.addFieldError(validationError);
+        emitFailure();
+      } else {
+        emitSuccess();
+      }
+    } catch (e) {
+      emitFailure();
+    }
+  }
+
+  Future<String?> validationFahrschulName(String? value) async {
+    if (value == null || value.isEmpty) {
+      return 'Bitte geben Sie einen Fahrschulnamen ein.';
+    }
+    bool exist = await checkIfFahrschuleExists(value!);
+    if (exist) {
+      return "Fahrschule existiert bereits.";
+    }
+    return null;
+  }
+
+  Future<String?> validationPLZFetchingOrt(String value) async {
+    List<ParseObject> ortObjects = await fetchOrtObjects(value);
+    if(ortObjects.isEmpty)
+    {
+      return "Keine gültige PLZ";
+    }
+    plzDropDownBloc.updateItems(ortObjects);
+    return null;
+
+  }
+
+  AsyncRegistrationFirstPageValidationFormBloc() {
+    addFieldBlocs(fieldBlocs: [fahrschulnameBloc, plzBloc, strasseBloc, hausnummerBloc, plzDropDownBloc]);
+
+    fahrschulnameBloc.addAsyncValidators(
+      [validationFahrschulName],
+    );
+    plzBloc.addAsyncValidators(
+      [validationPLZFetchingOrt],
+    );
+  }
+}
