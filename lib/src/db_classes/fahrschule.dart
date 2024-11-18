@@ -128,6 +128,17 @@ Future<ParseObject> createFahrschule(String name) async {
   return response.result as ParseObject;
 }
 
+/// Überprüft ob die Fahrschule bereits existiert
+/// 
+/// ### Parameter:
+/// - **`String` [value] : Name der Fahrschule
+/// 
+/// ### Return value:
+/// - **[bool]** : `true` wenn Fahrschule bereits existiert. Andernfalls `false`.
+/// 
+/// ### Exceptions:
+/// - **[FormatException]**
+/// - **[Exception]**
 Future<bool> checkIfFahrschuleExists(String value) async{
   if(value.isEmpty)
   {
