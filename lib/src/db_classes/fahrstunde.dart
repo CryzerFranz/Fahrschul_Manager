@@ -3,6 +3,10 @@ import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 //TODO !!FRONTEND sollte überprüfen das enddatum nicht kleiner als datum ist.!!
+/// Fügt eine Fahrstunde/Termin in die Datenbank ein und erstellt zugleich einen Objekt für das Kalendar Widget.
+/// 
+/// ### Return value:
+/// - **[CalendarEventData]**
 Future<CalendarEventData> addFahrstunde({
   required DateTime datum,
   required DateTime endDatum,
@@ -49,6 +53,11 @@ Future<CalendarEventData> addFahrstunde({
   return createEventData(titel: titel, beschreibung: beschreibung, datum: datum, endDatum: endDatum);
 }
 
+//TODO evtl async?
+/// Wandelt die gegebenen Daten zu einem [CalendarEventData] um und gibt sie zurück.
+/// 
+/// ### Return value:
+/// - **[CalendarEventData]**
 CalendarEventData createEventData({
   required String titel,
   required DateTime datum,
@@ -76,7 +85,10 @@ CalendarEventData createEventData({
       ));
 }
 
-//TODO
+/// Gibt alle Termine des Eingeloggten Benutzers zurück.
+/// 
+/// ### Return value:
+/// - **[List<CalendarEventData>]**
 Future<List<CalendarEventData>> getUserFahrstunden() async {
   List<CalendarEventData> events = [];
   String role = Benutzer().isFahrlehrer! ? "Fahrlehrer" : "Fahrschueler";

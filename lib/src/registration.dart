@@ -3,7 +3,6 @@ import 'package:fahrschul_manager/doc/intern/Status.dart';
 import 'package:fahrschul_manager/doc/intern/User.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
-
 /// Erstellt einen neuen Eintrag in `Fahrschueler`.
 ///
 /// ### Parameters:
@@ -89,22 +88,23 @@ Future<ParseObject> createFahrschueler(String vorname, String name,
 ///
 /// ### Parameters:
 ///
-/// - **`String` [vorname]** : Vorname des Fahrlehrers.
-/// - **`String` [name]** : Name des Fahrlehrers.
-/// - **`String` [eMail]** : E-Mail adresse vom Fahrlehrer.
-/// - **`String` [ParseObject]** : Das ParseObject Fahrschule zudem der Fahrlehrer gehört.
-/// - **`String` [password]** : Passwort des Benutzers.
-/// - **`bool` [createSession]** : **OPTIONAL** Default: `false`. Erstellt eine Session bei `true`
-///
-/// ### Return value:
-/// - **[ParseObject]** : Gibt Fahrlehrer als Objekt zurück.
+/// - **`required` `String` [vorname]** : Vorname des Fahrlehrers.
+/// - **`required` `String` [name]** : Name des Fahrlehrers.
+/// - **`required` `String` [eMail]** : E-Mail adresse vom Fahrlehrer.
+/// - **`required` `String` [ParseObject]** : Das ParseObject Fahrschule zudem der Fahrlehrer gehört.
+/// - **`required` `String` [password]** : Passwort des Benutzers.
+/// - **`optional` `bool` [createSession]** : **OPTIONAL** Default: `false`. Erstellt eine Session bei `true`
 ///
 /// ### Exception:
 /// - **[FormatException]** : Übergebene Parameter passen nicht zum erwartetem Format.
 /// - **[Exception]** : Etwas ist beim registrieren schief gelaufen.
-Future<ParseObject> createFahrlehrer(String vorname, String name, String eMail,
-    final ParseObject fahrschulObject, final String password,
-    {bool createSession = false}) async {
+Future<void> createFahrlehrer(
+    {required vorname,
+    required String name,
+    required String eMail,
+    required final ParseObject fahrschulObject,
+    required final String password,
+    bool createSession = false}) async {
   if (eMail.isEmpty || vorname.isEmpty || name.isEmpty) {
     throw const FormatException("Empty values are not allowed");
   }
@@ -149,8 +149,6 @@ Future<ParseObject> createFahrlehrer(String vorname, String name, String eMail,
     if (!createSession || !isCreated) {
       await Benutzer().logout();
     }
-
-    return response.result as ParseObject;
   } catch (e) {
     throw Exception("Error: createFahrlehrer -> $e");
   }
@@ -195,35 +193,44 @@ Future<ParseUser> createUser(final String eMail, final String password) async {
 /// Zusätzlich wird ein Fahrlehrer erstellt, der die Fahrschule erstellt hat bzw. zu dieser gehört.
 ///
 /// ### Parameters:
-/// - **`String` [fahrschulName]**: Name für die Fahrschule.
-/// - **`ParseObject` [ortObject]**: objectId vom Ort.
-/// - **`String` [strasse]**: Für die dazugehörige Straße.
-/// - **`String` [hausnummer]**: Für die dazugehörige Hausnummer.
-/// - **`String` [eMail]**: E-Mail adresse des Benutzers.
-/// - **`String` [password]**: Passwort des Benutzers.
-/// - **`String` [vorname]**: Vorname des Benutzers.
-/// - **`String` [name]**: Name des Benutzers.
-/// 
+/// - **`required` `String` [fahrschulName]**: Name für die Fahrschule.
+/// - **`required` `ParseObject` [ortObject]**: objectId vom Ort.
+/// - **`required` `String` [strasse]**: Für die dazugehörige Straße.
+/// - **`required` `String` [hausnummer]**: Für die dazugehörige Hausnummer.
+/// - **`required` `String` [eMail]**: E-Mail adresse des Benutzers.
+/// - **`required` `String` [password]**: Passwort des Benutzers.
+/// - **`required` `String` [vorname]**: Vorname des Benutzers.
+/// - **`required` `String` [name]**: Name des Benutzers.
+///
 /// ### Exceptions:
 /// - **[Exception]**
 Future<void> fahrschuleRegistration(
-  String fahrschulName,
-  ParseObject ortObject,
-  String strasse,
-  String hausnummer,
-  String eMail,
-  String password,
-  String vorname,
-  String name) async {
-  try{
+    {required String fahrschulName,
+    required ParseObject ortObject,
+    required String strasse,
+    required String hausnummer,
+    required String eMail,
+    required String password,
+    required String vorname,
+    required String name}) async {
+  try {
     //Fahrschule erstellen
     final fahrschulObject = await createFahrschule(fahrschulName);
-   
+
     //Eintrag in Zuordnung_Ort_Fahrschule erstellen
-    await registerOrtFromFahrschule(fahrschuleObject: fahrschulObject,ortObject: ortObject,strasse: strasse,hausnummer: hausnummer);
-    await createFahrlehrer(vorname, name, eMail, fahrschulObject, password, createSession: true);
-  } catch (e)
-  {
+    await registerOrtFromFahrschule(
+        fahrschuleObject: fahrschulObject,
+        ortObject: ortObject,
+        strasse: strasse,
+        hausnummer: hausnummer);
+    await createFahrlehrer(
+        vorname: vorname,
+        name: name,
+        eMail: eMail,
+        fahrschulObject: fahrschulObject,
+        password: password,
+        createSession: true);
+  } catch (e) {
     throw e.toString();
   }
 }

@@ -33,8 +33,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
   int _currentPage = 0;
   bool _isLoadingRegistration = false;
 
-
-
   @override
   void dispose() {
     _vornameController.dispose();
@@ -144,28 +142,27 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 FilteringTextInputFormatter.digitsOnly // Nur Zahlen zulassen
               ],
             ),
-    
-              DropdownFieldBlocBuilder(
-                selectFieldBloc: formBloc.plzDropDownBloc,
-                itemBuilder: (context, value) => FieldItem(
-                  child: Text(value.get<String>("Name")!),
-                ),
-                decoration: const InputDecoration(
-                  labelText: "Stadt wählen",
-                  prefixIcon: Icon(Icons.house_rounded),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.green, width: 2),
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.green, width: 1),
-                  ),
-                  // Optional: Customize the hintText or other properties if needed
-                ),
-                onChanged: (value) {
-                  formBloc.plzBloc.updateInitialValue(value!.get<String>("PLZ")!);
-                  //formBloc.plzDropDownBloc.updateValue(value);
-                },
+            DropdownFieldBlocBuilder(
+              selectFieldBloc: formBloc.plzDropDownBloc,
+              itemBuilder: (context, value) => FieldItem(
+                child: Text(value.get<String>("Name")!),
               ),
+              decoration: const InputDecoration(
+                labelText: "Stadt wählen",
+                prefixIcon: Icon(Icons.house_rounded),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.green, width: 2),
+                ),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.green, width: 1),
+                ),
+                // Optional: Customize the hintText or other properties if needed
+              ),
+              onChanged: (value) {
+                formBloc.plzBloc.updateInitialValue(value!.get<String>("PLZ")!);
+                //formBloc.plzDropDownBloc.updateValue(value);
+              },
+            ),
             const SizedBox(height: 16.0),
             TextFieldBlocBuilder(
               textFieldBloc: formBloc.strasseBloc,
@@ -280,14 +277,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         });
 
                         await fahrschuleRegistration(
-                            formBloc.fahrschulnameBloc.value,
-                            formBloc.plzDropDownBloc.value!,
-                            formBloc.strasseBloc.value,
-                            formBloc.hausnummerBloc.value,
-                            _emailController.text,
-                            _passwordController.text,
-                            _vornameController.text,
-                            _nachnameController.text);
+                            fahrschulName: formBloc.fahrschulnameBloc.value,
+                            ortObject: formBloc.plzDropDownBloc.value!,
+                            strasse: formBloc.strasseBloc.value,
+                            hausnummer: formBloc.hausnummerBloc.value,
+                            eMail: _emailController.text,
+                            password: _passwordController.text,
+                            vorname: _vornameController.text,
+                            name: _nachnameController.text);
                         if (await Benutzer().hasUserLogged()) {
                           navigatorKey.currentState?.pushAndRemoveUntil(
                             MaterialPageRoute(builder: (context) => HomePage()),

@@ -10,8 +10,8 @@ import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 /// - **[ParseObject?]** : `ParseObject` || `null`
 /// 
 /// ### Exception:
-/// - **[FormatException]** : Übergebene Parameter passen nicht zum erwartetem Format.
-Future<ParseObject?> getOrt(final String plz) async
+/// - **[Exception]**
+Future<ParseObject?> fetchOrt(final String plz) async
 {
     final QueryBuilder<ParseObject> parseQuery = QueryBuilder<ParseObject>(ParseObject('Ort'))
     ..whereContains('PLZ', plz)
@@ -31,6 +31,13 @@ Future<ParseObject?> getOrt(final String plz) async
   return apiResponse.results!.first as ParseObject;
 }
 
+/// Gibt eine Liste von "Ort"-Objekten zurück, bei denen das Feld "PLZ" mit der angegebenen Postleitzahl (PLZ) beginnt.
+/// 
+/// ### Return value:
+/// - **[List<ParseObject>]**
+/// 
+/// /// ### Exception:
+/// - **[Exception]** 
 Future<List<ParseObject>> fetchOrtObjects(final String plz) async
 {
     final QueryBuilder<ParseObject> parseQuery = QueryBuilder<ParseObject>(ParseObject('Ort'))
