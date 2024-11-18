@@ -1,18 +1,15 @@
 import 'dart:async';
 
-import 'package:fahrschul_manager/doc/intern/Authentication.dart';
-import 'package:fahrschul_manager/doc/intern/Ort.dart';
-import 'package:fahrschul_manager/doc/intern/User.dart';
 import 'package:fahrschul_manager/main.dart';
 import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/Login_page.dart';
+import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationFirstPageValidationFormBloc.dart';
+import 'package:fahrschul_manager/src/registration.dart';
 import 'package:fahrschul_manager/widgets/decorations.dart';
-import 'package:fahrschul_manager/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
-import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 class RegistrationPage extends StatefulWidget {
   RegistrationPage({Key? key}) : super(key: key);

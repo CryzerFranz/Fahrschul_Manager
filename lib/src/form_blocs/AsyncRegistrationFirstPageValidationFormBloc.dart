@@ -1,5 +1,5 @@
-import 'package:fahrschul_manager/doc/intern/Fahrschule.dart';
-import 'package:fahrschul_manager/doc/intern/Ort.dart';
+import 'package:fahrschul_manager/src/db_classes/fahrschule.dart';
+import 'package:fahrschul_manager/src/db_classes/ort.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
@@ -97,7 +97,7 @@ class AsyncRegistrationFirstPageValidationFormBloc extends FormBloc<String, Stri
     if (value == null || value.isEmpty) {
       return 'Bitte geben Sie einen Fahrschulnamen ein.';
     }
-    bool exist = await checkIfFahrschuleExists(value!);
+    bool exist = await checkIfFahrschuleExists(value);
     if (exist) {
       return "Fahrschule existiert bereits.";
     }

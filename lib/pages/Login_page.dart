@@ -1,8 +1,7 @@
-import 'package:fahrschul_manager/doc/intern/Authentication.dart';
-import 'package:fahrschul_manager/doc/intern/User.dart';
 import 'package:fahrschul_manager/main.dart';
 import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/Registration_page.dart';
+import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/widgets/decorations.dart';
 import 'package:flutter/material.dart';
 
