@@ -17,7 +17,7 @@ var logger = Logger(
 /// ### Exceptions:
 /// - **[FormatException]**
 /// - **[Exception]**
-Future<void> registerOrtFromFahrschule(ParseObject fahrschuleObject, ParseObject ortObject, String strasse, String hausnummer) async{
+Future<void> registerOrtFromFahrschule({required fahrschuleObject,required ParseObject ortObject,required String strasse,required String hausnummer}) async{
   if(strasse.isEmpty || hausnummer.isEmpty)
   {
     throw const FormatException("empty values are not allowed");

@@ -220,7 +220,7 @@ Future<void> fahrschuleRegistration(
     final fahrschulObject = await createFahrschule(fahrschulName);
    
     //Eintrag in Zuordnung_Ort_Fahrschule erstellen
-    await registerOrtFromFahrschule(fahrschulObject, ortObject, strasse, hausnummer);
+    await registerOrtFromFahrschule(fahrschuleObject: fahrschulObject,ortObject: ortObject,strasse: strasse,hausnummer: hausnummer);
     await createFahrlehrer(vorname, name, eMail, fahrschulObject, password, createSession: true);
   } catch (e)
   {
