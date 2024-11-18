@@ -1,11 +1,13 @@
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
-//TODO TEST
 /// Fügt ein Fahrzeug zur Fahrschule hinzu
 Future<bool> addFahrzeug(
-    ParseObject getriebe, ParseObject fahrzeugtyp, ParseObject marke,
-    {String? label, bool anhaengerkupplung = false}) async {
+    {required ParseObject getriebe,
+    required ParseObject fahrzeugtyp,
+    required ParseObject marke,
+    String? label,
+    bool anhaengerkupplung = false}) async {
   final fahrschuleObj = Benutzer().fahrschule;
   final user = Benutzer().parseUser;
 
@@ -30,64 +32,75 @@ Future<bool> addFahrzeug(
 
 //TODO NUR ZUM TESTEN DA WAHRSCHEINLICH
 Future<ParseObject> getFahrzeuge(String id) async {
-    final apiResponse = await ParseObject('Fahrzeug').getObject(id);
-    return apiResponse.results!.first as ParseObject;
+  final apiResponse = await ParseObject('Fahrzeug').getObject(id);
+  return apiResponse.results!.first as ParseObject;
 }
 
 //TODO TEST
 Future<List<ParseObject>> getAllFahrzeuge(ParseObject fahrschule) async {
-    final QueryBuilder<ParseObject> parseQuery =
-        QueryBuilder<ParseObject>(ParseObject('Fahrzeug'))
+  final QueryBuilder<ParseObject> parseQuery =
+      QueryBuilder<ParseObject>(ParseObject('Fahrzeug'))
         ..whereContains("Fahrschule", fahrschule.objectId!);
 
-    final apiResponse = await parseQuery.query();
+  final apiResponse = await parseQuery.query();
 
-    if (!apiResponse.success || apiResponse.results == null) {
-      return [];
-    }
+  if (!apiResponse.success || apiResponse.results == null) {
+    return [];
+  }
 
-    return apiResponse.results as List<ParseObject>;
+  return apiResponse.results as List<ParseObject>;
 }
 
-Future<List<ParseObject>> getAllGetriebe() async {
-    final QueryBuilder<ParseObject> parseQuery =
-        QueryBuilder<ParseObject>(ParseObject('Getriebe'));
+/// Gibt alle arten von Getriebe von der Datenbank zurück.
+/// 
+/// ### Return value:
+/// - **[List<ParseObject>]**
+Future<List<ParseObject>> fetchAllGetriebe() async {
+  final QueryBuilder<ParseObject> parseQuery =
+      QueryBuilder<ParseObject>(ParseObject('Getriebe'));
 
-    final apiResponse = await parseQuery.query();
+  final apiResponse = await parseQuery.query();
 
-    if (!apiResponse.success || apiResponse.results == null) {
-      return [];
-    }
+  if (!apiResponse.success || apiResponse.results == null) {
+    return [];
+  }
 
-    return apiResponse.results as List<ParseObject>;
+  return apiResponse.results as List<ParseObject>;
 }
 
-Future<List<ParseObject>> getAllMarke() async {
-    final QueryBuilder<ParseObject> parseQuery =
-        QueryBuilder<ParseObject>(ParseObject('Marke'));
+/// Gibt alle arten von Marken von der Datenbank zurück.
+/// 
+/// ### Return value:
+/// - **[List<ParseObject>]**
+Future<List<ParseObject>> fetchAllMarke() async {
+  final QueryBuilder<ParseObject> parseQuery =
+      QueryBuilder<ParseObject>(ParseObject('Marke'));
 
-    final apiResponse = await parseQuery.query();
+  final apiResponse = await parseQuery.query();
 
-    if (!apiResponse.success || apiResponse.results == null) {
-      return [];
-    }
+  if (!apiResponse.success || apiResponse.results == null) {
+    return [];
+  }
 
-    return apiResponse.results as List<ParseObject>;
+  return apiResponse.results as List<ParseObject>;
 }
 
-Future<List<ParseObject>> getAllFahrzeugtyp() async {
-    final QueryBuilder<ParseObject> parseQuery =
-        QueryBuilder<ParseObject>(ParseObject('Fahrzeugtyp'));
+/// Gibt alle arten von Fahrzeugtypen von der Datenbank zurück.
+/// 
+/// ### Return value:
+/// - **[List<ParseObject>]**
+Future<List<ParseObject>> fetchAllFahrzeugtyp() async {
+  final QueryBuilder<ParseObject> parseQuery =
+      QueryBuilder<ParseObject>(ParseObject('Fahrzeugtyp'));
 
-    final apiResponse = await parseQuery.query();
+  final apiResponse = await parseQuery.query();
 
-    if (!apiResponse.success || apiResponse.results == null) {
-      return [];
-    }
+  if (!apiResponse.success || apiResponse.results == null) {
+    return [];
+  }
 
-    return apiResponse.results as List<ParseObject>;
+  return apiResponse.results as List<ParseObject>;
 }
-
 
 //TODO Wahrscheinlich danach nicht mehr nötig
 
