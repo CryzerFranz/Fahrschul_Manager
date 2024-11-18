@@ -111,6 +111,9 @@ class AsyncRegistrationFirstPageValidationFormBloc extends FormBloc<String, Stri
 
   /// Holt sich die Daten von der Datenbank anhand der Eingabe des Benutzers
   Future<String?> validationPLZFetchingOrt(String value) async {
+    if(value.length == 5 && plzDropDownBloc.value != null) {
+      return null;
+    }
     List<ParseObject> ortObjects = await fetchOrtObjects(value);
     if(ortObjects.isEmpty)
     {

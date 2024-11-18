@@ -33,6 +33,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
   int _currentPage = 0;
   bool _isLoadingRegistration = false;
 
+
+
   @override
   void dispose() {
     _vornameController.dispose();
@@ -160,8 +162,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   // Optional: Customize the hintText or other properties if needed
                 ),
                 onChanged: (value) {
-                  formBloc.plzBloc.changeValue(value!.get<String>("PLZ")!);
-                  formBloc.plzDropDownBloc.selectSuggestion(value);
+                  formBloc.plzBloc.updateInitialValue(value!.get<String>("PLZ")!);
+                  //formBloc.plzDropDownBloc.updateValue(value);
                 },
               ),
             const SizedBox(height: 16.0),
