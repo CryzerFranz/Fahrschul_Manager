@@ -128,6 +128,7 @@ class AsyncRegistrationFirstPageValidationFormBloc extends FormBloc<String, Stri
   AsyncRegistrationFirstPageValidationFormBloc() {
     addFieldBlocs(fieldBlocs: [fahrschulnameBloc, plzBloc, strasseBloc, hausnummerBloc, plzDropDownBloc]);
 
+    /// Asynchrone Validierung hinzufügen
     fahrschulnameBloc.addAsyncValidators(
       [validationFahrschulName],
     );
