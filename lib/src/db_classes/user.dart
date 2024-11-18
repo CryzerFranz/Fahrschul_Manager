@@ -3,8 +3,6 @@ import 'package:fahrschul_manager/pages/Login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
-// TEST singleton klasse
-
 /// Die `Benutzer`-Klasse verwaltet die Benutzerauthentifizierung und die Benutzerrolle
 /// innerhalb der Anwendung. Sie implementiert ein Singleton-Muster, um sicherzustellen,
 /// dass nur eine Instanz der Klasse während der gesamten Lebensdauer der Anwendung
