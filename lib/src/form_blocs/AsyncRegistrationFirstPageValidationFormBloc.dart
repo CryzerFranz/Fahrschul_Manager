@@ -77,10 +77,8 @@ class AsyncRegistrationFirstPageValidationFormBloc extends FormBloc<String, Stri
           plzBloc.addFieldError("Gültige PLZ eingeben oder Stadt auswählen");
           emitFailure();
         }
-        plzDropDownBloc.updateInitialValue(ortObjects.first);
+        plzDropDownBloc.changeValue(ortObjects.first);
       }
-
-
 
       // Fahrschulname
       String? validationError =
@@ -120,6 +118,12 @@ class AsyncRegistrationFirstPageValidationFormBloc extends FormBloc<String, Stri
       return "Keine gültige PLZ";
     }
     plzDropDownBloc.updateItems(ortObjects);
+    //Falls PLZ vollständig eingegeben dann update denn ausgewählt wert vom DropDownMenu.
+    //Ansonsten kommt ein DropDownMenu error beim submitting
+    if(value.length == 5 && plzDropDownBloc.value == null)
+    {
+      plzDropDownBloc.updateValue(ortObjects.first);
+    }
     return null;
 
   }
