@@ -3,6 +3,8 @@ import 'package:fahrschul_manager/src/db_classes/ort.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
+/// Eine FormBloc klasse zur asynchronen Validierung einer Form.
+/// Diese gilt für die erste Seite der Registrierung
 class AsyncRegistrationFirstPageValidationFormBloc extends FormBloc<String, String> {
   // ------------------------Widget list -------------------------
   final fahrschulnameBloc = TextFieldBloc(
@@ -93,6 +95,8 @@ class AsyncRegistrationFirstPageValidationFormBloc extends FormBloc<String, Stri
     }
   }
 
+  /// Asynchrone Validierung für die Eingabe den Namen der Fahrschule.
+  /// Überprüft während der Eingabe ob die Fahrschule bereits existiert.
   Future<String?> validationFahrschulName(String? value) async {
     if (value == null || value.isEmpty) {
       return 'Bitte geben Sie einen Fahrschulnamen ein.';
@@ -104,6 +108,7 @@ class AsyncRegistrationFirstPageValidationFormBloc extends FormBloc<String, Stri
     return null;
   }
 
+  /// Holt sich die Daten von der Datenbank anhand der Eingabe des Benutzers
   Future<String?> validationPLZFetchingOrt(String value) async {
     List<ParseObject> ortObjects = await fetchOrtObjects(value);
     if(ortObjects.isEmpty)
@@ -115,6 +120,7 @@ class AsyncRegistrationFirstPageValidationFormBloc extends FormBloc<String, Stri
 
   }
 
+  /// Konstruktor
   AsyncRegistrationFirstPageValidationFormBloc() {
     addFieldBlocs(fieldBlocs: [fahrschulnameBloc, plzBloc, strasseBloc, hausnummerBloc, plzDropDownBloc]);
 
