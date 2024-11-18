@@ -11,29 +11,22 @@ import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 /// existiert.
 class Benutzer {
 
-  // Private constructor for singleton
   Benutzer._internal();
 
-  // Singleton instance
   static final Benutzer _instance = Benutzer._internal();
 
-  // Factory constructor to provide the same instance
   factory Benutzer() => _instance;
 
-  // Private variables
   bool _isLogged = false;
   bool? _isFahrlehrer = false;
   ParseObject? _fahrschule;
   ParseObject? _dbUser;
   ParseUser? _parseUser;
 
-  // Public getters for accessing private variables
   bool? get isFahrlehrer => _isFahrlehrer;
   ParseObject? get fahrschule => _fahrschule;
   ParseUser? get parseUser => _parseUser;
   ParseObject? get dbUser => _dbUser;
-
-  // Public getters
   String? get dbUserId => _dbUser?.objectId;
 
   void initialize() {
@@ -66,6 +59,7 @@ class Benutzer {
     return false;
   }
 
+  /// Instanz zurücksetzen
   Future<void> clear() async {
      _isLogged = false;
     _isFahrlehrer = null;
@@ -74,6 +68,7 @@ class Benutzer {
     _parseUser = null;
   }
 
+  /// Benutzer zur Login-Seite zurückführen und den Navigator leeren bis auf die Login-Seite
   void _clearNavigator() {
     navigatorKey.currentState?.pushAndRemoveUntil(
       MaterialPageRoute(
@@ -83,6 +78,10 @@ class Benutzer {
     );
   }
 
+  /// Ausloggen des Benutzers
+  /// 
+  /// ### Return value:
+  /// - **[bool]** : `true` wenn der Benutzer erfolgreich ausgeloggt wurde. Andernfalls `false`.
   Future<bool> logout() async {
     if (_parseUser != null) {
       if (_parseUser!.sessionToken != null) {
@@ -97,6 +96,7 @@ class Benutzer {
     return true;
   }
 
+  /// Die Variablen werden hierüber gesetzt
   Future<bool> _initUserSetup() async{
     if(_parseUser == null || _isLogged != true)
     {
@@ -112,6 +112,14 @@ class Benutzer {
     return true;
   }
 
+  /// Einloggen des Benutzers
+  /// 
+  /// ### Parameters
+  /// - **`String` [eMail]** : E-Mail addresse des Benutzers
+  /// - **`String` [password]** : Passwort des Benutzers
+  /// 
+  /// ### Return value:
+  /// - **[bool]** : `true` wenn der Benutzer erfolgreich eingeloggt wurde. Andernfalls `false`.
   Future<bool> login(final String eMail, final String password) async {
     _parseUser = ParseUser(eMail, password, eMail);
     final response = await _parseUser!.login();
@@ -128,6 +136,10 @@ class Benutzer {
     await hasUserLogged();
   }
 
+  /// Gibt alle Fahrschueler eines Fahrlehrers zurück
+  /// 
+  /// ### Return value:
+  /// - **[List<ParseObject>]** : Eine Liste wo alle zugehörigen Fahrschüler sind
   Future<List<ParseObject>> getAllFahrschueler() async
   {
     if(_isFahrlehrer == null || _dbUser == null)
@@ -156,6 +168,10 @@ class Benutzer {
     return apiResponse.results as List<ParseObject>;
   } 
 
+  /// Überprüft ob der eingeloggte User ein Fahrlehrer ist
+  /// 
+  /// ### Return value:
+  /// - **[bool]** : `true` wenn der eingeloggte Benutzer ein Fahrlehrer ist.
   Future<bool> _checkIsUserFahrlehrer() async {
     List<ParseObject> roleList = await getUserRoles();
     for (var roles in roleList) {
@@ -166,6 +182,7 @@ class Benutzer {
     return false;
   }
 
+  /// Updaten des ParseUsers
   Future<bool> _updateParseUser() async {
     final ParseResponse? parseResponse =
         await ParseUser.getCurrentUserFromServer(_parseUser!.sessionToken!);
@@ -179,6 +196,9 @@ class Benutzer {
     }
   }
 
+  /// Gibt die Rollen des eingeloggten Benutzers zurück
+  ///   /// ### Return value:
+  /// - **[List<ParseObject>]** : Eine Liste wo alle zugehörigen Rollen sind
   Future<List<ParseObject>> getUserRoles() async {
     if (!_isLogged) {
       _clearNavigator();
@@ -199,6 +219,10 @@ class Benutzer {
     return [];
   }
 
+  /// Überprüft ob der Benutzer eine aktive Session besitzt bzw. bereits eingeloggt ist
+  /// 
+  /// ### Return value:
+  /// - **[bool]** : `true` wenn der Benutzer lokal & remote noch angemeldet ist ( gültige session). 
   Future<bool> hasUserLogged() async {
     _parseUser = await ParseUser.currentUser() as ParseUser?;
     if (_parseUser != null && _parseUser?.sessionToken != null) {
