@@ -1,4 +1,5 @@
 //import 'package:fahrschul_manager/src/authentication.dart';
+import 'package:fahrschul_manager/constants.dart';
 import 'package:fahrschul_manager/doc/intern/Authentication.dart';
 import 'package:fahrschul_manager/doc/intern/Dummys.dart';
 import 'package:fahrschul_manager/src/db_classes/fahrschule.dart';
@@ -8,8 +9,10 @@ import 'package:fahrschul_manager/src/db_classes/status.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/Login_page.dart';
+import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 import 'package:calendar_view/calendar_view.dart';
 
@@ -30,15 +33,13 @@ void main() async {
       clientKey: _clientKey,
       debug: true,
     );
-  Benutzer().initialize();
+    Benutzer().initialize();
 
     runApp(MyApp());
   } else {
     runApp(ErrorApp());
   }
 }
-
-
 
 class ErrorApp extends StatelessWidget {
   @override
@@ -56,7 +57,6 @@ class ErrorApp extends StatelessWidget {
     );
   }
 }
-
 
 Future<String?> getApplicationID() async {
   const platform = MethodChannel('com.example.fahrschul_manager/keys');
@@ -80,7 +80,6 @@ Future<String?> getClientID() async {
   }
 }
 
-
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -102,7 +101,7 @@ class MyApp extends StatelessWidget {
                     child: Container(
                         width: 100,
                         height: 100,
-                        child: CircularProgressIndicator()),
+                        child: ballTrianglePathColoredFilledLoadingIndicator()),
                   ),
                 );
               default:
@@ -116,5 +115,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
- 
- 
