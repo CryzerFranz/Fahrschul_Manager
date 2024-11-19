@@ -20,6 +20,7 @@ dependencies:
   logger: ^2.4.0
   package_info_plus: ^4.2.0
   parse_server_sdk_flutter: ^8.0.0
+  loading_indicator: ^3.1.1
 
 dev_dependencies:
   flutter_test:
