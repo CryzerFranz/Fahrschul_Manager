@@ -8,7 +8,7 @@ import 'package:fahrschul_manager/src/db_classes/ort.dart';
 import 'package:fahrschul_manager/src/db_classes/status.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/pages/Home_page.dart';
-import 'package:fahrschul_manager/pages/Login_page.dart';
+import 'package:fahrschul_manager/pages/authentication/Login_page.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
