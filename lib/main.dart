@@ -12,9 +12,7 @@ import 'package:fahrschul_manager/pages/authentication/Login_page.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:loading_indicator/loading_indicator.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
-import 'package:calendar_view/calendar_view.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
