@@ -20,7 +20,7 @@ class _CustomNavBarState extends State<CustomNavBar> {
       child: Container(
         height: 66,
         decoration: BoxDecoration(
-          color: navBarBackgroundColor.withOpacity(0.6),
+          color: navBarBackgroundColor.withOpacity(0.8),
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
