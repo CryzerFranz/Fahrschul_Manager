@@ -2,8 +2,12 @@ import 'package:fahrschul_manager/main.dart';
 import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/authentication/Registration_page.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
+import 'package:fahrschul_manager/src/form_blocs/AsyncLoginValidationFormBloc.dart';
+import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
+import 'package:fahrschul_manager/widgets/snackbar.dart';
 import 'package:fahrschul_manager/widgets/styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 
 class SignInPage extends StatefulWidget {
   SignInPage({Key? key}) : super(key: key);
@@ -11,90 +15,112 @@ class SignInPage extends StatefulWidget {
   @override
   _SigninScreenState createState() => _SigninScreenState();
 }
-  class _SigninScreenState extends State<SignInPage>{
+
+class _SigninScreenState extends State<SignInPage> {
   final _formKey = GlobalKey<FormState>();
-
-
+  bool _isLoading = false;
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-    @override
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
- // String eMail = _emailController.text;
- // String password = _passwordController.text;
-
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                children: [
-                  SizedBox(height: constraints.maxHeight * 0.1),
-                  Image.asset(
-                    'assets/images/Logo_neu.jpg', // Lokales Bild aus dem assets-Verzeichnis
-                    height: 200,
-                  ),
-                  SizedBox(height: constraints.maxHeight * 0.1),
-                  Text(
-                    "Login",
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineSmall!
-                        .copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: constraints.maxHeight * 0.05),
-                  Form(
-                    key: _formKey,
-                    child: Column(
+    return BlocProvider(
+        create: (context) => AsyncLoginValidationFormBloc(),
+        child: Builder(builder: (context) {
+          final formBloc = context.read<AsyncLoginValidationFormBloc>();
+          return loginPageScaffold(formBloc);
+        }));
+  }
+
+  FormBlocListener loginPageScaffold(AsyncLoginValidationFormBloc formBloc) {
+    return FormBlocListener<AsyncLoginValidationFormBloc, String, String>(
+      onSuccess: (context, state) {
+        //Wenn success dann nächste Seite
+        navigatorKey.currentState?.pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      },
+      onFailure: (context, state) {
+        ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(showErrorSnackbar(state.failureResponse!, "Fehler"));
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  children: [
+                    SizedBox(height: constraints.maxHeight * 0.1),
+                    Image.asset(
+                      'assets/images/Logo_neu.jpg', // Lokales Bild aus dem assets-Verzeichnis
+                      height: 200,
+                    ),
+                    SizedBox(height: constraints.maxHeight * 0.1),
+                    Text(
+                      "Login",
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineSmall!
+                          .copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: constraints.maxHeight * 0.05),
+                    Column(
                       children: [
-                        TextFormField(
-                          controller: _emailController,
-                          decoration:inputDecoration('E-Mail'),
+                        TextFieldBlocBuilder(
+                          textFieldBloc: formBloc.emailTFFormBloc,
+                          readOnly: _isLoading,
+                          decoration: inputDecoration('E-Mail'),
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          child: TextFormField(
-                            obscureText: true,
-                            controller: _passwordController,
+                          child: TextFieldBlocBuilder(
+                            textFieldBloc: formBloc.passwordTFFormBloc,
+                            readOnly: _isLoading,
+                            suffixButton: SuffixButton.obscureText,
                             decoration: inputDecoration("Password"),
                           ),
                         ),
                         ElevatedButton(
-                          onPressed: () async {
-                            bool isvalid=await Benutzer().login(_emailController.text.trim(),_passwordController.text.trim());
-                            if(isvalid) {
-                            // "luis@gmail.com", "ABC12345"
-                              navigatorKey.currentState?.pushReplacement(
-                              MaterialPageRoute(builder: (context) => const HomePage()),
-
-                          );
-                            }
-                            else{
-                              //setState
-                            }
-                          },
+                          onPressed: _isLoading
+                              ? null
+                              : () async {
+                                  try {
+                                    setState(() {
+                                      _isLoading = true;
+                                    });
+                                    await formBloc.onSubmitting();
+                                  } finally {
+                                    setState(() {
+                                      _isLoading = false;
+                                    });
+                                  }
+                                },
                           style: stadiumButtonStyle(),
-                          child: const Text("Einloggen"),
+                          child: _isLoading
+                              ? SizedBox(
+                                  height: 57, child: pacmanLoadingIndicator())
+                              : const Text("Einloggen"),
                         ),
                         const SizedBox(height: 16.0),
                         TextButton(
-                        onPressed: () {
-                          navigatorKey.currentState?.push(
-                            MaterialPageRoute(builder: (context) => RegistrationPage()),
-                          );
-                        },
+                          onPressed: () {
+                            navigatorKey.currentState?.push(
+                              MaterialPageRoute(
+                                  builder: (context) => RegistrationPage()),
+                            );
+                          },
                           child: Text.rich(
                             const TextSpan(
                               text: "Neue Fahrschule registrieren? ",
@@ -119,11 +145,11 @@ class SignInPage extends StatefulWidget {
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
