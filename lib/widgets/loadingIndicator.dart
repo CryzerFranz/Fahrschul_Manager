@@ -3,10 +3,10 @@
 import 'package:fahrschul_manager/constants.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 
-LoadingIndicator ballTrianglePathColoredFilledLoadingIndicator()
+LoadingIndicator pacmanLoadingIndicator()
 {
   return const LoadingIndicator(
-                          indicatorType: Indicator.ballTrianglePathColoredFilled,
+                          indicatorType: Indicator.pacman,
                           colors: [mainColor, mainColorComplementaryFirst, mainColorComplementarySecond]
                         );
 }
