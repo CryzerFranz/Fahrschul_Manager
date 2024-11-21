@@ -3,9 +3,8 @@ import 'dart:async';
 import 'package:fahrschul_manager/main.dart';
 import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/authentication/Login_page.dart';
-import 'package:fahrschul_manager/src/db_classes/user.dart';
-import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationFirstPageValidationFormBloc.dart';
-import 'package:fahrschul_manager/src/registration.dart';
+import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationValidationFormBloc.dart';
+import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:fahrschul_manager/widgets/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,7 +18,6 @@ class RegistrationPage extends StatefulWidget {
 }
 
 class _RegistrationPageState extends State<RegistrationPage> {
-  final _formKeySecondPage = GlobalKey<FormState>();
   final PageController _pageController = PageController();
 
   Timer? _debounce;
@@ -37,10 +35,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (context) => AsyncRegistrationFirstPageValidationFormBloc(),
+        create: (context) => AsyncRegistrationValidationFormBloc(),
         child: Builder(builder: (context) {
-          final formBloc =
-              context.read<AsyncRegistrationFirstPageValidationFormBloc>();
+          final formBloc = context.read<AsyncRegistrationValidationFormBloc>();
           return Scaffold(
             backgroundColor: Colors.white,
             body: SafeArea(
@@ -98,10 +95,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
         }));
   }
 
-  Widget _buildFirstPage(
-      AsyncRegistrationFirstPageValidationFormBloc formBloc) {
-    return FormBlocListener<AsyncRegistrationFirstPageValidationFormBloc,
-            String, String>(
+  Widget _buildFirstPage(AsyncRegistrationValidationFormBloc formBloc) {
+    return FormBlocListener<AsyncRegistrationValidationFormBloc, String,
+            String>(
         onSuccess: (context, state) {
           //Wenn success dann nächste Seite
           _pageController.nextPage(
@@ -173,17 +169,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
         ));
   }
 
-  Widget _buildSecondPage(
-      AsyncRegistrationFirstPageValidationFormBloc formBloc) {
-    return FormBlocListener<AsyncRegistrationFirstPageValidationFormBloc,
-        String, String>(
-      onSuccess: (context, state)  {
- navigatorKey.currentState?.pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const HomePage()),
-            (Route<dynamic> route) => false,
-          );
-
-      },
+  Widget _buildSecondPage(AsyncRegistrationValidationFormBloc formBloc) {
+    return FormBlocListener<AsyncRegistrationValidationFormBloc, String,
+        String>(
+          formBloc: formBloc,
       onFailure: (context, state) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(state.failureResponse!)));
@@ -210,6 +199,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             const SizedBox(height: 16.0),
             TextFieldBlocBuilder(
               textFieldBloc: formBloc.passwordBloc,
+              suffixButton: SuffixButton.obscureText,
               decoration: inputDecoration('Password'),
               obscureText: true,
             ),
@@ -224,8 +214,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           _isLoadingRegistration = true;
                         });
                         await formBloc.onSubmitting();
-                      } catch (e) {
-                        //todo hier muss was passieren
                       } finally {
                         setState(() {
                           _isLoadingRegistration = false;
@@ -234,9 +222,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     },
               style: stadiumButtonStyle(),
               child: _isLoadingRegistration
-                  ? const CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    )
+                  ? SizedBox(height: 57, child: pacmanLoadingIndicator())
                   : const Text('Registrieren'),
             ),
           ],
