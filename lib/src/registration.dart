@@ -234,3 +234,18 @@ Future<void> fahrschuleRegistration(
     throw e.toString();
   }
 }
+
+/// Überprüft ob die E-Mail Addresse bereits vergeben ist
+/// 
+/// Die eigentlich logik der Funktion ist in Cloud Code von Back4App, da der 
+/// `MasterKey` sicher verwendet werden kann
+Future<bool> doesUserExist(String email) async {
+  final ParseCloudFunction function = ParseCloudFunction('doesUserExist');
+  final ParseResponse response = await function.execute(parameters: {'email': email});
+
+  if (response.success && response.result == true) {
+    return true; 
+  } else {
+    return false; 
+  }
+}
