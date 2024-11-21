@@ -1,12 +1,19 @@
+import 'package:fahrschul_manager/main.dart';
+import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/src/db_classes/fahrschule.dart';
 import 'package:fahrschul_manager/src/db_classes/ort.dart';
+import 'package:fahrschul_manager/src/db_classes/user.dart';
+import 'package:fahrschul_manager/src/registration.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 /// Eine FormBloc klasse zur asynchronen Validierung einer Form.
 /// Diese gilt für die erste Seite der Registrierung
-class AsyncRegistrationFirstPageValidationFormBloc extends FormBloc<String, String> {
+class AsyncRegistrationFirstPageValidationFormBloc
+    extends FormBloc<String, String> {
   // ------------------------Widget list -------------------------
+  // Variablen firstPage
   final fahrschulnameBloc = TextFieldBloc(
     validators: [
       (String? value) {
@@ -50,32 +57,123 @@ class AsyncRegistrationFirstPageValidationFormBloc extends FormBloc<String, Stri
         return null;
       },
     ],
-    asyncValidatorDebounceTime: const Duration(milliseconds: 300), 
+    asyncValidatorDebounceTime: const Duration(milliseconds: 300),
   );
 
   final plzDropDownBloc = SelectFieldBloc<ParseObject, String>();
 
+//Variablen secondPage
+
+  final vornameBloc = TextFieldBloc(
+    validators: [
+      (String? value) {
+        if (value == null || value.isEmpty) {
+          return 'Bitte geben Sie einen Vornamen ein.';
+        }
+        if (!RegExp(r'^(?!\s)[A-ZÄÖÜ][a-zäöüß]*(?:[-\s][A-ZÄÖÜ][a-zäöüß]*)*$')
+            .hasMatch(value)) {
+          return 'Nur Buchstaben, Erster Buchstabe groß';
+        }
+        return null;
+      },
+    ],
+    asyncValidatorDebounceTime: const Duration(milliseconds: 300),
+  );
+
+  final nachnameBloc = TextFieldBloc(
+    validators: [
+      (String? value) {
+        if (value == null || value.isEmpty) {
+          return 'Bitte geben Sie einen Nachnamen ein.';
+        }
+        if (!RegExp(r'^(?!\s)[A-ZÄÖÜ][a-zäöüß]*(?:[-\s][A-ZÄÖÜ][a-zäöüß]*)*$')
+            .hasMatch(value)) {
+          return 'Nur Buchstaben, Erster Buchstabe groß';
+        }
+        return null;
+      },
+    ],
+    asyncValidatorDebounceTime: const Duration(milliseconds: 300),
+  );
+
+  final emailBloc = TextFieldBloc(
+    validators: [
+      (String? value) {
+        if (value == null || value.isEmpty) {
+          return 'Bitte geben Sie eine E-Mail ein.';
+        }
+        return null;
+      },
+    ],
+    asyncValidatorDebounceTime: const Duration(milliseconds: 300),
+  );
+
+  final passwordBloc = TextFieldBloc(
+    validators: [
+      (String? value) {
+        if (value == null || value.isEmpty) {
+          return 'Bitte geben Sie ein Password ein.';
+        }
+        if (!RegExp(
+                r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$')
+            .hasMatch(value)) {
+          return 'Mind 8, Groß/klein, Zahl, Sonderzeichen erforderlich';
+        }
+
+        return null;
+      },
+    ],
+    asyncValidatorDebounceTime: const Duration(milliseconds: 300),
+  );
+
   //------------------------------------------------------------------
   @override
-  void onSubmitting() async {
+  Future<void> onSubmitting() async {
+    try {
+      vornameBloc.validate();
+      nachnameBloc.validate();
+      emailBloc.validate();
+      passwordBloc.validate();
+
+      await fahrschuleRegistration(
+          fahrschulName: fahrschulnameBloc.value,
+          ortObject: plzDropDownBloc.value!,
+          strasse: strasseBloc.value,
+          hausnummer: hausnummerBloc.value,
+          eMail: emailBloc.value,
+          password: passwordBloc.value,
+          vorname: vornameBloc.value,
+          name: nachnameBloc.value);
+      if (await Benutzer().hasUserLogged()) {
+        //TODO Auf fehler Überprüfen
+        emitSuccess();
+      }
+
+      emitFailure(failureResponse: "Login Fail");
+    } catch (e) {
+      emitFailure(failureResponse: e.toString());
+    }
+  }
+
+  void onSubmittingFirstPage() async {
     try {
       fahrschulnameBloc.validate();
       strasseBloc.validate();
       hausnummerBloc.validate();
       fahrschulnameBloc.validate();
 
-      if(plzBloc.value.length < 5 && plzDropDownBloc.value == null)
-      {
+      if (plzBloc.value.length < 5 && plzDropDownBloc.value == null) {
         plzBloc.addFieldError("Gültige PLZ eingeben oder Stadt auswählen");
-        emitFailure();
+        emitFailure(
+            failureResponse: "Gültige PLZ eingeben oder Stadt auswählen");
       }
 
-      if(plzBloc.value.length == 5 && plzDropDownBloc.value == null)
-      {
+      if (plzBloc.value.length == 5 && plzDropDownBloc.value == null) {
         List<ParseObject> ortObjects = await fetchOrtObjects(plzBloc.value);
-        if(ortObjects.isEmpty){
+        if (ortObjects.isEmpty) {
           plzBloc.addFieldError("Gültige PLZ eingeben oder Stadt auswählen");
-          emitFailure();
+          emitFailure(
+              failureResponse: "Gültige PLZ eingeben oder Stadt auswählen");
         }
         plzDropDownBloc.changeValue(ortObjects.first);
       }
@@ -85,12 +183,12 @@ class AsyncRegistrationFirstPageValidationFormBloc extends FormBloc<String, Stri
           await validationFahrschulName(fahrschulnameBloc.value);
       if (validationError != null) {
         fahrschulnameBloc.addFieldError(validationError);
-        emitFailure();
+        emitFailure(failureResponse: validationError);
       } else {
-        emitSuccess();
+        emitSuccess(canSubmitAgain: true);
       }
     } catch (e) {
-      emitFailure();
+      emitFailure(failureResponse: e.toString());
     }
   }
 
@@ -109,28 +207,35 @@ class AsyncRegistrationFirstPageValidationFormBloc extends FormBloc<String, Stri
 
   /// Holt sich die Daten von der Datenbank anhand der Eingabe des Benutzers
   Future<String?> validationPLZFetchingOrt(String value) async {
-    if(value.length == 5 && plzDropDownBloc.value != null) {
+    if (value.length == 5 && plzDropDownBloc.value != null) {
       return null;
     }
     List<ParseObject> ortObjects = await fetchOrtObjects(value);
-    if(ortObjects.isEmpty)
-    {
+    if (ortObjects.isEmpty) {
       return "Keine gültige PLZ";
     }
     plzDropDownBloc.updateItems(ortObjects);
     //Falls PLZ vollständig eingegeben dann update denn ausgewählt wert vom DropDownMenu.
     //Ansonsten kommt ein DropDownMenu error beim submitting
-    if(value.length == 5 && plzDropDownBloc.value == null)
-    {
+    if (value.length == 5 && plzDropDownBloc.value == null) {
       plzDropDownBloc.updateValue(ortObjects.first);
     }
     return null;
-
   }
 
   /// Konstruktor
   AsyncRegistrationFirstPageValidationFormBloc() {
-    addFieldBlocs(fieldBlocs: [fahrschulnameBloc, plzBloc, strasseBloc, hausnummerBloc, plzDropDownBloc]);
+    addFieldBlocs(fieldBlocs: [
+      fahrschulnameBloc,
+      plzBloc,
+      strasseBloc,
+      hausnummerBloc,
+      plzDropDownBloc,
+      vornameBloc,
+      nachnameBloc,
+      emailBloc,
+      passwordBloc
+    ]);
 
     /// Asynchrone Validierung hinzufügen
     fahrschulnameBloc.addAsyncValidators(

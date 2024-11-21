@@ -5,6 +5,7 @@ import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/authentication/Login_page.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationFirstPageValidationFormBloc.dart';
+import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationSecondPageValidationFormBloc.dart';
 import 'package:fahrschul_manager/src/registration.dart';
 import 'package:fahrschul_manager/widgets/styles.dart';
 import 'package:flutter/material.dart';
@@ -22,12 +23,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final _formKeySecondPage = GlobalKey<FormState>();
   final PageController _pageController = PageController();
 
-  // Form field controllers
-  final TextEditingController _vornameController = TextEditingController();
-  final TextEditingController _nachnameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
   Timer? _debounce;
 
   int _currentPage = 0;
@@ -35,10 +30,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   @override
   void dispose() {
-    _vornameController.dispose();
-    _nachnameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
     _pageController.dispose();
     _debounce?.cancel();
     super.dispose();
@@ -175,7 +166,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             ),
             const SizedBox(height: 16.0),
             ElevatedButton(
-              onPressed: formBloc.submit,
+              onPressed: formBloc.onSubmittingFirstPage,
               style: stadiumButtonStyle(),
               child: const Text('Weiter'),
             ),
@@ -185,78 +176,42 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   Widget _buildSecondPage(
       AsyncRegistrationFirstPageValidationFormBloc formBloc) {
-    return SingleChildScrollView(
-      child: Form(
-        key: _formKeySecondPage,
+    return FormBlocListener<AsyncRegistrationFirstPageValidationFormBloc,
+        String, String>(
+      onSuccess: (context, state)  {
+ navigatorKey.currentState?.pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const HomePage()),
+            (Route<dynamic> route) => false,
+          );
+
+      },
+      onFailure: (context, state) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(state.failureResponse!)));
+      },
+      child: SingleChildScrollView(
         child: Column(
           children: [
-            TextFormField(
-              controller: _vornameController,
+            TextFieldBlocBuilder(
+              textFieldBloc: formBloc.vornameBloc,
               decoration: inputDecoration('Vorname'),
-              autovalidateMode: AutovalidateMode
-                  .onUserInteraction, //TODO: Error Message erstellen
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Bitte geben Sie einen Vornamen ein.';
-                }
-                if (!RegExp(
-                        r'^(?!\s)[A-ZÄÖÜ][a-zäöüß]*(?:[-\s][A-ZÄÖÜ][a-zäöüß]*)*$')
-                    .hasMatch(value)) {
-                  return 'Nur Buchstaben, Erster Buchstabe groß';
-                }
-                return null;
-              },
             ),
             const SizedBox(height: 16.0),
-            TextFormField(
-              controller: _nachnameController,
+            TextFieldBlocBuilder(
+              textFieldBloc: formBloc.nachnameBloc,
               decoration: inputDecoration('Nachname'),
-              autovalidateMode: AutovalidateMode
-                  .onUserInteraction, //TODO: Error Message erstellen
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Bitte geben Sie einen Nachnamen ein.';
-                }
-                if (!RegExp(
-                        r'^(?!\s)[A-ZÄÖÜ][a-zäöüß]*(?:[-\s][A-ZÄÖÜ][a-zäöüß]*)*$')
-                    .hasMatch(value)) {
-                  return 'Nur Buchstaben, Erster Buchstabe groß';
-                }
-                return null;
-              },
             ),
             const SizedBox(height: 16.0),
-            TextFormField(
-              controller: _emailController,
+            TextFieldBlocBuilder(
+              textFieldBloc: formBloc.emailBloc,
               decoration: inputDecoration('E-Mail'),
-              autovalidateMode: AutovalidateMode
-                  .onUserInteraction, //TODO: Error Message erstellen
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Bitte geben Sie eine E-Mail ein.';
-                }
-                return null;
-              },
+              suffixButton: SuffixButton.asyncValidating,
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 16.0),
-            TextFormField(
-              controller: _passwordController,
+            TextFieldBlocBuilder(
+              textFieldBloc: formBloc.passwordBloc,
               decoration: inputDecoration('Password'),
-              autovalidateMode: AutovalidateMode
-                  .onUserInteraction, //TODO: Error Message erstellen
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Bitte geben Sie ein Password ein.';
-                }
-                if (!RegExp(
-                        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$')
-                    .hasMatch(value)) {
-                  return 'Mind 8, Groß/klein, Zahl, Sonderzeichen erforderlich';
-                }
-
-                return null;
-              },
               obscureText: true,
             ),
             const SizedBox(height: 16.0),
@@ -269,24 +224,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         setState(() {
                           _isLoadingRegistration = true;
                         });
-
-                        await fahrschuleRegistration(
-                            fahrschulName: formBloc.fahrschulnameBloc.value,
-                            ortObject: formBloc.plzDropDownBloc.value!,
-                            strasse: formBloc.strasseBloc.value,
-                            hausnummer: formBloc.hausnummerBloc.value,
-                            eMail: _emailController.text,
-                            password: _passwordController.text,
-                            vorname: _vornameController.text,
-                            name: _nachnameController.text);
-                        if (await Benutzer().hasUserLogged()) {
-                          navigatorKey.currentState?.pushAndRemoveUntil(
-                            MaterialPageRoute(builder: (context) => HomePage()),
-                            (Route<dynamic> route) => false,
-                          );
-                        } else {
-                          //Fehlerbehandlung wenn der Benutzer nicht eingeloggt ist
-                        }
+                        await formBloc.onSubmitting();
                       } catch (e) {
                         //todo hier muss was passieren
                       } finally {
