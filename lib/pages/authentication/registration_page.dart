@@ -5,7 +5,6 @@ import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/authentication/Login_page.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationFirstPageValidationFormBloc.dart';
-import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationSecondPageValidationFormBloc.dart';
 import 'package:fahrschul_manager/src/registration.dart';
 import 'package:fahrschul_manager/widgets/styles.dart';
 import 'package:flutter/material.dart';
