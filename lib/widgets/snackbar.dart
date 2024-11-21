@@ -2,6 +2,7 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 
+/// Gibt Awesome snackbar typ error zurück
 SnackBar showErrorSnackbar(String message, String title) {
   return SnackBar(
                   /// need to set following properties for best effect of awesome_snackbar_content
