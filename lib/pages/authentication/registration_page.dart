@@ -5,6 +5,7 @@ import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/authentication/Login_page.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationValidationFormBloc.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
+import 'package:fahrschul_manager/widgets/snackbar.dart';
 import 'package:fahrschul_manager/widgets/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -107,8 +108,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
         },
         onFailure: (context, state) {
           //TODO
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(state.failureResponse!)));
+           ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(showErrorSnackbar(state.failureResponse!, "Fehler"));
         },
         child: SingleChildScrollView(
           child: Column(children: [
@@ -173,9 +175,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
     return FormBlocListener<AsyncRegistrationValidationFormBloc, String,
         String>(
           formBloc: formBloc,
+        //   onSuccess: (context, state) {
+        //   //Wenn success dann nächste Seite
+        //   ScaffoldMessenger.of(context)
+        //           ..hideCurrentSnackBar()
+        //           ..showSnackBar(showSuccessSnackbar("Registriert!", "HURA"));
+
+          
+        // },
       onFailure: (context, state) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(state.failureResponse!)));
+         ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(showErrorSnackbar(state.failureResponse!, "Fehler"));
       },
       child: SingleChildScrollView(
         child: Column(

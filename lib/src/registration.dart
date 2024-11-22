@@ -240,12 +240,16 @@ Future<void> fahrschuleRegistration(
 /// Die eigentlich logik der Funktion ist in Cloud Code von Back4App, da der 
 /// `MasterKey` sicher verwendet werden kann
 Future<bool> doesUserExist(String email) async {
+  try{
   final ParseCloudFunction function = ParseCloudFunction('doesUserExist');
   final ParseResponse response = await function.execute(parameters: {'email': email});
-
+  if(!response.success){
+    throw("Network error");
+  }
   if (response.success && response.result == true) {
     return true; 
   } else {
     return false; 
   }
+  }catch(e){throw(e.toString());}
 }

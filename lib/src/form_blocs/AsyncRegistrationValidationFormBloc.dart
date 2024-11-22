@@ -10,8 +10,7 @@ import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 /// Eine FormBloc klasse zur asynchronen Validierung einer Form.
 /// Diese gilt für die erste Seite der Registrierung
-class AsyncRegistrationValidationFormBloc
-    extends FormBloc<String, String> {
+class AsyncRegistrationValidationFormBloc extends FormBloc<String, String> {
   // ------------------------Widget list -------------------------
   // Variablen firstPage
   final fahrschulnameBloc = TextFieldBloc(
@@ -127,6 +126,7 @@ class AsyncRegistrationValidationFormBloc
   );
 
   //------------------------------------------------------------------
+
   @override
   Future<void> onSubmitting() async {
     try {
@@ -151,11 +151,9 @@ class AsyncRegistrationValidationFormBloc
           (Route<dynamic> route) => false,
         );
         
-      }
-      else{
+      } else {
         emitFailure(failureResponse: "Login Fail");
       }
-
     } catch (e) {
       emitFailure(failureResponse: e.toString());
     }
@@ -201,41 +199,56 @@ class AsyncRegistrationValidationFormBloc
   /// Asynchrone Validierung für die Eingabe den Namen der Fahrschule.
   /// Überprüft während der Eingabe ob die Fahrschule bereits existiert.
   Future<String?> validationFahrschulName(String? value) async {
-    if (value == null || value.isEmpty) {
-      return 'Bitte geben Sie einen Fahrschulnamen ein.';
+    try {
+      if (value == null || value.isEmpty) {
+        return 'Bitte geben Sie einen Fahrschulnamen ein.';
+      }
+      bool exist = await checkIfFahrschuleExists(value);
+      if (exist) {
+        return "Fahrschule existiert bereits.";
+      }
+    } catch (e) {
+      emitFailure(failureResponse: "Network error");
+    } finally {
+      return null;
     }
-    bool exist = await checkIfFahrschuleExists(value);
-    if (exist) {
-      return "Fahrschule existiert bereits.";
-    }
-    return null;
   }
 
   /// Holt sich die Daten von der Datenbank anhand der Eingabe des Benutzers
   Future<String?> validationPLZFetchingOrt(String value) async {
-    if (value.length == 5 && plzDropDownBloc.value != null) {
+    try {
+      if (value.length == 5 && plzDropDownBloc.value != null) {
+        return null;
+      }
+      List<ParseObject> ortObjects = await fetchOrtObjects(value);
+      if (ortObjects.isEmpty) {
+        return "Keine gültige PLZ";
+      }
+      plzDropDownBloc.updateItems(ortObjects);
+      //Falls PLZ vollständig eingegeben dann update denn ausgewählt wert vom DropDownMenu.
+      //Ansonsten kommt ein DropDownMenu error beim submitting
+      if (value.length == 5 && plzDropDownBloc.value == null) {
+        plzDropDownBloc.updateValue(ortObjects.first);
+      }
+    } catch (e) {
+      emitFailure(failureResponse: "Network error");
+    }
+    finally{
       return null;
     }
-    List<ParseObject> ortObjects = await fetchOrtObjects(value);
-    if (ortObjects.isEmpty) {
-      return "Keine gültige PLZ";
-    }
-    plzDropDownBloc.updateItems(ortObjects);
-    //Falls PLZ vollständig eingegeben dann update denn ausgewählt wert vom DropDownMenu.
-    //Ansonsten kommt ein DropDownMenu error beim submitting
-    if (value.length == 5 && plzDropDownBloc.value == null) {
-      plzDropDownBloc.updateValue(ortObjects.first);
-    }
-    return null;
   }
 
-  Future<String?> validationEMailExist(String value) async{
+  Future<String?> validationEMailExist(String value) async {
+    try{
     final bool alreadyExist = await doesUserExist(value);
-    if(alreadyExist)
-    {
+    if (alreadyExist) {
       return "E-Mail Adresse bereits vergeben";
     }
-    return null;
+    }catch(e){
+        emitFailure(failureResponse: "Network error");
+    }finally{
+      return null;
+    }
   }
 
   /// Konstruktor
