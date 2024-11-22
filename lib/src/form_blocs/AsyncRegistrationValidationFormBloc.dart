@@ -1,10 +1,7 @@
-import 'package:fahrschul_manager/main.dart';
-import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/src/db_classes/fahrschule.dart';
 import 'package:fahrschul_manager/src/db_classes/ort.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/src/registration.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
@@ -127,6 +124,13 @@ class AsyncRegistrationValidationFormBloc extends FormBloc<String, String> {
 
   //------------------------------------------------------------------
 
+  void testsubmit() async{
+    //emitFailure(failureResponse: "Hallo");
+    //reload();
+    emitSuccess(canSubmitAgain: true);
+    reload();
+  }
+
   @override
   Future<void> onSubmitting() async {
     try {
@@ -145,11 +149,8 @@ class AsyncRegistrationValidationFormBloc extends FormBloc<String, String> {
           vorname: vornameBloc.value,
           name: nachnameBloc.value);
       if (await Benutzer().hasUserLogged()) {
-        //TODO Auf fehler Überprüfen
-        navigatorKey.currentState?.pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const HomePage()),
-          (Route<dynamic> route) => false,
-        );
+        emitSuccess(canSubmitAgain: true);
+       
         
       } else {
         emitFailure(failureResponse: "Login Fail");
@@ -157,27 +158,31 @@ class AsyncRegistrationValidationFormBloc extends FormBloc<String, String> {
     } catch (e) {
       emitFailure(failureResponse: e.toString());
     }
+    finally{
+      reload();
+    }
   }
 
   void onSubmittingFirstPage() async {
     try {
-      fahrschulnameBloc.validate();
-      strasseBloc.validate();
-      hausnummerBloc.validate();
-      fahrschulnameBloc.validate();
+      final isValidFahrschule = await fahrschulnameBloc.validate();
+      final isValidStrasse = await strasseBloc.validate();
+      final isValidHausnummer = await hausnummerBloc.validate();
+      bool isValidPLZ = true;
+      bool isExistingFahrschulName = true;
 
       if (plzBloc.value.length < 5 && plzDropDownBloc.value == null) {
         plzBloc.addFieldError("Gültige PLZ eingeben oder Stadt auswählen");
-        emitFailure(
-            failureResponse: "Gültige PLZ eingeben oder Stadt auswählen");
+       
+        isValidPLZ = false;
       }
 
       if (plzBloc.value.length == 5 && plzDropDownBloc.value == null) {
         List<ParseObject> ortObjects = await fetchOrtObjects(plzBloc.value);
         if (ortObjects.isEmpty) {
           plzBloc.addFieldError("Gültige PLZ eingeben oder Stadt auswählen");
-          emitFailure(
-              failureResponse: "Gültige PLZ eingeben oder Stadt auswählen");
+          
+        isValidPLZ = false;
         }
         plzDropDownBloc.changeValue(ortObjects.first);
       }
@@ -185,14 +190,23 @@ class AsyncRegistrationValidationFormBloc extends FormBloc<String, String> {
       // Fahrschulname
       String? validationError =
           await validationFahrschulName(fahrschulnameBloc.value);
-      if (validationError != null) {
-        fahrschulnameBloc.addFieldError(validationError);
-        emitFailure(failureResponse: validationError);
-      } else {
+      if (validationError != null || fahrschulnameBloc.value.isEmpty) {
+        fahrschulnameBloc.addFieldError(validationError ?? "Leerer Name nicht gültig");
+        isExistingFahrschulName = false;
+      }
+      if(isValidFahrschule && isValidStrasse && isValidHausnummer && isValidPLZ && isExistingFahrschulName) 
+      {
         emitSuccess(canSubmitAgain: true);
+      }
+      else{
+        emitFailure(failureResponse: "Ungültige Eingabe");
       }
     } catch (e) {
       emitFailure(failureResponse: e.toString());
+    }
+    finally
+    {
+      reload();
     }
   }
 
@@ -207,11 +221,11 @@ class AsyncRegistrationValidationFormBloc extends FormBloc<String, String> {
       if (exist) {
         return "Fahrschule existiert bereits.";
       }
+      return null;
     } catch (e) {
       emitFailure(failureResponse: "Network error");
-    } finally {
-      return null;
-    }
+      return "Netzwerk fehler";
+    } 
   }
 
   /// Holt sich die Daten von der Datenbank anhand der Eingabe des Benutzers
@@ -230,12 +244,12 @@ class AsyncRegistrationValidationFormBloc extends FormBloc<String, String> {
       if (value.length == 5 && plzDropDownBloc.value == null) {
         plzDropDownBloc.updateValue(ortObjects.first);
       }
+      return null;
     } catch (e) {
       emitFailure(failureResponse: "Network error");
+      return "Netwerk fehler";
     }
-    finally{
-      return null;
-    }
+
   }
 
   Future<String?> validationEMailExist(String value) async {
@@ -244,10 +258,10 @@ class AsyncRegistrationValidationFormBloc extends FormBloc<String, String> {
     if (alreadyExist) {
       return "E-Mail Adresse bereits vergeben";
     }
+    return null;
     }catch(e){
         emitFailure(failureResponse: "Network error");
-    }finally{
-      return null;
+        return "Netzwerk Fehler";
     }
   }
 

@@ -100,7 +100,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
     return FormBlocListener<AsyncRegistrationValidationFormBloc, String,
             String>(
         onSuccess: (context, state) {
-          //Wenn success dann nächste Seite
           _pageController.nextPage(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
@@ -108,9 +107,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
         },
         onFailure: (context, state) {
           //TODO
-           ScaffoldMessenger.of(context)
-                  ..hideCurrentSnackBar()
-                  ..showSnackBar(showErrorSnackbar(state.failureResponse!, "Fehler"));
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+                showErrorSnackbar(state.failureResponse!, "Fehler FIRST"));
         },
         child: SingleChildScrollView(
           child: Column(children: [
@@ -174,19 +174,22 @@ class _RegistrationPageState extends State<RegistrationPage> {
   Widget _buildSecondPage(AsyncRegistrationValidationFormBloc formBloc) {
     return FormBlocListener<AsyncRegistrationValidationFormBloc, String,
         String>(
-          formBloc: formBloc,
-        //   onSuccess: (context, state) {
-        //   //Wenn success dann nächste Seite
-        //   ScaffoldMessenger.of(context)
-        //           ..hideCurrentSnackBar()
-        //           ..showSnackBar(showSuccessSnackbar("Registriert!", "HURA"));
-
-          
-        // },
+      formBloc: formBloc,
+      onSuccess: (context, state) {
+        navigatorKey.currentState?.pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const HomePage()),
+          (Route<dynamic> route) => false,
+        );
+        //Wenn success dann nächste Seite
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(showSuccessSnackbar("Registriert!", "HURA"));
+      },
       onFailure: (context, state) {
-         ScaffoldMessenger.of(context)
-                  ..hideCurrentSnackBar()
-                  ..showSnackBar(showErrorSnackbar(state.failureResponse!, "Fehler"));
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+              showErrorSnackbar(state.failureResponse!, "Fehler SECOND"));
       },
       child: SingleChildScrollView(
         child: Column(
