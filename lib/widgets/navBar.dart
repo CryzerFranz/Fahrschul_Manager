@@ -1,4 +1,6 @@
 import 'package:fahrschul_manager/constants.dart';
+import 'package:fahrschul_manager/main.dart';
+import 'package:fahrschul_manager/pages/fahrschueler_liste_page.dart';
 import 'package:flutter/material.dart';
 
 class CustomNavBar extends StatefulWidget {
@@ -7,7 +9,7 @@ class CustomNavBar extends StatefulWidget {
 }
 
 class _CustomNavBarState extends State<CustomNavBar> {
-  int selectedIndex = 0;
+  int selectedIndex = 2;
 
   @override
   Widget build(BuildContext context) {
@@ -34,11 +36,11 @@ class _CustomNavBarState extends State<CustomNavBar> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            buildNavBarIcon(Icons.chat_bubble_outline, 0),
-            buildNavBarIcon(Icons.search, 1),
-            buildNavBarIcon(Icons.timer, 2),
-            buildNavBarIcon(Icons.notifications, 3),
-            buildNavBarIcon(Icons.person_outline, 4),
+            buildNavBarIcon(Icons.people_alt_rounded, 0),
+            buildNavBarIcon(Icons.calendar_month_rounded, 1),
+            buildNavBarIcon(Icons.home, 2),
+            buildNavBarIcon(Icons.airport_shuttle, 3),
+            buildNavBarIcon(Icons.person, 4),
           ],
         ),
       ),
@@ -55,6 +57,23 @@ class _CustomNavBarState extends State<CustomNavBar> {
         setState(() {
           selectedIndex = index;
         });
+        switch(index)
+        {
+          case 0:
+             navigatorKey.currentState?.push(
+                              MaterialPageRoute(
+                                  builder: (context) => const fahrschuelerListePage()),
+                            );
+            break;
+          case 1:
+            break;
+          case 2:
+            break;
+          case 3:
+            break;
+          case 4:
+            break;
+        }
       },
     );
   }
