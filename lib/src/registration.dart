@@ -63,12 +63,12 @@ Future<ParseObject> createFahrschueler(String vorname, String name,
     if (roleResponse.success &&
         roleResponse.results != null &&
         roleResponse.results!.isNotEmpty) {
-      final fahrlehrerRole = roleResponse.results!.first as ParseObject;
-      final roleUserRelation = fahrlehrerRole.getRelation("users");
+      final fahrschuelerRole = roleResponse.results!.first as ParseObject;
+      final roleUserRelation = fahrschuelerRole.getRelation("users");
       roleUserRelation.add(parseUser);
 
       // Benutzer zur Rolle hinzufügen
-      final saveRoleResponse = await fahrlehrerRole.save();
+      final saveRoleResponse = await fahrschuelerRole.save();
 
       if (!saveRoleResponse.success) {
         throw Exception(
@@ -76,7 +76,7 @@ Future<ParseObject> createFahrschueler(String vorname, String name,
       }
     }
 
-    await parseUser.logout();
+    //await parseUser.logout();
 
     return response.result as ParseObject;
   } catch (e) {
@@ -145,42 +145,41 @@ Future<void> createFahrlehrer(
             "Failed to assign role 'fahrlehrer' to user: ${saveRoleResponse.error!.message}");
       }
     }
-    final isCreated = await Benutzer().login(eMail, password);
-    if (!createSession || !isCreated) {
-      await Benutzer().logout();
+    if(createSession)
+    {
+      await Benutzer().login(eMail, password);
+
     }
+    // if (!createSession || !isCreated) {
+    //   await Benutzer().logout();
+    // }
   } catch (e) {
     throw Exception("Error: createFahrlehrer -> $e");
   }
 }
 
-/// Erstellt einen ParseUser (_User).
-///
-/// ### Parameters:
-///
-/// - **`String` [eMail]** : E-Mail adresse vom Benutzer, sowie auch der Username.
-/// - **`String` [password]** : Passwort des Benutzers.
-///
-/// ### Return value:
-/// - **[ParseUser]** : Gibt den ParseUser zurück.
-///
-/// ### Exception:
-/// - **[FormatException]** : Übergebene Parameter passen nicht zum erwartetem Format.
-/// - **[Exception]** : Etwas ist beim registrieren schief gelaufen.
-Future<ParseUser> createUser(final String eMail, final String password) async {
+/// Erstellt einen ParseUser in der Datenbank
+Future<ParseUser> createUser(String eMail, String password) async {
   try {
     if (eMail.isEmpty || password.isEmpty) {
       throw const FormatException("Empty values are not allowed");
     }
 
-    // user eMail as username
-    final user = ParseUser.createUser(eMail, password, eMail);
-    var response = await user.signUp();
+    // Call the cloud function for user creation
+    final ParseCloudFunction createUserFunction = ParseCloudFunction('createUser');
+    final Map<String, dynamic> params = <String, dynamic>{
+      'email': eMail,
+      'password': password,
+    };
 
-    if (!response.success) {
-      throw Exception(response.error!.message);
+    final ParseResponse response = await createUserFunction.execute(parameters: params);
+
+    if (!response.success || response.result == null) {
+      throw Exception(response.error?.message);
     }
-    return response.results?.first as ParseUser;
+
+    // Cloud function returns the created user
+    return ParseUser(null, null, null)..fromJson(response.result);
   } catch (e) {
     throw Exception("Error: createUser -> $e");
   }
