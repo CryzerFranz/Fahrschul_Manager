@@ -35,11 +35,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-        create: (context) => AsyncRegistrationValidationFormBloc(),
-        child: Builder(builder: (context) {
-          final formBloc = context.read<AsyncRegistrationValidationFormBloc>();
-          return Scaffold(
+     final formBloc = context.read<AsyncRegistrationValidationFormBloc>();
+    return Scaffold(
             backgroundColor: Colors.white,
             body: SafeArea(
               child: LayoutBuilder(builder: (context, constraints) {
@@ -93,7 +90,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
               }),
             ),
           );
-        }));
   }
 
   Widget _buildFirstPage(AsyncRegistrationValidationFormBloc formBloc) {
