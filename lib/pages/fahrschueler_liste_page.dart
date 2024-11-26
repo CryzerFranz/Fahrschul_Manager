@@ -1,6 +1,7 @@
 
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
+import 'package:fahrschul_manager/widgets/navBar/navBar.dart';
 import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
@@ -20,10 +21,21 @@ class fahrschuelerListePage extends StatelessWidget {
             if (snapshot.hasData && snapshot.data!.isEmpty) {
                   return Text("No data");
                 } else {
-                  return Text("muss noch machen");
+                  return _buildDataContent(snapshot.data!);
                 }
         };
       }
+    );
+  }
+
+  Widget _buildDataContent(List<ParseObject> data)
+  {
+    return Scaffold(
+      extendBody: true,
+      body: const Center(
+        child: Text("Sind drinne")
+      ),
+      bottomNavigationBar: CustomNavBar(),
     );
   }
 }
