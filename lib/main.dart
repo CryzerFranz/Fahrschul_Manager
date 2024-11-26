@@ -1,17 +1,13 @@
-//import 'package:fahrschul_manager/src/authentication.dart';
-import 'package:fahrschul_manager/constants.dart';
-import 'package:fahrschul_manager/doc/intern/Authentication.dart';
-import 'package:fahrschul_manager/doc/intern/Dummys.dart';
-import 'package:fahrschul_manager/src/db_classes/fahrschule.dart';
-import 'package:fahrschul_manager/src/db_classes/fahrstunde.dart';
-import 'package:fahrschul_manager/src/db_classes/ort.dart';
-import 'package:fahrschul_manager/src/db_classes/status.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/authentication/Login_page.dart';
+import 'package:fahrschul_manager/src/form_blocs/AsyncLoginValidationFormBloc.dart';
+import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationValidationFormBloc.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
+import 'package:fahrschul_manager/widgets/navBar/navBarBloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -32,6 +28,8 @@ void main() async {
       debug: true,
     );
     Benutzer().initialize();
+    await Benutzer().hasUserLogged();
+    final a = await Benutzer().getAllFahrschueler();
     runApp(MyApp());
   } else {
     runApp(ErrorApp());
@@ -42,16 +40,16 @@ class ErrorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Internal Error',
-      theme: ThemeData(
-        primarySwatch: Colors.red,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: const Scaffold(
-          body: Center(
-              child: Text("!Internal Error!",
-                  style: TextStyle(color: Colors.red)))),
-    );
+          title: 'Internal Error',
+          theme: ThemeData(
+            primarySwatch: Colors.red,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          home: const Scaffold(
+              body: Center(
+                  child: Text("!Internal Error!",
+                      style: TextStyle(color: Colors.red)))),
+        );
   }
 }
 
@@ -80,7 +78,14 @@ Future<String?> getClientID() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (context) => NavBarBloc()),
+          BlocProvider(
+              create: (context) => AsyncRegistrationValidationFormBloc()),
+          BlocProvider(create: (context) => AsyncLoginValidationFormBloc()),
+        ],
+        child:  MaterialApp(
       navigatorKey: navigatorKey,
       title: 'Flutter - Parse Server',
       theme: ThemeData(
@@ -93,14 +98,7 @@ class MyApp extends StatelessWidget {
             switch (snapshot.connectionState) {
               case ConnectionState.none:
               case ConnectionState.waiting:
-                return Scaffold(
-                  body: Center(
-                    child: Container(
-                        width: 100,
-                        height: 100,
-                        child: pacmanLoadingIndicator()),
-                  ),
-                );
+                return loadingScreen();
               default:
                 if (snapshot.hasData && snapshot.data!) {
                   return HomePage();
@@ -109,6 +107,6 @@ class MyApp extends StatelessWidget {
                 }
             }
           }),
-    );
+    ));
   }
 }
