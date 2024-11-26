@@ -1,6 +1,5 @@
 import 'package:fahrschul_manager/pages/authentication/login_page.dart';
 import 'package:fahrschul_manager/widgets/3dCard.dart';
-import 'package:fahrschul_manager/widgets/navBar.dart';
 import 'package:fahrschul_manager/widgets/navBar/navBar.dart';
 import 'package:flutter/material.dart';
 
