@@ -7,8 +7,8 @@ import 'package:fahrschul_manager/widgets/navBar/navBar.dart';
 import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
-class fahrschuelerListePage extends StatelessWidget {
-  const fahrschuelerListePage({super.key});
+class FahrschuelerListePage extends StatelessWidget {
+  const FahrschuelerListePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,6 @@ class fahrschuelerListePage extends StatelessWidget {
                 return _buildTestTab(snapshot.data!, context);
               }
           }
-          ;
         });
   }
 
