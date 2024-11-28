@@ -173,7 +173,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
       formBloc: formBloc,
       onSuccess: (context, state) {
         navigatorKey.currentState?.pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const HomePage()),
+          MaterialPageRoute(builder: (context) =>  HomePage()),
           (Route<dynamic> route) => false,
         );
         //Wenn success dann nächste Seite

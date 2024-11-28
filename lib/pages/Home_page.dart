@@ -1,6 +1,6 @@
 import 'package:fahrschul_manager/pages/authentication/login_page.dart';
 import 'package:fahrschul_manager/pages/calendar_page.dart';
-import 'package:fahrschul_manager/pages/fahrschueler_liste_page.dart';
+import 'package:fahrschul_manager/pages/fahrschueler_liste/fahrschueler_liste_page.dart';
 import 'package:fahrschul_manager/pages/fahrschule_page.dart';
 import 'package:fahrschul_manager/pages/profil_page.dart';
 import 'package:fahrschul_manager/widgets/3dCard.dart';
@@ -11,9 +11,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+   HomePage({super.key});
 
-  final List<Widget> _pages = const [
+  final List<Widget> _pages =  [
     FahrschuelerListePage(),
     CalendarPage(),
     HomePageBody(),
@@ -27,10 +27,7 @@ class HomePage extends StatelessWidget {
       extendBody: true,
       body: BlocBuilder<NavBarBloc, NavBarState>(
         builder: (context, state) {
-          return IndexedStack(
-            index: state.selectedIndex, // Use the current index from NavBarState
-            children: _pages,
-          );
+          return _pages[state.selectedIndex];
         },
       ),
       bottomNavigationBar: CustomNavBar(),
