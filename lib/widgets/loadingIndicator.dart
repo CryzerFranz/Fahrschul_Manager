@@ -12,14 +12,26 @@ LoadingIndicator pacmanLoadingIndicator()
                         );
 }
 
-Widget loadingScreen()
+Widget ScaffoldLoadingScreen({double width_ = 100, double height_ = 100})
 {
     return Scaffold(
                   body: Center(
                     child: Container(
-                        width: 100,
-                        height: 100,
+                        width: width_,
+                        height: height_,
                         child: pacmanLoadingIndicator()),
                   ),
                 );
 }
+
+Widget loadingScreen({double width_ = 100, double height_ = 100})
+{
+    return  Center(
+                    child: Container(
+                        width: width_,
+                        height: height_,
+                        child: pacmanLoadingIndicator()),
+                  );
+
+}
+
