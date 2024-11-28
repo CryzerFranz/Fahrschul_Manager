@@ -138,7 +138,7 @@ class Benutzer {
   /// 
   /// ### Return value:
   /// - **[List<ParseObject>]** : Eine Liste wo alle zugehörigen Fahrschüler sind
-  Future<List<ParseObject>> getAllFahrschueler() async
+  Future<List<ParseObject>> getAllFahrschueler({required String state}) async
   {
     if(_isFahrlehrer == null || _dbUser == null)
     {
