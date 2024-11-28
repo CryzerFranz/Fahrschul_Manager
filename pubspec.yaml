@@ -21,6 +21,7 @@ dependencies:
   package_info_plus: ^4.2.0
   parse_server_sdk_flutter: ^8.0.0
   loading_indicator: ^3.1.1
+  animated_segmented_tab_control: ^2.0.0
 
 dev_dependencies:
   flutter_test:
