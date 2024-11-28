@@ -55,37 +55,11 @@ class CustomNavBar extends StatelessWidget {
           icon: Icon(
             icon,
             color: state.selectedIndex == index
-                ? navBarSelectedColor
-                : navBarUnSelectedColor,
+                ? navBarSelectedColor // Use navBarSelectedColor
+                : navBarUnSelectedColor, // Use navBarUnSelectedColor
           ),
           onPressed: () {
             context.read<NavBarBloc>().add(NavBarItemTapped(index));
-            // Handle page navigation based on index
-            switch (index) {
-              case 0:
-                navigatorKey.currentState?.push(
-                  MaterialPageRoute(
-                    builder: (context) => const fahrschuelerListePage(),
-                  ),
-                );
-                break;
-              case 1:
-                // Navigate to calendar page
-                break;
-              case 2:
-                navigatorKey.currentState?.push(
-                  MaterialPageRoute(
-                    builder: (context) => const HomePage(),
-                  ),
-                );
-                break;
-              case 3:
-                // Navigate to shuttle page
-                break;
-              case 4:
-                // Navigate to profile page
-                break;
-            }
           },
         );
       },
