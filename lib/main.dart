@@ -1,8 +1,12 @@
+import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_bloc.dart';
+import 'package:fahrschul_manager/pages/fahrschueler_liste/fahrschueler_liste_page.dart';
+import 'package:fahrschul_manager/src/db_classes/fahrschule.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/authentication/Login_page.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncLoginValidationFormBloc.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationValidationFormBloc.dart';
+import 'package:fahrschul_manager/src/registration.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:fahrschul_manager/widgets/navBar/navBarBloc.dart';
 import 'package:flutter/material.dart';
@@ -28,8 +32,8 @@ void main() async {
       debug: true,
     );
     Benutzer().initialize();
-    await Benutzer().hasUserLogged();
-    final a = await Benutzer().getAllFahrschueler();
+    //await Benutzer().login("cp@gmail.com", "Admin12345.");
+
     runApp(MyApp());
   } else {
     runApp(ErrorApp());
@@ -84,6 +88,7 @@ class MyApp extends StatelessWidget {
           BlocProvider(
               create: (context) => AsyncRegistrationValidationFormBloc()),
           BlocProvider(create: (context) => AsyncLoginValidationFormBloc()),
+          BlocProvider(create: (context) => FahrschuelerListBloc()),
         ],
         child:  MaterialApp(
       navigatorKey: navigatorKey,
@@ -98,7 +103,7 @@ class MyApp extends StatelessWidget {
             switch (snapshot.connectionState) {
               case ConnectionState.none:
               case ConnectionState.waiting:
-                return loadingScreen();
+                return ScaffoldLoadingScreen();
               default:
                 if (snapshot.hasData && snapshot.data!) {
                   return HomePage();
