@@ -11,9 +11,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 
 class HomePage extends StatelessWidget {
-   HomePage({super.key});
+  const HomePage({super.key});
 
-  final List<Widget> _pages =  [
+  final List<Widget> _pages =  const [
     FahrschuelerListePage(),
     CalendarPage(),
     HomePageBody(),
