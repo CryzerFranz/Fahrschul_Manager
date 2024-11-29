@@ -1,3 +1,4 @@
+import 'package:fahrschul_manager/doc/intern/Status.dart';
 import 'package:fahrschul_manager/main.dart';
 import 'package:fahrschul_manager/pages/authentication/Login_page.dart';
 import 'package:flutter/material.dart';
@@ -134,11 +135,14 @@ class Benutzer {
     await hasUserLogged();
   }
 
-  /// Gibt alle Fahrschueler eines Fahrlehrers zurück
+  /// Gibt die Fahrschueler mit den übergebenen Status zurück
+  /// 
+  /// ### Parameter:
+  /// - **`String` [state]** : Status der Fahrschueler
   /// 
   /// ### Return value:
   /// - **[List<ParseObject>]** : Eine Liste wo alle zugehörigen Fahrschüler sind
-  Future<List<ParseObject>> getAllFahrschueler({required String state}) async
+  Future<List<ParseObject>> fetchFahrschuelerByState({required String state}) async
   {
     if(_isFahrlehrer == null || _dbUser == null)
     {
@@ -149,8 +153,15 @@ class Benutzer {
         throw("Permission denied");
     }
 
+    final String? stateId = await fetchStatusID(state);
+    if(stateId == null)
+    {
+      throw("Status existiert nicht.");
+    }
+
     final QueryBuilder<ParseObject> parseQuery = QueryBuilder<ParseObject>(ParseObject('Fahrschueler'))
-    ..whereContains('Fahrlehrer', dbUserId!);
+    ..whereContains('Fahrlehrer', dbUserId!)
+    ..whereContains('Status', stateId);
 
     final apiResponse = await parseQuery.query();
 
