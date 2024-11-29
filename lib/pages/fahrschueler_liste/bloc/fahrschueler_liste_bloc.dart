@@ -12,7 +12,7 @@ class FahrschuelerListBloc extends Bloc<FahrschuelerListEvent, FahrschuelerListS
     emit(DataLoading());
     try {
       // Replace with your actual data fetching logic
-      final data = await Benutzer().getAllFahrschueler(state: event.state);
+      final data = await Benutzer().fetchFahrschuelerByState(state: event.state);
       if (data.isEmpty) {
         emit(DataError('No data available'));
       } else {
