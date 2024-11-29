@@ -109,13 +109,13 @@ class FahrschuelerListContent extends StatelessWidget {
                 Row(
                   children: [
                     Custom3DCard(
-                      title: "${state.data[index].get<String>("Name")!},"
+                      title: "${state.data[index].get<String>("Name")!}, "
                           "${state.data[index].get<String>("Vorname")!}",
-                      widget: const Text("Test"),
+                      widget: Text("Fahrstunden: ${state.data[index].get<int>("Gesamtfahrstunden")!}"),
                       colors: colors,
                       width: 0.7,
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Custom3DCard(
                       widget: IconButton(onPressed: () {}, icon: Icon(icon)),
                       colors: [colors.last, colors.first],
