@@ -31,9 +31,9 @@ Future<ParseObject> createFahrschueler(String vorname, String name,
   try {
     ParseObject? status;
     if (fahrlehrer == null) {
-      status = await getStatus("Nicht zugewiesen");
+      status = await fetchStatus("Nicht zugewiesen");
     }
-    status = await getStatus("Passiv");
+    status = await fetchStatus("Passiv");
 
     final parseUser = await createUser(eMail, password);
 
