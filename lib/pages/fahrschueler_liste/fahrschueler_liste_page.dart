@@ -90,13 +90,7 @@ class FahrschuelerListContent extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             itemCount: blocState.data.length,
             itemBuilder: (BuildContext context, int index) {
-              if(state != "Nicht zugewiesen") {
-                return displayDataForAssigned(blocState, index);
-              }
-              else{
-                return displayDataForUnassigned(context ,blocState, index);
-
-              }
+                return displayDataForAssigned(blocState, state, index);
             },
           );
         } else if (blocState is DataError) {
@@ -108,21 +102,8 @@ class FahrschuelerListContent extends StatelessWidget {
     );
   }
 
-  Widget displayDataForAssigned(DataLoaded state, int index) {
-    return Column(
-              children: [
-                Custom3DCard(
-                  title: "${state.data[index].get<String>("Name")!}, "
-                      "${state.data[index].get<String>("Vorname")!}",
-                  widget: const Text("Test"),
-                  colors: colors,
-                ),
-                const SizedBox(height: 10),
-              ],
-            );
-  }
-
-  Widget displayDataForUnassigned(BuildContext context, state, int index) {
+  Widget displayDataForAssigned(DataLoaded state, String contentState, int index) {
+    IconData icon = contentState != "Aktiv" ? Icons.add : Icons.check;
     return Column(
               children: [
                 Row(
@@ -136,7 +117,7 @@ class FahrschuelerListContent extends StatelessWidget {
                     ),
                     SizedBox(width: 10),
                     Custom3DCard(
-                      widget: IconButton(onPressed: (){}, icon: Icon(Icons.add)),
+                      widget: IconButton(onPressed: () {}, icon: Icon(icon)),
                       colors: [colors.last, colors.first],
                       width: 0.17,
           
