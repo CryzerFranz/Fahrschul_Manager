@@ -32,21 +32,21 @@ class FahrschuelerListePage extends StatelessWidget {
                   .textTheme
                   .bodyLarge
                   ?.copyWith(fontWeight: FontWeight.bold),
-              tabs: [
+              tabs: const [
                 SegmentTab(
                   label: 'AKTIV',
-                  color: mainColorShade300,
-                  backgroundColor: mainColorShade100,
+                  color: tabBarMainColorShade300,
+                  backgroundColor: tabBarMainColorShade100,
                 ),
                 SegmentTab(
                   label: 'PASSIV',
-                  backgroundColor: Colors.orange.shade100,
-                  color: Colors.orange.shade300,
+                  backgroundColor: tabBarOrangeShade100,
+                  color: tabBarOrangeShade300,
                 ),
                 SegmentTab(
                   label: 'NEU',
-                  backgroundColor: Colors.red.shade100,
-                  color: Colors.red.shade300,
+                  backgroundColor: tabBarRedShade100,
+                  color: tabBarRedShade300,
                 ),
               ],
             ),
@@ -56,9 +56,9 @@ class FahrschuelerListePage extends StatelessWidget {
             child: TabBarView(
               physics: BouncingScrollPhysics(),
               children: [
-                FahrschuelerListContent(state: "Aktiv"),
-                FahrschuelerListContent(state: "Passiv"),
-                FahrschuelerListContent(state: "Nicht zugewiesen"),
+                FahrschuelerListContent(state: "Aktiv", colors: [tabBarMainColorShade300, tabBarMainColorShade300, tabBarMainColorShade100]),
+                FahrschuelerListContent(state: "Passiv", colors: [tabBarOrangeShade300, tabBarOrangeShade300, tabBarOrangeShade100],),
+                FahrschuelerListContent(state: "Nicht zugewiesen", colors: [tabBarRedShade300, tabBarRedShade300, tabBarRedShade100]),
               ],
             ),
           ),
@@ -72,40 +72,79 @@ class FahrschuelerListContent extends StatelessWidget {
   const FahrschuelerListContent({
     super.key,
     required this.state,
+    this.colors = const [mainColor, mainColor, mainColorComplementaryFirst],
   });
 
   final String state;
+  final List<Color> colors;
   @override
   Widget build(BuildContext context) {
     context.read<FahrschuelerListBloc>().add(FetchFahrschuelerListEvent(state));
 
     return BlocBuilder<FahrschuelerListBloc, FahrschuelerListState>(
-      builder: (context, state) {
-        if (state is DataLoading) {
+      builder: (context, blocState) {
+        if (blocState is DataLoading) {
           return loadingScreen(height_: 150, width_: 150);
-        } else if (state is DataLoaded) {
+        } else if (blocState is DataLoaded) {
           return ListView.builder(
             padding: const EdgeInsets.all(20),
-            itemCount: state.data.length,
+            itemCount: blocState.data.length,
             itemBuilder: (BuildContext context, int index) {
-              return Column(
-                children: [
-                  Custom3DCard(
-                    title: "${state.data[index].get<String>("Name")!}, "
-                        "${state.data[index].get<String>("Vorname")!}",
-                    widget: const Text("Test"),
-                  ),
-                  const SizedBox(height: 10),
-                ],
-              );
+              if(state != "Nicht zugewiesen") {
+                return displayDataForAssigned(blocState, index);
+              }
+              else{
+                return displayDataForUnassigned(context ,blocState, index);
+
+              }
             },
           );
-        } else if (state is DataError) {
-          return Center(child: Text("Error: ${state.message}"));
+        } else if (blocState is DataError) {
+          return Center(child: Text("Error: ${blocState.message}"));
         } else {
           return Center(child: Text("No data"));
         }
       },
     );
+  }
+
+  Widget displayDataForAssigned(DataLoaded state, int index) {
+    return Column(
+              children: [
+                Custom3DCard(
+                  title: "${state.data[index].get<String>("Name")!}, "
+                      "${state.data[index].get<String>("Vorname")!}",
+                  widget: const Text("Test"),
+                  colors: colors,
+                ),
+                const SizedBox(height: 10),
+              ],
+            );
+  }
+
+  Widget displayDataForUnassigned(BuildContext context, state, int index) {
+    return Column(
+              children: [
+                Row(
+                  children: [
+                    Custom3DCard(
+                      title: "${state.data[index].get<String>("Name")!},"
+                          "${state.data[index].get<String>("Vorname")!}",
+                      widget: const Text("Test"),
+                      colors: colors,
+                      width: 0.7,
+                    ),
+                    SizedBox(width: 10),
+                    Custom3DCard(
+                      widget: IconButton(onPressed: (){}, icon: Icon(Icons.add)),
+                      colors: [colors.last, colors.first],
+                      width: 0.17,
+          
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+              ],
+            );
   }
 }
