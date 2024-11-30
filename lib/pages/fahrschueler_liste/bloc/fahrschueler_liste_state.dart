@@ -13,3 +13,8 @@ class DataError extends FahrschuelerListState {
   final String message;
   DataError(this.message);
 }
+
+class ChangeDataState extends FahrschuelerListState {
+  final String state;
+  ChangeDataState(this.state);
+}
