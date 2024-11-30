@@ -21,3 +21,9 @@ const Color mainColor = Color(0xFF00BF6D);
 const Color mainColorComplementaryFirst = Color(0xFF87CEEB);
 const Color mainColorComplementarySecond = Color(0xFFFFD700);
 
+// States
+const String stateActive = "Aktiv";
+const String statePassive = "Passiv";
+const String stateUnassigned = "Nicht zugewiesen";
+const String stateDone = "Abgeschlossen";
+ 
