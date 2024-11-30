@@ -5,9 +5,11 @@ import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_lis
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_state.dart';
 import 'package:fahrschul_manager/widgets/3dCard.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
+import 'package:fahrschul_manager/widgets/styles.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 class FahrschuelerListePage extends StatelessWidget {
   const FahrschuelerListePage({
@@ -20,7 +22,8 @@ class FahrschuelerListePage extends StatelessWidget {
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.only(
+                bottom: 16.0, left: 16.0, right: 16.0, top: 38),
             child: SegmentedTabControl(
               tabTextColor: Colors.black,
               selectedTabTextColor: Colors.white,
@@ -34,7 +37,7 @@ class FahrschuelerListePage extends StatelessWidget {
                   ?.copyWith(fontWeight: FontWeight.bold),
               tabs: const [
                 SegmentTab(
-                  label: 'AKTIV',
+                  label: "AKTIV",
                   color: tabBarMainColorShade300,
                   backgroundColor: tabBarMainColorShade100,
                 ),
@@ -56,9 +59,24 @@ class FahrschuelerListePage extends StatelessWidget {
             child: TabBarView(
               physics: BouncingScrollPhysics(),
               children: [
-                FahrschuelerListContent(state: "Aktiv", colors: [tabBarMainColorShade300, tabBarMainColorShade300, tabBarMainColorShade100]),
-                FahrschuelerListContent(state: "Passiv", colors: [tabBarOrangeShade300, tabBarOrangeShade300, tabBarOrangeShade100],),
-                FahrschuelerListContent(state: "Nicht zugewiesen", colors: [tabBarRedShade300, tabBarRedShade300, tabBarRedShade100]),
+                FahrschuelerListContent(state: stateActive, colors: [
+                  tabBarMainColorShade300,
+                  tabBarMainColorShade300,
+                  tabBarMainColorShade100
+                ]),
+                FahrschuelerListContent(
+                  state: statePassive,
+                  colors: [
+                    tabBarOrangeShade300,
+                    tabBarOrangeShade300,
+                    tabBarOrangeShade100
+                  ],
+                ),
+                FahrschuelerListContent(state: stateUnassigned, colors: [
+                  tabBarRedShade300,
+                  tabBarRedShade300,
+                  tabBarRedShade100
+                ]),
               ],
             ),
           ),
@@ -90,42 +108,197 @@ class FahrschuelerListContent extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             itemCount: blocState.data.length,
             itemBuilder: (BuildContext context, int index) {
-                return displayDataForAssigned(blocState, state, index);
+              return displayListEntryConent(context: context, data: blocState.data[index], contentState: state);
             },
           );
         } else if (blocState is DataError) {
-          return Center(child: Text("Error: ${blocState.message}"));
+          return Center(
+              child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 120),
+              ),
+              Icon(
+                Icons.sentiment_dissatisfied,
+                size: 80,
+                color: Colors.red[600],
+                shadows: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.5), // Shadow color
+                    spreadRadius: 1, // How far the shadow spreads
+                    blurRadius: 10, // The softness of the shadow
+                    offset: const Offset(5, 5), // X and Y offset
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              const Text("Keine Fahrschüler"),
+            ],
+          ));
         } else {
-          return Center(child: Text("No data"));
+          return const Center(child: Text("No data"));
         }
       },
     );
   }
 
-  Widget displayDataForAssigned(DataLoaded state, String contentState, int index) {
-    IconData icon = contentState != "Aktiv" ? Icons.add : Icons.check;
+  /// Erstellt den Content für jedes einzelne Listen element
+  /// 
+   /// ### Parameter:
+  /// - **`BuildContext` [context]** : BuildContext
+  /// - **`ParseObject` [data]** : ParseObject vom ausgewählten Index der Liste
+  /// - **`String` [contentState]** : Der Aktuelle Tab
+  /// 
+  /// ### Return value:
+  /// - **[Widget]** : UI Element
+  Widget displayListEntryConent({
+      required BuildContext context,required ParseObject data ,required String contentState}) {
+    IconData icon = contentState != stateActive ? Icons.add : Icons.check;
     return Column(
+      children: [
+        Row(
+          children: [
+            Custom3DCard(
+              title: "${data.get<String>("Name")!}, "
+                  "${data.get<String>("Vorname")!}",
+              widget: Text(
+                  "Fahrstunden: ${data.get<int>("Gesamtfahrstunden")!}"),
+              colors: colors,
+              width: 0.7,
+            ),
+            const SizedBox(width: 10),
+            Custom3DCard(
+              widget: IconButton(
+                  onPressed: () {
+                    if(contentState == stateActive)
+                    {
+                      context.read<FahrschuelerListBloc>().add(
+                                  ChangeStateFahrschuelerEvent(
+                                      stateDone, stateActive, data));
+                    }else{
+                      _dialogBuilder(context, data, contentState);
+                    }
+                  },
+                  icon: Icon(icon)),
+              colors: [colors.last, colors.first],
+              width: 0.17,
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+      ],
+    );
+  }
+
+  Future<void> _dialogBuilder(
+      BuildContext context, ParseObject obj, String actualTab) {
+    Color actualTabColor300 =
+        actualTab == statePassive ? tabBarOrangeShade300 : tabBarRedShade300;
+    Color actualTabColor100 =
+        actualTab == statePassive ? tabBarOrangeShade100 : tabBarRedShade100;
+
+    Color buttonColor_2 =
+        actualTab == statePassive ? tabBarRedShade300 : tabBarOrangeShade300;
+    String value_2 =
+        actualTab == statePassive ? "Entfernen" : "$statePassive setzen";
+
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors
+              .transparent, // Dialog hintergrundfarbe wird transparenz gesetzt damit wir unseren eigenen gestalten können
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white, // Dialog hintergrund farbe
+              borderRadius: BorderRadius.circular(20.0),
+              border: Border.all(
+                color: actualTabColor300,
+                width: 2.3,
+              ),
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.topCenter,
               children: [
-                Row(
-                  children: [
-                    Custom3DCard(
-                      title: "${state.data[index].get<String>("Name")!}, "
-                          "${state.data[index].get<String>("Vorname")!}",
-                      widget: Text("Fahrstunden: ${state.data[index].get<int>("Gesamtfahrstunden")!}"),
-                      colors: colors,
-                      width: 0.7,
+                Padding(
+                  padding: const EdgeInsets.only(top: 60.0),
+                  child: SizedBox(
+                    height: 170,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${obj.get<String>("Name")}, ${obj.get<String>("Vorname")}',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: 16.0),
+                        Padding(
+                          padding:
+                              const EdgeInsets.only(left: 80.0, right: 80.0),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              context.read<FahrschuelerListBloc>().add(
+                                  ChangeStateFahrschuelerEvent(
+                                      stateActive, actualTab, obj));
+                              Navigator.of(context).pop();
+                            },
+                            style: stadiumButtonStyle(
+                                background: tabBarMainColorShade300),
+                            child: const Text("$stateActive setzen"),
+                          ),
+                        ),
+                        const SizedBox(height: 10.0),
+                        Padding(
+                          padding:
+                              const EdgeInsets.only(left: 80.0, right: 80.0),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              context.read<FahrschuelerListBloc>().add(
+                                  ChangeStateFahrschuelerEvent(
+                                      actualTab == statePassive
+                                          ? stateUnassigned
+                                          : statePassive,
+                                      actualTab,
+                                      obj));
+                              Navigator.of(context).pop();
+                            },
+                            style:
+                                stadiumButtonStyle(background: buttonColor_2),
+                            child: Text(value_2),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 10),
-                    Custom3DCard(
-                      widget: IconButton(onPressed: () {}, icon: Icon(icon)),
-                      colors: [colors.last, colors.first],
-                      width: 0.17,
-          
-                    ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 10),
+                Positioned(
+                  top: -40,
+                  child: Container(
+                    // Border für CircleAvatar
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: actualTabColor300,
+                        width: 2.3,
+                      ),
+                    ),
+                    child: CircleAvatar(
+                      backgroundColor: actualTabColor100,
+                      radius: 40,
+                      child: Icon(
+                        Icons.question_mark,
+                        size: 60,
+                        color: actualTabColor300,
+                      ),
+                    ),
+                  ),
+                ),
               ],
-            );
+            ),
+          ),
+        );
+      },
+    );
   }
 }
