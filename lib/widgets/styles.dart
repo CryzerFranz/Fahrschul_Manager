@@ -17,12 +17,12 @@ InputDecoration inputDecoration(String hintText) {
   }
 
 
-ButtonStyle stadiumButtonStyle()
+ButtonStyle stadiumButtonStyle({Color background = mainColor, Color foreground = Colors.white})
 {
   return ElevatedButton.styleFrom(
                             elevation: 0,
-                            backgroundColor: mainColor,
-                            foregroundColor: Colors.white,
+                            backgroundColor: background,
+                            foregroundColor: foreground,
                             minimumSize: const Size(double.infinity, 48),
                             shape: const StadiumBorder(),
                           );
