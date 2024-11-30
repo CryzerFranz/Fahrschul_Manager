@@ -38,7 +38,7 @@ class CustomNavBar extends StatelessWidget {
                 buildNavBarIcon(context, Icons.people_alt_rounded, 0),
                 buildNavBarIcon(context, Icons.calendar_month_rounded, 1),
                 buildNavBarIcon(context, Icons.home, 2),
-                buildNavBarIcon(context, Icons.airport_shuttle, 3),
+                buildNavBarIcon(context, Icons.emoji_transportation, 3),
                 buildNavBarIcon(context, Icons.person, 4),
               ],
             ),
