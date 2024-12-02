@@ -1,4 +1,4 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+// ignore: file_names, depend_on_referenced_packages
 import 'package:equatable/equatable.dart';
 
 // Event

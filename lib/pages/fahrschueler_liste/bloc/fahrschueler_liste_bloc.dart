@@ -1,4 +1,3 @@
-import 'package:fahrschul_manager/constants.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_event.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_state.dart';
 import 'package:fahrschul_manager/src/db_classes/fahrschueler.dart';

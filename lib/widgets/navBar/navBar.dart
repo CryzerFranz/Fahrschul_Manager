@@ -1,7 +1,4 @@
 import 'package:fahrschul_manager/constants.dart';
-import 'package:fahrschul_manager/main.dart';
-import 'package:fahrschul_manager/pages/Home_page.dart';
-import 'package:fahrschul_manager/pages/fahrschueler_liste/fahrschueler_liste_page.dart';
 import 'package:fahrschul_manager/widgets/navBar/navBarBloc.dart';
 import 'package:fahrschul_manager/widgets/navBar/navBarEvent.dart';
 import 'package:flutter/material.dart';

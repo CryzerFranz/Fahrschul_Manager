@@ -1,7 +1,6 @@
 import 'package:fahrschul_manager/doc/intern/User.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:flutter/material.dart';
-import 'package:fahrschul_manager/widgets/styles.dart';
 
 class ProfilPage extends StatelessWidget {
   const ProfilPage({super.key});

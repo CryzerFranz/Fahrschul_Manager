@@ -1,7 +1,6 @@
 import 'package:fahrschul_manager/main.dart';
 import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/authentication/Registration_page.dart';
-import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncLoginValidationFormBloc.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:fahrschul_manager/widgets/snackbar.dart';
@@ -17,7 +16,6 @@ class SignInPage extends StatefulWidget {
 }
 
 class _SigninScreenState extends State<SignInPage> {
-  final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
   final TextEditingController _emailController = TextEditingController();

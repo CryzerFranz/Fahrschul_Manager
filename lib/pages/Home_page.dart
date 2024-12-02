@@ -1,4 +1,3 @@
-import 'package:fahrschul_manager/pages/authentication/login_page.dart';
 import 'package:fahrschul_manager/pages/calendar_page.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/fahrschueler_liste_page.dart';
 import 'package:fahrschul_manager/pages/fahrschule_page.dart';
