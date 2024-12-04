@@ -115,3 +115,8 @@ Future<List<CalendarEventData>> getUserFahrstunden() async {
   }
   return events;
 }
+
+Stream<List<CalendarEventData>> getUserFahrstundenStream() {
+  return Stream.periodic(Duration(seconds: 5), (_) => getUserFahrstunden())
+      .asyncMap((future) => future);
+}
