@@ -1,5 +1,8 @@
+import 'dart:ui';
+
 import 'package:calendar_view/calendar_view.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
+import 'package:fahrschul_manager/widgets/calendar_view_customization.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 //TODO !!FRONTEND sollte überprüfen das enddatum nicht kleiner als datum ist.!!
@@ -18,6 +21,10 @@ Future<CalendarEventData> addFahrstunde({
 }) async {
   if (!Benutzer().isFahrlehrer!) {
     throw ("No permission");
+  }
+  if(fahrzeug == null && fahrschueler == null)
+  {
+    throw("Fahrzeug or Fahrschueler has to be at least choosed");
   }
   // Event in die Datenbank abspeichern
   //DateTime dbDate = datum.add(Duration(hours: zeit.hour, minutes: zeit.minute));
@@ -50,21 +57,25 @@ Future<CalendarEventData> addFahrstunde({
   }
 
   // Event erstellen für calender_view package
-  return createEventData(titel: titel, beschreibung: beschreibung, datum: datum, endDatum: endDatum);
+  return createEventData(titel: titel, beschreibung: beschreibung, datum: datum, endDatum: endDatum, fahrzeug: fahrzeug, fahrschueler: fahrschueler);
 }
 
 //TODO evtl async?
-/// Wandelt die gegebenen Daten zu einem [CalendarEventData] um und gibt sie zurück.
+/// Wandelt die gegebenen Daten zu einem [FahrstundenEvent] um und gibt sie zurück.
 /// 
 /// ### Return value:
-/// - **[CalendarEventData]**
-CalendarEventData createEventData({
+/// - **[FahrstundenEvent]**
+FahrstundenEvent createEventData({
   required String titel,
   required DateTime datum,
   required DateTime endDatum,
   String? beschreibung,
+  ParseObject? fahrzeug,
+  ParseObject? fahrschueler,
 }) {
-  return CalendarEventData(
+  return FahrstundenEvent(
+      fahrzeug: fahrzeug,
+      schueler: fahrschueler,
       title: titel,
       date: datum,
       description: beschreibung,
@@ -89,13 +100,14 @@ CalendarEventData createEventData({
 /// 
 /// ### Return value:
 /// - **[List<CalendarEventData>]**
-Future<List<CalendarEventData>> getUserFahrstunden() async {
-  List<CalendarEventData> events = [];
+Future<List<FahrstundenEvent>> getUserFahrstunden() async {
+  List<FahrstundenEvent> events = [];
   String role = Benutzer().isFahrlehrer! ? "Fahrlehrer" : "Fahrschueler";
   final QueryBuilder<ParseObject> parseQuery =
       QueryBuilder<ParseObject>(ParseObject('Fahrstunden'))
         ..whereGreaterThan("Datum", DateTime.now())
-        ..whereContains(role, Benutzer().dbUser!.objectId!);
+        ..whereContains(role, Benutzer().dbUser!.objectId!)
+        ..includeObject(["Fahrzeug", "Fahrschueler"]);
 
   final apiResponse = await parseQuery.query();
   if (!apiResponse.success) {
@@ -111,12 +123,17 @@ Future<List<CalendarEventData>> getUserFahrstunden() async {
         titel: result.get<String>("Titel"),
         datum: result.get<DateTime>("Datum"),
         endDatum: result.get<DateTime>("EndDatum"),
-        beschreibung: result.get<String?>("Beschreibung")));
+        beschreibung: result.get<String?>("Beschreibung"),
+        fahrschueler: result.get<ParseObject?>("Fahrschueler"),
+        fahrzeug: result.get<ParseObject?>("Fahrzeug")));
   }
   return events;
 }
 
-Stream<List<CalendarEventData>> getUserFahrstundenStream() {
+/// Ein Stream der Periodisch alle 5 Sekunden `getUserFahrstunden` aufruft.
+Stream<List<FahrstundenEvent>> getUserFahrstundenStream() {
   return Stream.periodic(Duration(seconds: 5), (_) => getUserFahrstunden())
       .asyncMap((future) => future);
 }
+
+
