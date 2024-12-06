@@ -38,7 +38,7 @@ class CalendarPage extends StatelessWidget {
                 WeekDays.friday,
                 WeekDays.saturday
               ],
-              startHour: 6, // Arbeit startet erst um 06.00 Früh 
+              startHour: 6, // Arbeit startet erst um 06.00 Früh
               onEventTap: (events, date) {
                 _dialogBuilder(context, events);
               },
@@ -65,16 +65,20 @@ class CalendarPage extends StatelessWidget {
     FahrstundenEvent eventData = events.first as FahrstundenEvent;
     late Color infoBackgroundColor;
     late Color infoBorderColor;
+    String dateInfo = events.first.date.day == events.first.endDate.day
+        ? "${events.first.date.day}.${events.first.date.month}.${events.first.date.year}"
+        : "${events.first.date.day}.${events.first.date.month}.${events.first.date.year} - ${events.first.endDate.day}.${events.first.endDate.month}.${events.first.endDate.year}";
+    // endTime in FahrstundenEvent ist immer gegeben, da die beim erstellen immer vorrausgesetzt ist.
+    String datetimeInfo =
+        "${events.first.startTime!.hour}:${events.first.startTime!.minute} - ${events.first.endTime!.hour}:${events.first.endTime!.minute}";
 
-    if(eventData.color == mainColor)
-    {
+    if (eventData.color == mainColor) {
       infoBackgroundColor = tabBarMainColorShade100;
       infoBorderColor = mainColor;
-    }else if(eventData.color == mainColorComplementaryFirst){
+    } else if (eventData.color == mainColorComplementaryFirst) {
       infoBackgroundColor = mainColorComplementaryFirstShade100;
       infoBorderColor = mainColorComplementaryFirst;
-    }
-    else if(eventData.color == mainColorComplementarySecond){
+    } else if (eventData.color == mainColorComplementarySecond) {
       infoBackgroundColor = mainColorComplementarySecondShade100;
       infoBorderColor = mainColorComplementarySecond;
     }
@@ -115,8 +119,14 @@ class CalendarPage extends StatelessWidget {
                         style: const TextStyle(
                             fontSize: 25, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 15),
+                      const SizedBox(height: 7),
+                      Icon(Icons.access_time_outlined, size: 20),
+                      const SizedBox(height: 3),
+                      Text(dateInfo),
+                      const SizedBox(height: 3),
+                      Text(datetimeInfo),
 
+                      const SizedBox(height: 15),
                       // Beschreibung (Left-Aligned)
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,21 +148,38 @@ class CalendarPage extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 15),
-
                       // Fahrzeug und Fahrschüler Info
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            eventData.fahrzeug == null
-                                ? "Kein Fahrzeug"
-                                : "${eventData.fahrzeug!.get<ParseObject>('Marke')?.get<String>('Name') ?? ''} ${eventData.fahrzeug!.get<String>('Label') != null ? "(${eventData.fahrzeug!.get<String>('Label')})" : ''}",
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Fahrzeug:", // Label 
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                eventData.fahrzeug == null
+                                    ? "Kein Fahrzeug"
+                                    : "${eventData.fahrzeug!.get<ParseObject>('Marke')?.get<String>('Name') ?? ''} ${eventData.fahrzeug!.get<String>('Label') != null ? "(${eventData.fahrzeug!.get<String>('Label')})" : ''}",
+                              ),
+                            ],
                           ),
-                          Text(
-                            eventData.schueler == null
-                                ? "Kein Fahrschüler"
-                                : "${eventData.schueler!.get<String>("Name")!}, ${eventData.schueler!.get<String>("Vorname")!}",
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Fahrschüler:", // Label
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                eventData.schueler == null
+                                    ? "Kein Fahrschüler"
+                                    : "${eventData.schueler!.get<String>("Name")!}, ${eventData.schueler!.get<String>("Vorname")!}",
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -174,7 +201,7 @@ class CalendarPage extends StatelessWidget {
                       backgroundColor: infoBackgroundColor,
                       radius: 40,
                       child: Icon(
-                        Icons.edit_calendar,
+                        Icons.event,
                         size: 60,
                         color: infoBorderColor,
                       ),
@@ -195,7 +222,7 @@ class CalendarPage extends StatelessWidget {
                       ),
                     ),
                     child: GestureDetector(
-                      onTap: () {},
+                      onTap: () { _dialogBuilderTEST(context, events);},
                       child: const CircleAvatar(
                         backgroundColor: tabBarOrangeShade100,
                         radius: 15,
@@ -233,6 +260,165 @@ class CalendarPage extends StatelessWidget {
                     ),
                   ),
                 ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
+  Future<void> _dialogBuilderTEST(
+      BuildContext context, List<CalendarEventData<FahrstundenEvent>> events) {
+    FahrstundenEvent eventData = events.first as FahrstundenEvent;
+    late Color infoBackgroundColor;
+    late Color infoBorderColor;
+    String dateInfo = events.first.date.day == events.first.endDate.day
+        ? "${events.first.date.day}.${events.first.date.month}.${events.first.date.year}"
+        : "${events.first.date.day}.${events.first.date.month}.${events.first.date.year} - ${events.first.endDate.day}.${events.first.endDate.month}.${events.first.endDate.year}";
+    // endTime in FahrstundenEvent ist immer gegeben, da die beim erstellen immer vorrausgesetzt ist.
+    String datetimeInfo =
+        "${events.first.startTime!.hour}:${events.first.startTime!.minute} - ${events.first.endTime!.hour}:${events.first.endTime!.minute}";
+
+    if (eventData.color == mainColor) {
+      infoBackgroundColor = tabBarMainColorShade100;
+      infoBorderColor = mainColor;
+    } else if (eventData.color == mainColorComplementaryFirst) {
+      infoBackgroundColor = mainColorComplementaryFirstShade100;
+      infoBorderColor = mainColorComplementaryFirst;
+    } else if (eventData.color == mainColorComplementarySecond) {
+      infoBackgroundColor = mainColorComplementarySecondShade100;
+      infoBorderColor = mainColorComplementarySecond;
+    }
+
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors
+              .transparent, // Dialog hintergrundfarbe wird transparenz gesetzt damit wir unseren eigenen gestalten können
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white, // Dialog hintergrund farbe
+              borderRadius: BorderRadius.circular(20.0),
+              border: Border.all(
+                color: infoBorderColor,
+                width: 2.3,
+              ),
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.topCenter,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: 60.0,
+                    left: 20.0,
+                    right: 20.0,
+                    bottom: 15.0,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Titel (Centered)
+                      Text(
+                        events.first.title,
+                        style: const TextStyle(
+                            fontSize: 25, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 7),
+                      Icon(Icons.access_time_outlined, size: 20),
+                      const SizedBox(height: 3),
+                      Text(dateInfo),
+                      const SizedBox(height: 3),
+                      Text(datetimeInfo),
+
+                      const SizedBox(height: 15),
+                      // Beschreibung (Left-Aligned)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Beschreibung:",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(events.first.description!),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 15),
+                      // Fahrzeug und Fahrschüler Info
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Fahrzeug:", // Label 
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                eventData.fahrzeug == null
+                                    ? "Kein Fahrzeug"
+                                    : "${eventData.fahrzeug!.get<ParseObject>('Marke')?.get<String>('Name') ?? ''} ${eventData.fahrzeug!.get<String>('Label') != null ? "(${eventData.fahrzeug!.get<String>('Label')})" : ''}",
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Fahrschüler:", // Label
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                eventData.schueler == null
+                                    ? "Kein Fahrschüler"
+                                    : "${eventData.schueler!.get<String>("Name")!}, ${eventData.schueler!.get<String>("Vorname")!}",
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: -40,
+                  child: Container(
+                    // Border für CircleAvatar
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: infoBorderColor,
+                        width: 2.3,
+                      ),
+                    ),
+                    child: CircleAvatar(
+                      backgroundColor: infoBackgroundColor,
+                      radius: 40,
+                      child: Icon(
+                        Icons.event,
+                        size: 60,
+                        color: infoBorderColor,
+                      ),
+                    ),
+                  ),
+                ),
+                
+              
               ],
             ),
           ),
