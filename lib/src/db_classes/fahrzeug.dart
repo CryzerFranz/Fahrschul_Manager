@@ -40,7 +40,8 @@ Future<ParseObject> getFahrzeuge(String id) async {
 Future<List<ParseObject>> getAllFahrzeuge(ParseObject fahrschule) async {
   final QueryBuilder<ParseObject> parseQuery =
       QueryBuilder<ParseObject>(ParseObject('Fahrzeug'))
-        ..whereContains("Fahrschule", fahrschule.objectId!);
+        ..whereContains("Fahrschule", fahrschule.objectId!)
+        ..includeObject(["Marke", "Getriebe", "Fahrzeugtyp"]);
 
   final apiResponse = await parseQuery.query();
 
@@ -199,3 +200,4 @@ Future<ParseObject?> getFahrzeugtypByTyp(final String typ) async {
     throw Exception("Error: getFahrzeugtyp -> $e");
   }
 }
+
