@@ -1,6 +1,5 @@
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_bloc.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/fahrschueler_liste_page.dart';
-import 'package:fahrschul_manager/pages/profil_page.dart';
 import 'package:fahrschul_manager/pages/profil_page/bloc/profil_page_bloc.dart';
 import 'package:fahrschul_manager/src/db_classes/fahrschule.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
