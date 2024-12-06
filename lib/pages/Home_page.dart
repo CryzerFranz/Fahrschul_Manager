@@ -1,7 +1,7 @@
 import 'package:fahrschul_manager/pages/calendar_page.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/fahrschueler_liste_page.dart';
 import 'package:fahrschul_manager/pages/fahrschule_page.dart';
-import 'package:fahrschul_manager/pages/profil_page.dart';
+import 'package:fahrschul_manager/pages/profil_page/profil_page.dart';
 import 'package:fahrschul_manager/widgets/3dCard.dart';
 import 'package:fahrschul_manager/widgets/navBar/navBar.dart';
 import 'package:fahrschul_manager/widgets/navBar/navBarBloc.dart';
