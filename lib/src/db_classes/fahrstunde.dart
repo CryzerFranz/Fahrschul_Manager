@@ -1,8 +1,10 @@
 import 'dart:ui';
 
 import 'package:calendar_view/calendar_view.dart';
+import 'package:fahrschul_manager/constants.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/widgets/calendar_view_customization.dart';
+import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 //TODO !!FRONTEND sollte überprüfen das enddatum nicht kleiner als datum ist.!!
@@ -72,7 +74,22 @@ FahrstundenEvent createEventData({
   String? beschreibung,
   ParseObject? fahrzeug,
   ParseObject? fahrschueler,
-}) {
+}) 
+{
+  late Color tileColor;
+  if(fahrzeug != null && fahrschueler != null)
+  {
+    tileColor = mainColor;
+  }else if(fahrzeug != null && fahrschueler == null)
+  {
+    tileColor = mainColorComplementaryFirst;
+  }
+  else if(fahrzeug == null && fahrschueler != null)
+  {
+    tileColor = mainColorComplementarySecond;
+  }
+
+
   return FahrstundenEvent(
       fahrzeug: fahrzeug,
       schueler: fahrschueler,
@@ -93,7 +110,10 @@ FahrstundenEvent createEventData({
         endDatum.day,
         endDatum.hour,
         endDatum.minute,
-      ));
+      ),
+      color: tileColor,
+      titleStyle: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w700),
+      descriptionStyle: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w400));
 }
 
 /// Gibt alle Termine des Eingeloggten Benutzers zurück.
@@ -107,7 +127,7 @@ Future<List<FahrstundenEvent>> getUserFahrstunden() async {
       QueryBuilder<ParseObject>(ParseObject('Fahrstunden'))
         ..whereGreaterThan("Datum", DateTime.now())
         ..whereContains(role, Benutzer().dbUser!.objectId!)
-        ..includeObject(["Fahrzeug", "Fahrschueler"]);
+        ..includeObject(["Fahrzeug", "Fahrzeug.Marke" ,"Fahrschueler"]);
 
   final apiResponse = await parseQuery.query();
   if (!apiResponse.success) {
@@ -131,8 +151,12 @@ Future<List<FahrstundenEvent>> getUserFahrstunden() async {
 }
 
 /// Ein Stream der Periodisch alle 5 Sekunden `getUserFahrstunden` aufruft.
-Stream<List<FahrstundenEvent>> getUserFahrstundenStream() {
-  return Stream.periodic(Duration(seconds: 5), (_) => getUserFahrstunden())
+Stream<List<FahrstundenEvent>> getUserFahrstundenStream() async* {
+  // initital fetch
+  yield await getUserFahrstunden();
+
+  // Regelmäßige Aktualisierungen nach dem ersten Abruf starten
+  yield* Stream.periodic(Duration(seconds: 90000), (_) => getUserFahrstunden())
       .asyncMap((future) => future);
 }
 
