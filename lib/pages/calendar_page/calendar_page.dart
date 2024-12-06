@@ -1,7 +1,7 @@
 import 'package:calendar_view/calendar_view.dart';
 import 'package:fahrschul_manager/constants.dart';
 import 'package:fahrschul_manager/src/db_classes/fahrstunde.dart';
-import 'package:fahrschul_manager/widgets/calendar_view_customization.dart';
+import 'package:fahrschul_manager/pages/calendar_page/calendar_view_customization.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';

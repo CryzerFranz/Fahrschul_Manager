@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:fahrschul_manager/constants.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
-import 'package:fahrschul_manager/widgets/calendar_view_customization.dart';
+import 'package:fahrschul_manager/pages/calendar_page/calendar_view_customization.dart';
 import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
