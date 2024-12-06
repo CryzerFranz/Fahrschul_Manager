@@ -1,4 +1,5 @@
 import 'package:calendar_view/calendar_view.dart';
+import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 
@@ -17,5 +18,8 @@ class FahrstundenEvent extends CalendarEventData<FahrstundenEvent> {
     super.description,
     this.fahrzeug,
     this.schueler,
+    super.descriptionStyle,
+    super.titleStyle,
+    super.color,
   });
 }
