@@ -19,7 +19,10 @@ const Color tabBarMainColorShade300 = Color.fromARGB(255, 128, 222, 154);
 const Color mainColor = Color(0xFF00BF6D);
 
 const Color mainColorComplementaryFirst = Color(0xFF87CEEB);
+const Color mainColorComplementaryFirstShade100 = Color.fromARGB(255, 199, 233, 245);
 const Color mainColorComplementarySecond = Color(0xFFFFD700);
+const Color mainColorComplementarySecondShade100 = Color.fromARGB(255, 255, 240, 179);
+
 
 // States
 const String stateActive = "Aktiv";
