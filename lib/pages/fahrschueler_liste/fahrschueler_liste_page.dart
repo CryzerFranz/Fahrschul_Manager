@@ -108,7 +108,7 @@ class FahrschuelerListContent extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             itemCount: blocState.data.length,
             itemBuilder: (BuildContext context, int index) {
-              return displayListEntryConent(context: context, data: blocState.data[index], contentState: state);
+              return displayListEntryContent(context: context, data: blocState.data[index], contentState: state);
             },
           );
         } else if (blocState is DataError) {
@@ -151,7 +151,7 @@ class FahrschuelerListContent extends StatelessWidget {
   /// 
   /// ### Return value:
   /// - **[Widget]** : UI Element
-  Widget displayListEntryConent({
+  Widget displayListEntryContent({
       required BuildContext context,required ParseObject data ,required String contentState}) {
     IconData icon = contentState != stateActive ? Icons.add : Icons.check;
     return Column(
