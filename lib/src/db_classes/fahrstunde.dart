@@ -9,13 +9,13 @@ import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 //TODO !!FRONTEND sollte überprüfen das enddatum nicht kleiner als datum ist.!!
 /// Fügt eine Fahrstunde/Termin in die Datenbank ein und erstellt zugleich einen Objekt für das Kalendar Widget.
-/// 
+///
 /// ### Return value:
 /// - **[CalendarEventData]**
 Future<CalendarEventData> addFahrstunde({
   required DateTime datum,
   required DateTime endDatum,
-  required String titel, 
+  required String titel,
   ParseObject? fahrzeug,
   DateTime? pufferZeit,
   ParseObject? fahrschueler,
@@ -24,9 +24,8 @@ Future<CalendarEventData> addFahrstunde({
   if (!Benutzer().isFahrlehrer!) {
     throw ("No permission");
   }
-  if(fahrzeug == null && fahrschueler == null)
-  {
-    throw("Fahrzeug or Fahrschueler has to be at least choosed");
+  if (fahrzeug == null && fahrschueler == null) {
+    throw ("Fahrzeug or Fahrschueler has to be at least choosed");
   }
   // Event in die Datenbank abspeichern
   //DateTime dbDate = datum.add(Duration(hours: zeit.hour, minutes: zeit.minute));
@@ -59,38 +58,41 @@ Future<CalendarEventData> addFahrstunde({
   }
 
   // Event erstellen für calender_view package
-  return createEventData(titel: titel, beschreibung: beschreibung, datum: datum, endDatum: endDatum, fahrzeug: fahrzeug, fahrschueler: fahrschueler);
+  return createEventData(
+      eventId: response.results!.first.objectId,
+      titel: titel,
+      beschreibung: beschreibung,
+      datum: datum,
+      endDatum: endDatum,
+      fahrzeug: fahrzeug,
+      fahrschueler: fahrschueler);
 }
 
 //TODO evtl async?
 /// Wandelt die gegebenen Daten zu einem [FahrstundenEvent] um und gibt sie zurück.
-/// 
+///
 /// ### Return value:
 /// - **[FahrstundenEvent]**
 FahrstundenEvent createEventData({
+  required String eventId,
   required String titel,
   required DateTime datum,
   required DateTime endDatum,
   String? beschreibung,
   ParseObject? fahrzeug,
   ParseObject? fahrschueler,
-}) 
-{
+}) {
   late Color tileColor;
-  if(fahrzeug != null && fahrschueler != null)
-  {
+  if (fahrzeug != null && fahrschueler != null) {
     tileColor = mainColor;
-  }else if(fahrzeug != null && fahrschueler == null)
-  {
+  } else if (fahrzeug != null && fahrschueler == null) {
     tileColor = mainColorComplementaryFirst;
-  }
-  else if(fahrzeug == null && fahrschueler != null)
-  {
+  } else if (fahrzeug == null && fahrschueler != null) {
     tileColor = mainColorComplementarySecond;
   }
 
-
   return FahrstundenEvent(
+      eventID: eventId,
       fahrzeug: fahrzeug,
       schueler: fahrschueler,
       title: titel,
@@ -112,12 +114,14 @@ FahrstundenEvent createEventData({
         endDatum.minute,
       ),
       color: tileColor,
-      titleStyle: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w700),
-      descriptionStyle: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w400));
+      titleStyle: const TextStyle(
+          fontSize: 15, color: Colors.white, fontWeight: FontWeight.w700),
+      descriptionStyle: const TextStyle(
+          fontSize: 12, color: Colors.white, fontWeight: FontWeight.w400));
 }
 
 /// Gibt alle Termine des Eingeloggten Benutzers zurück.
-/// 
+///
 /// ### Return value:
 /// - **[List<CalendarEventData>]**
 Future<List<FahrstundenEvent>> getUserFahrstunden() async {
@@ -127,7 +131,7 @@ Future<List<FahrstundenEvent>> getUserFahrstunden() async {
       QueryBuilder<ParseObject>(ParseObject('Fahrstunden'))
         ..whereGreaterThan("Datum", DateTime.now())
         ..whereContains(role, Benutzer().dbUser!.objectId!)
-        ..includeObject(["Fahrzeug", "Fahrzeug.Marke" ,"Fahrschueler"]);
+        ..includeObject(["Fahrzeug", "Fahrzeug.Marke", "Fahrschueler"]);
 
   final apiResponse = await parseQuery.query();
   if (!apiResponse.success) {
@@ -138,11 +142,12 @@ Future<List<FahrstundenEvent>> getUserFahrstunden() async {
     return [];
   }
 
-  for (var result in apiResponse.results!) {
+  for (ParseObject result in apiResponse.results!) {
     events.add(createEventData(
-        titel: result.get<String>("Titel"),
-        datum: result.get<DateTime>("Datum"),
-        endDatum: result.get<DateTime>("EndDatum"),
+        eventId: result.objectId!,
+        titel: result.get<String>("Titel")!,
+        datum: result.get<DateTime>("Datum")!,
+        endDatum: result.get<DateTime>("EndDatum")!,
         beschreibung: result.get<String?>("Beschreibung"),
         fahrschueler: result.get<ParseObject?>("Fahrschueler"),
         fahrzeug: result.get<ParseObject?>("Fahrzeug")));
@@ -159,5 +164,3 @@ Stream<List<FahrstundenEvent>> getUserFahrstundenStream() async* {
   yield* Stream.periodic(Duration(seconds: 90000), (_) => getUserFahrstunden())
       .asyncMap((future) => future);
 }
-
-

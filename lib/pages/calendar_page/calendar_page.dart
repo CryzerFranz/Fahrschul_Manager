@@ -1,8 +1,13 @@
 import 'package:calendar_view/calendar_view.dart';
 import 'package:fahrschul_manager/constants.dart';
+import 'package:fahrschul_manager/pages/calendar_page/AsyncEventDataValidationFormBloc.dart';
+import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_bloc.dart';
+import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_event.dart';
+import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_state.dart';
 import 'package:fahrschul_manager/src/db_classes/fahrstunde.dart';
 import 'package:fahrschul_manager/pages/calendar_page/calendar_view_customization.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
+import 'package:fahrschul_manager/widgets/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
@@ -98,332 +103,418 @@ class CalendarPage extends StatelessWidget {
                 width: 2.3,
               ),
             ),
-            child: Stack(
-              clipBehavior: Clip.none,
-              alignment: Alignment.topCenter,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(
-                    top: 60.0,
-                    left: 20.0,
-                    right: 20.0,
-                    bottom: 15.0,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Titel (Centered)
-                      Text(
-                        events.first.title,
-                        style: const TextStyle(
-                            fontSize: 25, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 7),
-                      Icon(Icons.access_time_outlined, size: 20),
-                      const SizedBox(height: 3),
-                      Text(dateInfo),
-                      const SizedBox(height: 3),
-                      Text(datetimeInfo),
-
-                      const SizedBox(height: 15),
-                      // Beschreibung (Left-Aligned)
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  "Beschreibung:",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(events.first.description!),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 15),
-                      // Fahrzeug und Fahrschüler Info
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Fahrzeug:", // Label 
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                eventData.fahrzeug == null
-                                    ? "Kein Fahrzeug"
-                                    : "${eventData.fahrzeug!.get<ParseObject>('Marke')?.get<String>('Name') ?? ''} ${eventData.fahrzeug!.get<String>('Label') != null ? "(${eventData.fahrzeug!.get<String>('Label')})" : ''}",
-                              ),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Fahrschüler:", // Label
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                eventData.schueler == null
-                                    ? "Kein Fahrschüler"
-                                    : "${eventData.schueler!.get<String>("Name")!}, ${eventData.schueler!.get<String>("Vorname")!}",
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: -40,
-                  child: Container(
-                    // Border für CircleAvatar
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: infoBorderColor,
-                        width: 2.3,
-                      ),
-                    ),
-                    child: CircleAvatar(
-                      backgroundColor: infoBackgroundColor,
-                      radius: 40,
-                      child: Icon(
-                        Icons.event,
-                        size: 60,
-                        color: infoBorderColor,
-                      ),
-                    ),
-                  ),
-                ),
-                // Linker button
-                Positioned(
-                  top: -15,
-                  left: -15,
-                  child: Container(
-                    // Border für CircleAvatar
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: tabBarOrangeShade300,
-                        width: 2.3,
-                      ),
-                    ),
-                    child: GestureDetector(
-                      onTap: () { _dialogBuilderTEST(context, events);},
-                      child: const CircleAvatar(
-                        backgroundColor: tabBarOrangeShade100,
-                        radius: 15,
-                        child: Icon(
-                          Icons.edit,
-                          color: tabBarOrangeShade300,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                // Rechter Button
-                Positioned(
-                  top: -15,
-                  right: -15,
-                  child: Container(
-                    // Border für CircleAvatar
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: tabBarRedShade300,
-                        width: 2.3,
-                      ),
-                    ),
-                    child: GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: const CircleAvatar(
-                        backgroundColor: tabBarRedShade100,
-                        radius: 15,
-                        child: Icon(
-                          Icons.close,
-                          color: tabBarRedShade300,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            child: Builder(builder: (context) {
+              return BlocBuilder<CalendarEventBloc, CalendarEventState>(
+                  builder: (context, blocState) {
+                if (blocState is DataLoading || blocState is DataLoaded) {
+                  return _stackLoadingEditingWindow(
+                      blocState, context, infoBorderColor, infoBackgroundColor);
+                } else {
+                  return _stackEventInformation(events, dateInfo, datetimeInfo,
+                      eventData, infoBorderColor, infoBackgroundColor, context);
+                }
+              });
+            }),
           ),
         );
       },
     );
   }
 
-
-  Future<void> _dialogBuilderTEST(
-      BuildContext context, List<CalendarEventData<FahrstundenEvent>> events) {
-    FahrstundenEvent eventData = events.first as FahrstundenEvent;
-    late Color infoBackgroundColor;
-    late Color infoBorderColor;
-    String dateInfo = events.first.date.day == events.first.endDate.day
-        ? "${events.first.date.day}.${events.first.date.month}.${events.first.date.year}"
-        : "${events.first.date.day}.${events.first.date.month}.${events.first.date.year} - ${events.first.endDate.day}.${events.first.endDate.month}.${events.first.endDate.year}";
-    // endTime in FahrstundenEvent ist immer gegeben, da die beim erstellen immer vorrausgesetzt ist.
-    String datetimeInfo =
-        "${events.first.startTime!.hour}:${events.first.startTime!.minute} - ${events.first.endTime!.hour}:${events.first.endTime!.minute}";
-
-    if (eventData.color == mainColor) {
-      infoBackgroundColor = tabBarMainColorShade100;
-      infoBorderColor = mainColor;
-    } else if (eventData.color == mainColorComplementaryFirst) {
-      infoBackgroundColor = mainColorComplementaryFirstShade100;
-      infoBorderColor = mainColorComplementaryFirst;
-    } else if (eventData.color == mainColorComplementarySecond) {
-      infoBackgroundColor = mainColorComplementarySecondShade100;
-      infoBorderColor = mainColorComplementarySecond;
-    }
-
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors
-              .transparent, // Dialog hintergrundfarbe wird transparenz gesetzt damit wir unseren eigenen gestalten können
+  Stack _stackLoadingEditingWindow(CalendarEventState blocState,
+      BuildContext context, Color infoBorderColor, Color infoBackgroundColor) {
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.topCenter,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(
+            top: 60.0,
+            left: 20.0,
+            right: 20.0,
+            bottom: 15.0,
+          ),
+          child: blocState is DataLoading
+              ? loadingScreen()
+              : _editWindow(
+                  context,
+                  blocState
+                      as DataLoaded), // blocState kann in diesen Moment nur DataLoaded sein
+        ),
+        Positioned(
+          top: -40,
           child: Container(
+            // Border für CircleAvatar
             decoration: BoxDecoration(
-              color: Colors.white, // Dialog hintergrund farbe
-              borderRadius: BorderRadius.circular(20.0),
+              shape: BoxShape.circle,
               border: Border.all(
                 color: infoBorderColor,
                 width: 2.3,
               ),
             ),
-            child: Stack(
-              clipBehavior: Clip.none,
-              alignment: Alignment.topCenter,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(
-                    top: 60.0,
-                    left: 20.0,
-                    right: 20.0,
-                    bottom: 15.0,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Titel (Centered)
-                      Text(
-                        events.first.title,
-                        style: const TextStyle(
-                            fontSize: 25, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 7),
-                      Icon(Icons.access_time_outlined, size: 20),
-                      const SizedBox(height: 3),
-                      Text(dateInfo),
-                      const SizedBox(height: 3),
-                      Text(datetimeInfo),
-
-                      const SizedBox(height: 15),
-                      // Beschreibung (Left-Aligned)
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  "Beschreibung:",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(events.first.description!),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 15),
-                      // Fahrzeug und Fahrschüler Info
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Fahrzeug:", // Label 
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                eventData.fahrzeug == null
-                                    ? "Kein Fahrzeug"
-                                    : "${eventData.fahrzeug!.get<ParseObject>('Marke')?.get<String>('Name') ?? ''} ${eventData.fahrzeug!.get<String>('Label') != null ? "(${eventData.fahrzeug!.get<String>('Label')})" : ''}",
-                              ),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Fahrschüler:", // Label
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                eventData.schueler == null
-                                    ? "Kein Fahrschüler"
-                                    : "${eventData.schueler!.get<String>("Name")!}, ${eventData.schueler!.get<String>("Vorname")!}",
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: -40,
-                  child: Container(
-                    // Border für CircleAvatar
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: infoBorderColor,
-                        width: 2.3,
-                      ),
-                    ),
-                    child: CircleAvatar(
-                      backgroundColor: infoBackgroundColor,
-                      radius: 40,
-                      child: Icon(
-                        Icons.event,
-                        size: 60,
-                        color: infoBorderColor,
-                      ),
-                    ),
-                  ),
-                ),
-                
-              
-              ],
+            child: CircleAvatar(
+              backgroundColor: infoBackgroundColor,
+              radius: 40,
+              child: Icon(
+                Icons.edit_calendar_outlined,
+                size: 60,
+                color: infoBorderColor,
+              ),
             ),
           ),
-        );
-      },
+        ),
+        // Rechter Button
+        Positioned(
+          top: -15,
+          right: -15,
+          child: Container(
+            // Border für CircleAvatar
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: tabBarRedShade300,
+                width: 2.3,
+              ),
+            ),
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: const CircleAvatar(
+                backgroundColor: tabBarRedShade100,
+                radius: 15,
+                child: Icon(
+                  Icons.close,
+                  color: tabBarRedShade300,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
+  }
+
+  // Dialog _displayEventInformation(
+  //     Color infoBorderColor,
+  //     List<CalendarEventData<FahrstundenEvent>> events,
+  //     String dateInfo,
+  //     String datetimeInfo,
+  //     FahrstundenEvent eventData,
+  //     Color infoBackgroundColor,
+  //     BuildContext context,
+  //     CalendarEventState blocState) {
+  //   return Dialog(
+  //     backgroundColor: Colors
+  //         .transparent, // Dialog hintergrundfarbe wird transparenz gesetzt damit wir unseren eigenen gestalten können
+  //     child: Container(
+  //       decoration: BoxDecoration(
+  //         color: Colors.white, // Dialog hintergrund farbe
+  //         borderRadius: BorderRadius.circular(20.0),
+  //         border: Border.all(
+  //           color: infoBorderColor,
+  //           width: 2.3,
+  //         ),
+  //       ),
+  //       child: _stackEventInformation(events, dateInfo, datetimeInfo, eventData, infoBorderColor, infoBackgroundColor, context),
+  //     ),
+  //   );
+  // }
+
+  Stack _stackEventInformation(
+      List<CalendarEventData<FahrstundenEvent>> events,
+      String dateInfo,
+      String datetimeInfo,
+      FahrstundenEvent eventData,
+      Color infoBorderColor,
+      Color infoBackgroundColor,
+      BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.topCenter,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(
+            top: 60.0,
+            left: 20.0,
+            right: 20.0,
+            bottom: 15.0,
+          ),
+          child: _eventContent(events, dateInfo, datetimeInfo, eventData),
+        ),
+        Positioned(
+          top: -40,
+          child: Container(
+            // Border für CircleAvatar
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: infoBorderColor,
+                width: 2.3,
+              ),
+            ),
+            child: CircleAvatar(
+              backgroundColor: infoBackgroundColor,
+              radius: 40,
+              child: Icon(
+                Icons.event,
+                size: 60,
+                color: infoBorderColor,
+              ),
+            ),
+          ),
+        ),
+        // Linker button
+        Positioned(
+          top: -15,
+          left: -15,
+          child: Container(
+            // Border für CircleAvatar
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: tabBarOrangeShade300,
+                width: 2.3,
+              ),
+            ),
+            child: GestureDetector(
+              onTap: () {
+                context.read<CalendarEventBloc>().add(
+                    PrepareChangeCalendarEventData(
+                        events.first as FahrstundenEvent));
+              },
+              child: const CircleAvatar(
+                backgroundColor: tabBarOrangeShade100,
+                radius: 15,
+                child: Icon(
+                  Icons.edit,
+                  color: tabBarOrangeShade300,
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Rechter Button
+        Positioned(
+          top: -15,
+          right: -15,
+          child: Container(
+            // Border für CircleAvatar
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: tabBarRedShade300,
+                width: 2.3,
+              ),
+            ),
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: const CircleAvatar(
+                backgroundColor: tabBarRedShade100,
+                radius: 15,
+                child: Icon(
+                  Icons.close,
+                  color: tabBarRedShade300,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Column _eventContent(List<CalendarEventData<FahrstundenEvent>> events,
+      String dateInfo, String datetimeInfo, FahrstundenEvent eventData) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Titel (Centered)
+        Text(
+          events.first.title,
+          style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 7),
+        Icon(Icons.access_time_outlined, size: 20),
+        const SizedBox(height: 3),
+        Text(dateInfo),
+        const SizedBox(height: 3),
+        Text(datetimeInfo),
+
+        const SizedBox(height: 15),
+        // Beschreibung (Left-Aligned)
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Beschreibung:",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(events.first.description!),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 15),
+        // Fahrzeug und Fahrschüler Info
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Fahrzeug:", // Label
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  eventData.fahrzeug == null
+                      ? "Kein Fahrzeug"
+                      : "${eventData.fahrzeug!.get<ParseObject>('Marke')?.get<String>('Name') ?? ''} ${eventData.fahrzeug!.get<String>('Label') != null ? "(${eventData.fahrzeug!.get<String>('Label')})" : ''}",
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Fahrschüler:", // Label
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  eventData.schueler == null
+                      ? "Kein Fahrschüler"
+                      : "${eventData.schueler!.get<String>("Name")!}, ${eventData.schueler!.get<String>("Vorname")!}",
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  _editWindow(BuildContext context, DataLoaded blocState) {
+    return BlocProvider(
+        create: (context) => AsyncEventDataValidationFormBloc(
+            title: blocState.event.title,
+            startDateTime: blocState.event.date,
+            endDateTime: blocState.event.endDate,
+            fahrzeuge: blocState.fahrzeuge,
+            schueler: blocState.fahrschueler,
+            description: blocState.event.description),
+        child: Builder(builder: (context) {
+          final formBloc = context.read<AsyncEventDataValidationFormBloc>();
+          return FormBlocListener<AsyncEventDataValidationFormBloc, String,
+              String>(
+            formBloc: formBloc,
+            onSuccess: (context, state) {
+              //TODO event triggern zum speichern der DATEN
+            },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Titel (Centered)
+                TextFieldBlocBuilder(
+                  textFieldBloc: formBloc.titleFormBloc,
+                  decoration: inputDecoration("Titel"),
+                ),
+                const SizedBox(height: 7),
+                DateTimeFieldBlocBuilder(
+                  dateTimeFieldBloc: formBloc.startDateTimeFormBloc,
+                  format: DateFormat('dd-MM-yyyy'),
+                  // initialDate: DateTime.now(),
+                  initialDate: blocState.event.date,
+                  firstDate: DateTime(1900),
+                  lastDate: DateTime(2100),
+                  decoration: const InputDecoration(
+                    labelText: 'Start',
+                    prefixIcon: Icon(Icons.calendar_today),
+                    helperText: 'Date',
+                  ),
+                ),
+                const SizedBox(height: 5),
+                DateTimeFieldBlocBuilder(
+                  dateTimeFieldBloc: formBloc.startDateTimeFormBloc,
+                  format: DateFormat('dd-MM-yyyy'),
+                  // initialDate: DateTime.now(),
+                  initialDate: blocState.event.date,
+                  firstDate: DateTime(1900),
+                  lastDate: DateTime(2100),
+                  decoration: const InputDecoration(
+                    labelText: 'Ende',
+                    prefixIcon: Icon(Icons.calendar_today),
+                    helperText: 'Date',
+                  ),
+                ),
+                const SizedBox(height: 5),
+                const Text(
+                  "Beschreibung:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                TextFieldBlocBuilder(
+                  textFieldBloc: formBloc.descriptionFormBloc,
+                  decoration: inputDecoration("Description"),
+                ),
+
+                const SizedBox(height: 15),
+
+                const Text(
+                  "Fahrzeug:", // Label
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                DropdownFieldBlocBuilder(
+                  selectFieldBloc: formBloc.fahrzeugDropDownBloc,
+                  itemBuilder: (context, value) => FieldItem(
+                    child: Text(
+                        "${value.get<ParseObject>("Marke")!.get<String>("Name")!}, (${value.get<String>("Label")!})"),
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: "Fahrzeug wählen",
+                    prefixIcon: Icon(Icons.directions_car),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.green, width: 2),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.green, width: 1),
+                    ),
+                    // Optional: Customize the hintText or other properties if needed
+                  ),
+                ),
+                const Text(
+                  "Fahrschüler:", // Label
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                DropdownFieldBlocBuilder(
+                  selectFieldBloc: formBloc.fahrschuelerDropDownBloc,
+                  itemBuilder: (context, value) => FieldItem(
+                    child: Text(
+                        "${value.get<String>("Name")!}, ${value.get<String>("Vorname")!}"),
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: "Schüler wählen",
+                    prefixIcon: Icon(Icons.directions_car),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.green, width: 2),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.green, width: 1),
+                    ),
+                    // Optional: Customize the hintText or other properties if needed
+                  ),
+                )
+              ],
+            ),
+          );
+        }));
   }
 }

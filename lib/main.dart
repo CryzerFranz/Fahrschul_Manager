@@ -1,13 +1,11 @@
+import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_bloc.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_bloc.dart';
-import 'package:fahrschul_manager/pages/fahrschueler_liste/fahrschueler_liste_page.dart';
 import 'package:fahrschul_manager/pages/profil_page/bloc/profil_page_bloc.dart';
-import 'package:fahrschul_manager/src/db_classes/fahrschule.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/authentication/Login_page.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncLoginValidationFormBloc.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationValidationFormBloc.dart';
-import 'package:fahrschul_manager/src/registration.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:fahrschul_manager/widgets/navBar/navBarBloc.dart';
 import 'package:flutter/material.dart';
@@ -91,6 +89,7 @@ class MyApp extends StatelessWidget {
           BlocProvider(create: (context) => AsyncLoginValidationFormBloc()),
           BlocProvider(create: (context) => FahrschuelerListBloc()),
           BlocProvider(create: (context) => ProfilPageBloc()),
+          BlocProvider(create: (context) => CalendarEventBloc()),
         ],
         child:  MaterialApp(
       navigatorKey: navigatorKey,
