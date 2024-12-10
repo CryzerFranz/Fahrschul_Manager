@@ -164,3 +164,23 @@ Stream<List<FahrstundenEvent>> getUserFahrstundenStream() async* {
   yield* Stream.periodic(Duration(seconds: 90000), (_) => getUserFahrstunden())
       .asyncMap((future) => future);
 }
+
+Future<List<ParseObject>> fetchFahrstundenInRange({required DateTime start, required DateTime end}) async
+{
+   final QueryBuilder<ParseObject> query = QueryBuilder<ParseObject>(ParseObject('Fahrstunden'))
+    ..whereContains("Fahrlehrer", Benutzer().dbUserId!)
+    ..whereLessThanOrEqualTo("Datum", end) // Event starts before or on the end date
+    ..whereGreaterThanOrEqualsTo("EndDatum", start)
+    ..includeObject(["Fahrzeug", "Fahrschueler"]);  // EndDatum >= start
+
+  // Execute the query
+  final ParseResponse response = await query.query();
+
+  // Check for success and return results
+  if (response.success && response.results != null) {
+    return response.results as List<ParseObject>;
+  }
+
+  // Return an empty list if there were no results or if the query failed
+  return [];
+}
