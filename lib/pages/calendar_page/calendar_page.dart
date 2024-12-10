@@ -73,7 +73,6 @@ class CalendarPage extends StatelessWidget {
     String dateInfo = events.first.date.day == events.first.endDate.day
         ? "${events.first.date.day}.${events.first.date.month}.${events.first.date.year}"
         : "${events.first.date.day}.${events.first.date.month}.${events.first.date.year} - ${events.first.endDate.day}.${events.first.endDate.month}.${events.first.endDate.year}";
-    // endTime in FahrstundenEvent ist immer gegeben, da die beim erstellen immer vorrausgesetzt ist.
     String datetimeInfo =
         "${events.first.startTime!.hour}:${events.first.startTime!.minute} - ${events.first.endTime!.hour}:${events.first.endTime!.minute}";
 
@@ -88,38 +87,65 @@ class CalendarPage extends StatelessWidget {
       infoBorderColor = mainColorComplementarySecond;
     }
 
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          
-          backgroundColor: Colors
-              .transparent, // Dialog hintergrundfarbe wird transparenz gesetzt damit wir unseren eigenen gestalten können
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white, // Dialog hintergrund farbe
-              borderRadius: BorderRadius.circular(20.0),
-              border: Border.all(
-                color: infoBorderColor,
-                width: 2.3,
+    return showGeneralDialog<void>(
+        context: context,
+        barrierDismissible:
+            false, // Prevent automatic dismissal when tapping outside
+        barrierLabel: "Dismiss", // Optional label for accessibility
+        barrierColor: Colors.black54, // Dim background
+        transitionDuration: Duration(milliseconds: 200), // Optional: animation
+        pageBuilder: (BuildContext dialogContext, Animation<double> animation,
+            Animation<double> secondaryAnimation) {
+          return BlocBuilder<CalendarEventBloc, CalendarEventState>(
+              builder: (context, blocState) {
+            return GestureDetector(
+              behavior:
+                  HitTestBehavior.opaque, // Ensures taps outside are detected
+              onTap: () {
+                context.read<CalendarEventBloc>().add(ResetStateEvent());
+                Navigator.of(dialogContext).pop(); // Close the dialog
+              },
+              child: Center(
+                child: GestureDetector(
+                  onTap:
+                      () {}, // Prevent tap propagation to the outer GestureDetector
+                  child: Dialog(
+                    backgroundColor:
+                        Colors.transparent, // Custom dialog background
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white, // Dialog background color
+                        borderRadius: BorderRadius.circular(20.0),
+                        border: Border.all(
+                          color: infoBorderColor,
+                          width: 2.3,
+                        ),
+                      ),
+                      child: Builder(
+                        builder: (context) {
+                          if (blocState is DataLoading ||
+                              blocState is DataLoaded) {
+                            return _stackLoadingEditingWindow(blocState,
+                                context, infoBorderColor, infoBackgroundColor);
+                          } else {
+                            return _stackEventInformation(
+                                events,
+                                dateInfo,
+                                datetimeInfo,
+                                eventData,
+                                infoBorderColor,
+                                infoBackgroundColor,
+                                context);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-            child: Builder(builder: (context) {
-              return BlocBuilder<CalendarEventBloc, CalendarEventState>(
-                  builder: (context, blocState) {
-                if (blocState is DataLoading || blocState is DataLoaded) {
-                  return _stackLoadingEditingWindow(
-                      blocState, context, infoBorderColor, infoBackgroundColor);
-                } else {
-                  return _stackEventInformation(events, dateInfo, datetimeInfo,
-                      eventData, infoBorderColor, infoBackgroundColor, context);
-                }
-              });
-            }),
-          ),
-        );
-      },
-    );
+            );
+          });
+        });
   }
 
   Stack _stackLoadingEditingWindow(CalendarEventState blocState,
@@ -186,7 +212,7 @@ class CalendarPage extends StatelessWidget {
                 backgroundColor: tabBarRedShade100,
                 radius: 15,
                 child: Icon(
-                  Icons.close_fullscreen,
+                  Icons.close,
                   color: tabBarRedShade300,
                 ),
               ),
