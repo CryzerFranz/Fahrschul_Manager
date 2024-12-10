@@ -92,6 +92,7 @@ class CalendarPage extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
+          
           backgroundColor: Colors
               .transparent, // Dialog hintergrundfarbe wird transparenz gesetzt damit wir unseren eigenen gestalten können
           child: Container(
@@ -177,12 +178,15 @@ class CalendarPage extends StatelessWidget {
               ),
             ),
             child: GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
+              onTap: () {
+                context.read<CalendarEventBloc>().add(ResetStateEvent());
+                Navigator.of(context).pop();
+              },
               child: const CircleAvatar(
                 backgroundColor: tabBarRedShade100,
                 radius: 15,
                 child: Icon(
-                  Icons.close,
+                  Icons.close_fullscreen,
                   color: tabBarRedShade300,
                 ),
               ),
@@ -376,8 +380,12 @@ class CalendarPage extends StatelessWidget {
   }
 
   _editWindow(BuildContext context, DataLoaded blocState) {
-    final initialStartTime = blocState.event.date.add(Duration(hours: blocState.event.startTime!.hour, minutes: blocState.event.startTime!.minute));
-    final initialEndTime =  blocState.event.date.add(Duration(hours: blocState.event.endTime!.hour, minutes: blocState.event.endTime!.minute));
+    final initialStartTime = blocState.event.date.add(Duration(
+        hours: blocState.event.startTime!.hour,
+        minutes: blocState.event.startTime!.minute));
+    final initialEndTime = blocState.event.date.add(Duration(
+        hours: blocState.event.endTime!.hour,
+        minutes: blocState.event.endTime!.minute));
     return BlocProvider(
         create: (context) => AsyncEventDataValidationFormBloc(
             title: blocState.event.title,
@@ -408,7 +416,9 @@ class CalendarPage extends StatelessWidget {
                   DateTimeFieldBlocBuilder(
                     dateTimeFieldBloc: formBloc.startDateTimeFormBloc,
                     canSelectTime: true,
-                    format: DateFormat('dd-MM-yyyy  HH:mm', ),
+                    format: DateFormat(
+                      'dd-MM-yyyy  HH:mm',
+                    ),
                     initialDate: blocState.event.date,
                     firstDate: DateTime(1900),
                     lastDate: DateTime(2100),
@@ -443,9 +453,9 @@ class CalendarPage extends StatelessWidget {
                     decoration: inputDecoration("Description"),
                     maxLines: 5,
                   ),
-              
+
                   const SizedBox(height: 15),
-              
+
                   const Text(
                     "Fahrzeug:", // Label
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -491,7 +501,11 @@ class CalendarPage extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 10),
-                  ElevatedButton(onPressed: (){}, child: Text("Ändern"), style: stadiumButtonStyle(),)
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: Text("Ändern"),
+                    style: stadiumButtonStyle(),
+                  )
                 ],
               ),
             ),

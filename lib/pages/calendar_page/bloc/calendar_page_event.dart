@@ -8,6 +8,10 @@ class PrepareChangeCalendarEventData extends CalendarEvent {
   PrepareChangeCalendarEventData(this.event);
 }
 
+class ResetStateEvent extends CalendarEvent {
+  ResetStateEvent();
+}
+
 class ExecuteChangeCalendarEventData extends CalendarEvent {
   final FahrstundenEvent event;
   ExecuteChangeCalendarEventData(this.event);
