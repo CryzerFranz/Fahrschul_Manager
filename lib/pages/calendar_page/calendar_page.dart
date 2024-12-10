@@ -193,32 +193,6 @@ class CalendarPage extends StatelessWidget {
     );
   }
 
-  // Dialog _displayEventInformation(
-  //     Color infoBorderColor,
-  //     List<CalendarEventData<FahrstundenEvent>> events,
-  //     String dateInfo,
-  //     String datetimeInfo,
-  //     FahrstundenEvent eventData,
-  //     Color infoBackgroundColor,
-  //     BuildContext context,
-  //     CalendarEventState blocState) {
-  //   return Dialog(
-  //     backgroundColor: Colors
-  //         .transparent, // Dialog hintergrundfarbe wird transparenz gesetzt damit wir unseren eigenen gestalten können
-  //     child: Container(
-  //       decoration: BoxDecoration(
-  //         color: Colors.white, // Dialog hintergrund farbe
-  //         borderRadius: BorderRadius.circular(20.0),
-  //         border: Border.all(
-  //           color: infoBorderColor,
-  //           width: 2.3,
-  //         ),
-  //       ),
-  //       child: _stackEventInformation(events, dateInfo, datetimeInfo, eventData, infoBorderColor, infoBackgroundColor, context),
-  //     ),
-  //   );
-  // }
-
   Stack _stackEventInformation(
       List<CalendarEventData<FahrstundenEvent>> events,
       String dateInfo,
@@ -402,11 +376,13 @@ class CalendarPage extends StatelessWidget {
   }
 
   _editWindow(BuildContext context, DataLoaded blocState) {
+    final initialStartTime = blocState.event.date.add(Duration(hours: blocState.event.startTime!.hour, minutes: blocState.event.startTime!.minute));
+    final initialEndTime =  blocState.event.date.add(Duration(hours: blocState.event.endTime!.hour, minutes: blocState.event.endTime!.minute));
     return BlocProvider(
         create: (context) => AsyncEventDataValidationFormBloc(
             title: blocState.event.title,
-            startDateTime: blocState.event.date,
-            endDateTime: blocState.event.endDate,
+            startDateTime: initialStartTime,
+            endDateTime: initialEndTime,
             fahrzeuge: blocState.fahrzeuge,
             schueler: blocState.fahrschueler,
             description: blocState.event.description),
@@ -418,101 +394,106 @@ class CalendarPage extends StatelessWidget {
             onSuccess: (context, state) {
               //TODO event triggern zum speichern der DATEN
             },
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Titel (Centered)
-                TextFieldBlocBuilder(
-                  textFieldBloc: formBloc.titleFormBloc,
-                  decoration: inputDecoration("Titel"),
-                ),
-                const SizedBox(height: 7),
-                DateTimeFieldBlocBuilder(
-                  dateTimeFieldBloc: formBloc.startDateTimeFormBloc,
-                  format: DateFormat('dd-MM-yyyy'),
-                  // initialDate: DateTime.now(),
-                  initialDate: blocState.event.date,
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime(2100),
-                  decoration: const InputDecoration(
-                    labelText: 'Start',
-                    prefixIcon: Icon(Icons.calendar_today),
-                    helperText: 'Date',
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Titel (Centered)
+                  TextFieldBlocBuilder(
+                    textFieldBloc: formBloc.titleFormBloc,
+                    decoration: inputDecoration("Titel"),
                   ),
-                ),
-                const SizedBox(height: 5),
-                DateTimeFieldBlocBuilder(
-                  dateTimeFieldBloc: formBloc.startDateTimeFormBloc,
-                  format: DateFormat('dd-MM-yyyy'),
-                  // initialDate: DateTime.now(),
-                  initialDate: blocState.event.date,
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime(2100),
-                  decoration: const InputDecoration(
-                    labelText: 'Ende',
-                    prefixIcon: Icon(Icons.calendar_today),
-                    helperText: 'Date',
-                  ),
-                ),
-                const SizedBox(height: 5),
-                const Text(
-                  "Beschreibung:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                TextFieldBlocBuilder(
-                  textFieldBloc: formBloc.descriptionFormBloc,
-                  decoration: inputDecoration("Description"),
-                ),
-
-                const SizedBox(height: 15),
-
-                const Text(
-                  "Fahrzeug:", // Label
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                DropdownFieldBlocBuilder(
-                  selectFieldBloc: formBloc.fahrzeugDropDownBloc,
-                  itemBuilder: (context, value) => FieldItem(
-                    child: Text(
-                        "${value.get<ParseObject>("Marke")!.get<String>("Name")!}, (${value.get<String>("Label")!})"),
-                  ),
-                  decoration: const InputDecoration(
-                    labelText: "Fahrzeug wählen",
-                    prefixIcon: Icon(Icons.directions_car),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.green, width: 2),
+                  const SizedBox(height: 7),
+                  DateTimeFieldBlocBuilder(
+                    dateTimeFieldBloc: formBloc.startDateTimeFormBloc,
+                    canSelectTime: true,
+                    format: DateFormat('dd-MM-yyyy  HH:mm', ),
+                    initialDate: blocState.event.date,
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime(2100),
+                    decoration: const InputDecoration(
+                      labelText: 'Start',
+                      prefixIcon: Icon(Icons.calendar_today),
+                      helperText: 'Start Zeit des Termins',
                     ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.green, width: 1),
-                    ),
-                    // Optional: Customize the hintText or other properties if needed
                   ),
-                ),
-                const Text(
-                  "Fahrschüler:", // Label
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                DropdownFieldBlocBuilder(
-                  selectFieldBloc: formBloc.fahrschuelerDropDownBloc,
-                  itemBuilder: (context, value) => FieldItem(
-                    child: Text(
-                        "${value.get<String>("Name")!}, ${value.get<String>("Vorname")!}"),
-                  ),
-                  decoration: const InputDecoration(
-                    labelText: "Schüler wählen",
-                    prefixIcon: Icon(Icons.directions_car),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.green, width: 2),
+                  const SizedBox(height: 5),
+                  DateTimeFieldBlocBuilder(
+                    dateTimeFieldBloc: formBloc.endDateTimeFormBloc,
+                    canSelectTime: true,
+                    format: DateFormat('dd-MM-yyyy  HH:mm'),
+                    initialDate: blocState.event.endDate,
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime(2100),
+                    decoration: const InputDecoration(
+                      labelText: 'Ende',
+                      prefixIcon: Icon(Icons.calendar_today),
+                      helperText: 'End Zeit des Termins',
                     ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.green, width: 1),
-                    ),
-                    // Optional: Customize the hintText or other properties if needed
                   ),
-                )
-              ],
+                  const SizedBox(height: 5),
+                  const Text(
+                    "Beschreibung:",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  TextFieldBlocBuilder(
+                    textFieldBloc: formBloc.descriptionFormBloc,
+                    decoration: inputDecoration("Description"),
+                    maxLines: 5,
+                  ),
+              
+                  const SizedBox(height: 15),
+              
+                  const Text(
+                    "Fahrzeug:", // Label
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  DropdownFieldBlocBuilder(
+                    selectFieldBloc: formBloc.fahrzeugDropDownBloc,
+                    itemBuilder: (context, value) => FieldItem(
+                      child: Text(
+                          "${value.get<ParseObject>("Marke")!.get<String>("Name")!}, (${value.get<String>("Label")!})"),
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: "Fahrzeug wählen",
+                      prefixIcon: Icon(Icons.directions_car),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.green, width: 2),
+                      ),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.green, width: 1),
+                      ),
+                      // Optional: Customize the hintText or other properties if needed
+                    ),
+                  ),
+                  const Text(
+                    "Fahrschüler:", // Label
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  DropdownFieldBlocBuilder(
+                    selectFieldBloc: formBloc.fahrschuelerDropDownBloc,
+                    itemBuilder: (context, value) => FieldItem(
+                      child: Text(
+                          "${value.get<String>("Name")!}, ${value.get<String>("Vorname")!}"),
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: "Schüler wählen",
+                      prefixIcon: Icon(Icons.directions_car),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.green, width: 2),
+                      ),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.green, width: 1),
+                      ),
+                      // Optional: Customize the hintText or other properties if needed
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton(onPressed: (){}, child: Text("Ändern"), style: stadiumButtonStyle(),)
+                ],
+              ),
             ),
           );
         }));
