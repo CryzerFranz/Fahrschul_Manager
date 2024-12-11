@@ -18,28 +18,22 @@ class AsyncEventDataValidationFormBloc extends FormBloc<String, String> {
   @override
   Future<void> onSubmitting() async {
     try {
-      ////validieren
-      //emailTFFormBloc.validate();
-      //passwordTFFormBloc.validate();
-
-      //bool isValid = await Benutzer()
-      //    .login(emailTFFormBloc.value.trim(), passwordTFFormBloc.value.trim());
-      //if(isValid)
-      //{
-      //  emitSuccess();
-      //}
-      //else{
-      //  emailTFFormBloc.addFieldError("Angegebene Daten sind Falsch.");
-      //  passwordTFFormBloc.addFieldError("Angegebene Daten sind Falsch.");
-      //  emitFailure(failureResponse: "Falsche Daten");
-      //}
+      emitSuccess();
     } catch (e) {
       emitFailure(failureResponse: "Netzwerk fehler");
     }
   }
 
   /// Konstruktor
-  AsyncEventDataValidationFormBloc({required String title, required DateTime startDateTime, required DateTime endDateTime, required List<ParseObject> fahrzeuge, required List<ParseObject> schueler ,String? description}) {
+  AsyncEventDataValidationFormBloc(
+      {required String title,
+      required DateTime startDateTime,
+      required DateTime endDateTime,
+      required List<ParseObject> fahrzeuge,
+      required List<ParseObject> fahrschueler,
+      required bool selectedFahrzeug,
+      required bool selectedFahrschueler,
+      String? description}) {
     titleFormBloc = TextFieldBloc(
       initialValue: title,
       validators: [
@@ -55,28 +49,36 @@ class AsyncEventDataValidationFormBloc extends FormBloc<String, String> {
 
     descriptionFormBloc = TextFieldBloc(initialValue: description ?? "");
 
-    startDateTimeFormBloc = 
-      InputFieldBloc<DateTime, dynamic>(initialValue: startDateTime, validators: [
-    (selectedDate) {
-      if (selectedDate.isBefore(DateTime.now())) {
-        return 'Der ausgewählte Datum darf nicht in der Vergangenheut liegen';
-      }
-      return null;
-    },
-  ]);
+    startDateTimeFormBloc = InputFieldBloc<DateTime, dynamic>(
+        initialValue: startDateTime,
+        validators: [
+          (selectedDate) {
+            if (selectedDate.isBefore(DateTime.now())) {
+              return 'Der ausgewählte Datum darf nicht in der Vergangenheut liegen';
+            }
+            return null;
+          },
+        ]);
 
-  endDateTimeFormBloc = 
-      InputFieldBloc<DateTime, dynamic>(initialValue: endDateTime, validators: [
-    (selectedDate) {
-      if (selectedDate.isBefore(DateTime.now())) {
-        return 'Der ausgewählte Datum darf nicht in der Vergangenheut liegen';
-      }
-      return null;
-    },
-  ]);
-
-  fahrzeugDropDownBloc = SelectFieldBloc<ParseObject, String>(items: fahrzeuge);
-  fahrschuelerDropDownBloc = SelectFieldBloc<ParseObject, String>(items: schueler);
+    endDateTimeFormBloc = InputFieldBloc<DateTime, dynamic>(
+        initialValue: endDateTime,
+        validators: [
+          (selectedDate) {
+            if (selectedDate.isBefore(DateTime.now())) {
+              return 'Der ausgewählte Datum darf nicht in der Vergangenheut liegen';
+            }
+            if(selectedDate.isBefore(startDateTimeFormBloc.value))
+            {
+              return "Der ausgewählte Datum darf nicht vor dem Start Datum liegen";
+            }
+            return null;
+          },
+        ]);
+    // initalValue ist das letzte Element in der Liste. Wird in _fetchData von calendar_page_bloc.dart festgelegt
+    fahrzeugDropDownBloc = SelectFieldBloc<ParseObject, String>(
+        items: fahrzeuge, initialValue: selectedFahrzeug ? fahrzeuge.last : null);
+    fahrschuelerDropDownBloc = SelectFieldBloc<ParseObject, String>(
+        items: fahrschueler, initialValue: selectedFahrschueler ? fahrschueler.last : null);
 
     addFieldBlocs(fieldBlocs: [
       titleFormBloc,

@@ -59,7 +59,7 @@ Future<String?> fetchStatusID(String status) async {
     final QueryBuilder<ParseObject> query =
         QueryBuilder<ParseObject>(ParseObject('Status'))
           ..whereContains('Typ', status)
-          ..keysToReturn(["ObjectId"]);
+          ..keysToReturn(["objectId"]);
 
     final apiResponse = await query.query();
 

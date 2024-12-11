@@ -10,9 +10,21 @@ class DataLoaded extends CalendarEventState {
   final List<ParseObject> fahrzeuge;
   final List<ParseObject> fahrschueler;
   final FahrstundenEvent event;
+  final DateTime fullDate;
+  final DateTime fullEndDate;
 
-  DataLoaded(this.fahrzeuge, this.fahrschueler, this.event);
+  DataLoaded(this.fahrzeuge, this.fahrschueler, this.event, this.fullDate, this.fullEndDate);
 }
+
+// class UpdateFahrstunde extends CalendarEventState {
+//   final ParseObject? fahrzeuge;
+//   final ParseObject? fahrschueler;
+//   final FahrstundenEvent event;
+//   final DateTime fullDate;
+//   final DateTime fullEndDate;
+
+//   UpdateFahrstunde(this.fahrzeuge, this.fahrschueler, this.event, this.fullDate, this.fullEndDate);
+// }
 
 class DataError extends CalendarEventState {
   final String message;

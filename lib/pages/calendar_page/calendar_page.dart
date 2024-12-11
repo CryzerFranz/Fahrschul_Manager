@@ -7,6 +7,7 @@ import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_state.d
 import 'package:fahrschul_manager/src/db_classes/fahrstunde.dart';
 import 'package:fahrschul_manager/pages/calendar_page/calendar_view_customization.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
+import 'package:fahrschul_manager/widgets/snackbar.dart';
 import 'package:fahrschul_manager/widgets/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
@@ -393,9 +394,9 @@ class CalendarPage extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  eventData.schueler == null
+                  eventData.fahrschueler == null
                       ? "Kein Fahrschüler"
-                      : "${eventData.schueler!.get<String>("Name")!}, ${eventData.schueler!.get<String>("Vorname")!}",
+                      : "${eventData.fahrschueler!.get<String>("Name")!}, ${eventData.fahrschueler!.get<String>("Vorname")!}",
                 ),
               ],
             ),
@@ -406,27 +407,31 @@ class CalendarPage extends StatelessWidget {
   }
 
   _editWindow(BuildContext context, DataLoaded blocState) {
-    final initialStartTime = blocState.event.date.add(Duration(
-        hours: blocState.event.startTime!.hour,
-        minutes: blocState.event.startTime!.minute));
-    final initialEndTime = blocState.event.date.add(Duration(
-        hours: blocState.event.endTime!.hour,
-        minutes: blocState.event.endTime!.minute));
     return BlocProvider(
         create: (context) => AsyncEventDataValidationFormBloc(
             title: blocState.event.title,
-            startDateTime: initialStartTime,
-            endDateTime: initialEndTime,
+            startDateTime: blocState.fullDate,
+            endDateTime: blocState.fullEndDate,
             fahrzeuge: blocState.fahrzeuge,
-            schueler: blocState.fahrschueler,
+            fahrschueler: blocState.fahrschueler,
+            selectedFahrzeug: blocState.event.fahrzeug != null ? true : false,
+            selectedFahrschueler:
+                blocState.event.fahrschueler != null ? true : false,
             description: blocState.event.description),
         child: Builder(builder: (context) {
           final formBloc = context.read<AsyncEventDataValidationFormBloc>();
           return FormBlocListener<AsyncEventDataValidationFormBloc, String,
               String>(
             formBloc: formBloc,
-            onSuccess: (context, state) {
+            onSuccess: (context, state) async {
               //TODO event triggern zum speichern der DATEN
+                context.read<CalendarEventBloc>().add(ExecuteChangeCalendarEventData(blocState.event.eventID, formBloc.titleFormBloc.value, formBloc.descriptionFormBloc.value, formBloc.startDateTimeFormBloc.value, formBloc.endDateTimeFormBloc.value, formBloc.fahrschuelerDropDownBloc.value, formBloc.fahrzeugDropDownBloc.value));
+            },
+            onFailure: (context, state) {
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                    showErrorSnackbar(state.failureResponse!, "Fehler SECOND"));
             },
             child: SingleChildScrollView(
               child: Column(
@@ -528,7 +533,7 @@ class CalendarPage extends StatelessWidget {
                   ),
                   SizedBox(height: 10),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: formBloc.submit,
                     child: Text("Ändern"),
                     style: stadiumButtonStyle(),
                   )

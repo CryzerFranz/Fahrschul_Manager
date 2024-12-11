@@ -31,13 +31,28 @@ Future<bool> addFahrzeug(
 }
 
 //TODO NUR ZUM TESTEN DA WAHRSCHEINLICH
-Future<ParseObject> getFahrzeuge(String id) async {
-  final apiResponse = await ParseObject('Fahrzeug').getObject(id);
-  return apiResponse.results!.first as ParseObject;
+Future<List<ParseObject>> fetchAvailableFahrzeugExcludingIds(List<String> ids) async {
+    final QueryBuilder<ParseObject> queryBuilder =
+      QueryBuilder<ParseObject>(ParseObject('Fahrzeug'))
+      ..whereEqualTo("Fahrschule", Benutzer().fahrschule!.objectId!)
+      ..whereNotContainedIn("objectId", ids)
+      ..includeObject(['Getriebe', 'Marke']); // Include the related objects
+
+  // Execute the query
+  final ParseResponse apiResponse = await queryBuilder.query();
+
+  // Check for success and return the first result
+  if (apiResponse.success && apiResponse.results != null) {
+    return apiResponse.results as List<ParseObject>;
+  }
+
+  // Return null if there were no results or if the query failed
+  return [];
 }
 
+
 //TODO TEST
-Future<List<ParseObject>> getAllFahrzeuge(ParseObject fahrschule) async {
+Future<List<ParseObject>> fetchAllFahrzeug(ParseObject fahrschule) async {
   final QueryBuilder<ParseObject> parseQuery =
       QueryBuilder<ParseObject>(ParseObject('Fahrzeug'))
         ..whereContains("Fahrschule", fahrschule.objectId!)

@@ -2,10 +2,57 @@ import 'dart:ui';
 
 import 'package:calendar_view/calendar_view.dart';
 import 'package:fahrschul_manager/constants.dart';
+import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_event.dart';
+import 'package:fahrschul_manager/src/db_classes/fahrschueler.dart';
+import 'package:fahrschul_manager/src/db_classes/fahrzeug.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/pages/calendar_page/calendar_view_customization.dart';
 import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
+
+Future<ParseObject?> fetchFahrstundeById({required String eventId}) async
+{
+  // Create the query for the Fahrstunde class using the given objectId
+  final QueryBuilder<ParseObject> queryBuilder =
+      QueryBuilder<ParseObject>(ParseObject('Fahrstunden'))
+        ..whereEqualTo('objectId', eventId); // Filter by objectId
+
+  // Execute the query
+  final ParseResponse response = await queryBuilder.query();
+
+  // Check for success and return the first (and should be only) result
+  if (response.success && response.results != null) {
+    return response.results!.first as ParseObject;
+  }
+
+  // Return null if no result or if the query failed
+  return null;
+}
+
+Future<bool> updateFahrstunde({required ExecuteChangeCalendarEventData event}) async
+{
+  ParseObject? eventObject = await fetchFahrstundeById(eventId: event.eventId);
+  if(eventObject == null)
+  {
+    throw("fetching event failed");
+  }
+
+  eventObject.set("Fahrzeug", event.fahrzeuge);
+  eventObject.set("Fahrschueler", event.fahrschueler);
+  eventObject.set("Titel", event.titel);
+  eventObject.set("Beschreibung", event.description);
+  eventObject.set("Datum", event.fullDate);
+  eventObject.set("EndDatum", event.fullEndDate);
+
+  final response = await eventObject.save();
+  if(!response.success)
+  {
+    return false;
+  }
+  return true;
+}
+
+
 
 //TODO !!FRONTEND sollte überprüfen das enddatum nicht kleiner als datum ist.!!
 /// Fügt eine Fahrstunde/Termin in die Datenbank ein und erstellt zugleich einen Objekt für das Kalendar Widget.
@@ -94,7 +141,7 @@ FahrstundenEvent createEventData({
   return FahrstundenEvent(
       eventID: eventId,
       fahrzeug: fahrzeug,
-      schueler: fahrschueler,
+      fahrschueler: fahrschueler,
       title: titel,
       date: datum,
       description: beschreibung,
@@ -161,26 +208,73 @@ Stream<List<FahrstundenEvent>> getUserFahrstundenStream() async* {
   yield await getUserFahrstunden();
 
   // Regelmäßige Aktualisierungen nach dem ersten Abruf starten
-  yield* Stream.periodic(Duration(seconds: 90000), (_) => getUserFahrstunden())
+  yield* Stream.periodic(Duration(seconds: 5), (_) => getUserFahrstunden())
       .asyncMap((future) => future);
 }
 
-Future<List<ParseObject>> fetchFahrstundenInRange({required DateTime start, required DateTime end}) async
-{
-   final QueryBuilder<ParseObject> query = QueryBuilder<ParseObject>(ParseObject('Fahrstunden'))
-    ..whereContains("Fahrlehrer", Benutzer().dbUserId!)
-    ..whereLessThanOrEqualTo("Datum", end) // Event starts before or on the end date
-    ..whereGreaterThanOrEqualsTo("EndDatum", start)
-    ..includeObject(["Fahrzeug", "Fahrschueler"]);  // EndDatum >= start
+/// Ruft verfügbare Ressourcen (Fahrzeuge und Fahrschüler) innerhalb eines angegebenen Datumsbereichs ab.
+///
+/// Diese Funktion sucht "Fahrstunden" (Fahrstunden-Einträge) für einen bestimmten Fahrlehrer 
+/// im angegebenen Zeitraum (Start- und Enddatum). Sie ermittelt nicht verfügbare Fahrzeuge 
+/// und Fahrschüler basierend auf den Fahrstunden und schließt diese von den verfügbaren Listen aus.
+///
+/// Es wird eine Map zurückgegeben, die Listen der verfügbaren Fahrzeuge und Fahrschüler enthält.
+///
+/// ### Parameter:
+/// - [start]: Das Startdatum des Zeitraums.
+/// - [end]: Das Enddatum des Zeitraums.
+///
+/// ### Return value:
+/// - Eine **[Map<String, List<ParseObject>>]** mit zwei Schlüsseln:
+///   - `"Fahrzeuge"`: Liste der verfügbaren Fahrzeuge.
+///   - `"Schueler"`: Liste der verfügbaren Fahrschüler.
+Future<Map<String, List<ParseObject>>> fetchAvailableResourcesInRange(
+    {required DateTime start, required DateTime end}) async {
+  List<String> unavailableFahrzeugeIds = [];
+  List<String> unavailableSchuelerIds = [];
+  List<ParseObject> availableFahrzeuge = [];
+  List<ParseObject> availableSchueler = [];
+
+  final QueryBuilder<ParseObject> query =
+      QueryBuilder<ParseObject>(ParseObject('Fahrstunden'))
+        ..whereContains("Fahrlehrer", Benutzer().dbUserId!)
+        ..whereLessThanOrEqualTo(
+            "Datum", end) // Event starts before or on the end date
+        ..whereGreaterThanOrEqualsTo("EndDatum", start)
+        ..excludeKeys([
+          "ObjectId",
+          "Fahrlehrer",
+          "Datum",
+          "EndDatum",
+          "Titel",
+          "Beschreibung"
+        ])
+        ..includeObject(
+            ["Fahrzeug", "Fahrschueler"]); // Include the related objects
+  // EndDatum >= start
 
   // Execute the query
   final ParseResponse response = await query.query();
 
   // Check for success and return results
   if (response.success && response.results != null) {
-    return response.results as List<ParseObject>;
-  }
+    for (var entry in response.results as List<ParseObject>) {
+      if (entry.get<ParseObject>("Fahrzeug") != null) {
+        unavailableFahrzeugeIds.add(entry.get<ParseObject>("Fahrzeug")!.objectId!);
+      }
+      if (entry.get<ParseObject>("Fahrschueler") != null) {
+        unavailableSchuelerIds.add(
+            entry.get<ParseObject>("Fahrschueler")!.objectId!);
+      }
 
-  // Return an empty list if there were no results or if the query failed
-  return [];
+      availableFahrzeuge = await fetchAvailableFahrzeugExcludingIds(unavailableFahrzeugeIds);
+      availableSchueler = await fetchAvailableFahrschuelerExcludingIds(unavailableSchuelerIds);
+
+    }
+    return {
+      "Fahrzeuge": availableFahrzeuge,
+      "Schueler": availableSchueler,
+    };
+  }
+  return {};
 }

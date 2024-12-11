@@ -1,5 +1,4 @@
 import 'package:calendar_view/calendar_view.dart';
-import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 
@@ -7,7 +6,7 @@ import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 /// um zusätzliche Felder für ein Fahrzeug (`fahrzeug`) und einen Schüler (`schueler`) einzuschließen.
 class FahrstundenEvent extends CalendarEventData<FahrstundenEvent> {
   final ParseObject? fahrzeug; 
-  final ParseObject? schueler;
+  final ParseObject? fahrschueler;
   final String eventID;
 
   FahrstundenEvent({
@@ -19,7 +18,7 @@ class FahrstundenEvent extends CalendarEventData<FahrstundenEvent> {
     required super.date,
     super.description,
     this.fahrzeug,
-    this.schueler,
+    this.fahrschueler,
     super.descriptionStyle,
     super.titleStyle,
     super.color,
