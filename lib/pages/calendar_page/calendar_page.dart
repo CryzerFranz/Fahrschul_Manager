@@ -77,16 +77,7 @@ class CalendarPage extends StatelessWidget {
     String datetimeInfo =
         "${events.first.startTime!.hour}:${events.first.startTime!.minute} - ${events.first.endTime!.hour}:${events.first.endTime!.minute}";
 
-    if (eventData.color == mainColor) {
-      infoBackgroundColor = tabBarMainColorShade100;
-      infoBorderColor = mainColor;
-    } else if (eventData.color == mainColorComplementaryFirst) {
-      infoBackgroundColor = mainColorComplementaryFirstShade100;
-      infoBorderColor = mainColorComplementaryFirst;
-    } else if (eventData.color == mainColorComplementarySecond) {
-      infoBackgroundColor = mainColorComplementarySecondShade100;
-      infoBorderColor = mainColorComplementarySecond;
-    }
+    
 
     return showGeneralDialog<void>(
         context: context,
@@ -99,6 +90,20 @@ class CalendarPage extends StatelessWidget {
             Animation<double> secondaryAnimation) {
           return BlocBuilder<CalendarEventBloc, CalendarEventState>(
               builder: (context, blocState) {
+                if(blocState is EventDataPreviewAfterUpdating)
+                            {
+                              eventData = blocState.updatedEvent;
+                            }
+                if (eventData.color == mainColor) {
+      infoBackgroundColor = tabBarMainColorShade100;
+      infoBorderColor = mainColor;
+    } else if (eventData.color == mainColorComplementaryFirst) {
+      infoBackgroundColor = mainColorComplementaryFirstShade100;
+      infoBorderColor = mainColorComplementaryFirst;
+    } else if (eventData.color == mainColorComplementarySecond) {
+      infoBackgroundColor = mainColorComplementarySecondShade100;
+      infoBorderColor = mainColorComplementarySecond;
+    }
             return GestureDetector(
               behavior:
                   HitTestBehavior.opaque, // Ensures taps outside are detected
@@ -129,8 +134,8 @@ class CalendarPage extends StatelessWidget {
                             return _stackLoadingEditingWindow(blocState,
                                 context, infoBorderColor, infoBackgroundColor);
                           } else {
+                            
                             return _stackEventInformation(
-                                events,
                                 dateInfo,
                                 datetimeInfo,
                                 eventData,
@@ -225,7 +230,6 @@ class CalendarPage extends StatelessWidget {
   }
 
   Stack _stackEventInformation(
-      List<CalendarEventData<FahrstundenEvent>> events,
       String dateInfo,
       String datetimeInfo,
       FahrstundenEvent eventData,
@@ -243,7 +247,7 @@ class CalendarPage extends StatelessWidget {
             right: 20.0,
             bottom: 15.0,
           ),
-          child: _eventContent(events, dateInfo, datetimeInfo, eventData),
+          child: _eventContent( dateInfo, datetimeInfo, eventData),
         ),
         Positioned(
           top: -40,
@@ -284,7 +288,7 @@ class CalendarPage extends StatelessWidget {
               onTap: () {
                 context.read<CalendarEventBloc>().add(
                     PrepareChangeCalendarEventData(
-                        events.first as FahrstundenEvent));
+                        eventData));
               },
               child: const CircleAvatar(
                 backgroundColor: tabBarOrangeShade100,
@@ -327,7 +331,7 @@ class CalendarPage extends StatelessWidget {
     );
   }
 
-  Column _eventContent(List<CalendarEventData<FahrstundenEvent>> events,
+  Column _eventContent(
       String dateInfo, String datetimeInfo, FahrstundenEvent eventData) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -335,7 +339,7 @@ class CalendarPage extends StatelessWidget {
       children: [
         // Titel (Centered)
         Text(
-          events.first.title,
+          eventData.title,
           style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 7),
@@ -360,7 +364,7 @@ class CalendarPage extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  Text(events.first.description!),
+                  Text(eventData.description!),
                 ],
               ),
             ),

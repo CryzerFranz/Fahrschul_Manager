@@ -34,3 +34,8 @@ class DataError extends CalendarEventState {
 class EventDataPreview extends CalendarEventState{
   EventDataPreview();
 }
+
+class EventDataPreviewAfterUpdating extends CalendarEventState{
+  final FahrstundenEvent updatedEvent;
+  EventDataPreviewAfterUpdating(this.updatedEvent);
+}
