@@ -29,7 +29,7 @@ Future<ParseObject?> fetchFahrstundeById({required String eventId}) async
   return null;
 }
 
-Future<bool> updateFahrstunde({required ExecuteChangeCalendarEventData event}) async
+Future<FahrstundenEvent?> updateFahrstunde({required ExecuteChangeCalendarEventData event}) async
 {
   ParseObject? eventObject = await fetchFahrstundeById(eventId: event.eventId);
   if(eventObject == null)
@@ -47,9 +47,16 @@ Future<bool> updateFahrstunde({required ExecuteChangeCalendarEventData event}) a
   final response = await eventObject.save();
   if(!response.success)
   {
-    return false;
+    return null;
   }
-  return true;
+  return createEventData(
+      eventId: response.results!.first.objectId,
+      titel: event.titel,
+      beschreibung: event.description,
+      datum: event.fullDate,
+      endDatum: event.fullEndDate,
+      fahrzeug: event.fahrzeuge,
+      fahrschueler: event.fahrschueler);
 }
 
 
@@ -58,8 +65,8 @@ Future<bool> updateFahrstunde({required ExecuteChangeCalendarEventData event}) a
 /// Fügt eine Fahrstunde/Termin in die Datenbank ein und erstellt zugleich einen Objekt für das Kalendar Widget.
 ///
 /// ### Return value:
-/// - **[CalendarEventData]**
-Future<CalendarEventData> addFahrstunde({
+/// - **[FahrstundenEvent]**
+Future<FahrstundenEvent> addFahrstunde({
   required DateTime datum,
   required DateTime endDatum,
   required String titel,
