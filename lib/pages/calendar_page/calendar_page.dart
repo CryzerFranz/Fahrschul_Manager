@@ -77,15 +77,13 @@ class CalendarPage extends StatelessWidget {
     String datetimeInfo =
         "${events.first.startTime!.hour}:${events.first.startTime!.minute} - ${events.first.endTime!.hour}:${events.first.endTime!.minute}";
 
-    
-
     return showGeneralDialog<void>(
         context: context,
         barrierDismissible:
             false, // Prevent automatic dismissal when tapping outside
         barrierLabel: "Dismiss", // Optional label for accessibility
         barrierColor: Colors.black54, // Dim background
-        transitionDuration: Duration(milliseconds: 200), // Optional: animation
+        transitionDuration: const Duration(milliseconds: 200), // Optional: animation
         pageBuilder: (BuildContext dialogContext, Animation<double> animation,
             Animation<double> secondaryAnimation) {
           return BlocBuilder<CalendarEventBloc, CalendarEventState>(
@@ -343,7 +341,7 @@ class CalendarPage extends StatelessWidget {
           style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 7),
-        Icon(Icons.access_time_outlined, size: 20),
+        const Icon(Icons.access_time_outlined, size: 20),
         const SizedBox(height: 3),
         Text(dateInfo),
         const SizedBox(height: 3),
@@ -428,7 +426,6 @@ class CalendarPage extends StatelessWidget {
               String>(
             formBloc: formBloc,
             onSuccess: (context, state) async {
-              //TODO event triggern zum speichern der DATEN
                 context.read<CalendarEventBloc>().add(ExecuteChangeCalendarEventData(blocState.event.eventID, formBloc.titleFormBloc.value, formBloc.descriptionFormBloc.value, formBloc.startDateTimeFormBloc.value, formBloc.endDateTimeFormBloc.value, formBloc.fahrschuelerDropDownBloc.value, formBloc.fahrzeugDropDownBloc.value));
             },
             onFailure: (context, state) {
@@ -535,11 +532,11 @@ class CalendarPage extends StatelessWidget {
                       // Optional: Customize the hintText or other properties if needed
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: formBloc.submit,
-                    child: Text("Ändern"),
                     style: stadiumButtonStyle(),
+                    child: const Text("Ändern"),
                   )
                 ],
               ),
