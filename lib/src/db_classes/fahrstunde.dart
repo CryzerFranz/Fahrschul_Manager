@@ -1,6 +1,3 @@
-import 'dart:ui';
-
-import 'package:calendar_view/calendar_view.dart';
 import 'package:fahrschul_manager/constants.dart';
 import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_event.dart';
 import 'package:fahrschul_manager/src/db_classes/fahrschueler.dart';
@@ -104,6 +101,11 @@ Future<FahrstundenEvent> addFahrstunde({
 
   if (fahrschueler != null) {
     termin.set('Fahrschueler', fahrschueler);
+  }
+  else{
+    // Wenn kein Fahrschueler ausgewählt ist wird 'UpdatedGesantStd' auf 'true' gesetzt damit
+    // dieser Eintrag nicht vom Schedule Job erfasst wird.
+    termin.set('UpdatedGesamtStd', true);
   }
 
   final ParseResponse response = await termin.save();
