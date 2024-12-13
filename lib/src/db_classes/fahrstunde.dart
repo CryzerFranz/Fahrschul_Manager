@@ -180,10 +180,17 @@ FahrstundenEvent createEventData({
 /// - **[List<CalendarEventData>]**
 Future<List<FahrstundenEvent>> getUserFahrstunden() async {
   List<FahrstundenEvent> events = [];
+
+   DateTime today = DateTime.now(); // Get today's date
+  int currentWeekday = today.weekday; // 1 = Monday, 7 = Sunday
+  
+  // Calculate the date for the current Monday
+  DateTime currentMonday = today.subtract(Duration(days: currentWeekday - 1));
+
   String role = Benutzer().isFahrlehrer! ? "Fahrlehrer" : "Fahrschueler";
   final QueryBuilder<ParseObject> parseQuery =
       QueryBuilder<ParseObject>(ParseObject('Fahrstunden'))
-        ..whereGreaterThan("Datum", DateTime.now())
+        ..whereGreaterThan("Datum", currentMonday)
         ..whereContains(role, Benutzer().dbUser!.objectId!)
         ..includeObject(["Fahrzeug", "Fahrzeug.Marke", "Fahrschueler"]);
 
