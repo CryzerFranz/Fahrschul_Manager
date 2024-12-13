@@ -75,8 +75,7 @@ class CalendarPage extends StatelessWidget {
         ? "${events.first.date.day}.${events.first.date.month}.${events.first.date.year}"
         : "${events.first.date.day}.${events.first.date.month}.${events.first.date.year} - ${events.first.endDate.day}.${events.first.endDate.month}.${events.first.endDate.year}";
     String datetimeInfo =
-        "${events.first.startTime!.hour}:${events.first.startTime!.minute} - ${events.first.endTime!.hour}:${events.first.endTime!.minute}";
-
+    "${events.first.startTime!.hour.toString().padLeft(2, '0')}:${events.first.startTime!.minute.toString().padLeft(2, '0')} - ${events.first.endTime!.hour.toString().padLeft(2, '0')}:${events.first.endTime!.minute.toString().padLeft(2, '0')}";
     return showGeneralDialog<void>(
         context: context,
         barrierDismissible:
