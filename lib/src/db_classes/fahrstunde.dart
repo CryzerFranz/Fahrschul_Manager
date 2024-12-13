@@ -34,6 +34,12 @@ Future<FahrstundenEvent?> updateFahrstunde({required ExecuteChangeCalendarEventD
     throw("fetching event failed");
   }
 
+  if(event.fahrschueler == null)
+  {
+    // Wenn kein Fahrschueler ausgewählt ist wird 'UpdatedGesantStd' auf 'true' gesetzt damit
+    // dieser Eintrag nicht vom Schedule Job erfasst wird.
+    eventObject.set("UpdatedGesamtStd", true);
+  }
   eventObject.set("Fahrzeug", event.fahrzeuge);
   eventObject.set("Fahrschueler", event.fahrschueler);
   eventObject.set("Titel", event.titel);
