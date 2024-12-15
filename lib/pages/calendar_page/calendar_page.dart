@@ -484,18 +484,21 @@ class CalendarPage extends StatelessWidget {
 
   _editWindow(BuildContext context, DataLoaded blocState) {
     return BlocProvider(
-        create: (context) => AsyncEventDataValidationFormBloc(
-            title: blocState.event.title,
-            startDateTime: blocState.fullDate,
-            endDateTime: blocState.fullEndDate,
-            fahrzeuge: blocState.fahrzeuge,
-            fahrschueler: blocState.fahrschueler,
-            selectedFahrzeug: blocState.event.fahrzeug != null ? true : false,
-            selectedFahrschueler:
-                blocState.event.fahrschueler != null ? true : false,
-            description: blocState.event.description),
+        create: (context) => AsyncEventDataValidationFormBloc(),
         child: Builder(builder: (context) {
           final formBloc = context.read<AsyncEventDataValidationFormBloc>();
+
+          formBloc.titleFormBloc.updateInitialValue(blocState.event.title);
+          formBloc.startDateTimeFormBloc.updateInitialValue(blocState.fullDate);
+          formBloc.endDateTimeFormBloc.updateInitialValue(blocState.fullEndDate);
+          formBloc.fahrzeugDropDownBloc.updateItems(blocState.fahrzeuge);
+          formBloc.fahrzeugDropDownBloc.updateInitialValue(blocState.event.fahrzeug != null ? blocState.fahrzeuge.last : null);
+          formBloc.fahrschuelerDropDownBloc.updateItems(blocState.fahrschueler);
+          formBloc.fahrschuelerDropDownBloc.updateInitialValue(blocState.event.fahrschueler != null ? blocState.fahrschueler.last : null);
+          formBloc.descriptionFormBloc.updateInitialValue(blocState.event.description ?? "");
+
+
+
           return FormBlocListener<AsyncEventDataValidationFormBloc, String,
               String>(
             formBloc: formBloc,
