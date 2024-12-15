@@ -23,92 +23,122 @@ class CalendarPage extends StatelessWidget {
   const CalendarPage({super.key});
   @override
   Widget build(BuildContext context) {
-  return StreamBuilder<List<FahrstundenEvent>>(
-    stream: getUserFahrstundenStream(), 
-    builder: (BuildContext context,
-        AsyncSnapshot<List<FahrstundenEvent>> snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return loadingScreen(height_: 150, width_: 150);
-      } else if (snapshot.hasError) {
-        return Center(child: Text("Error: ${snapshot.error}"));
-      } else {
-        final events = snapshot.data!;
-        return CalendarControllerProvider<FahrstundenEvent>(
-          controller: EventController<FahrstundenEvent>()..addAll(events),
-          child: WeekView<FahrstundenEvent>(
-            headerStringBuilder: (date, {secondaryDate}) {
-              return "Termine von\n${date.day}.${date.month}.${date.year} bis ${secondaryDate!.day - 1}.${secondaryDate.month}.${secondaryDate.year}";
-            },
-            headerStyle: const HeaderStyle(
-              decoration: BoxDecoration(color: tabBarMainColorShade100),
-            ),
-            // Ohne Sonntage
-            weekDays: const [
-              WeekDays.monday,
-              WeekDays.tuesday,
-              WeekDays.wednesday,
-              WeekDays.thursday,
-              WeekDays.friday,
-              WeekDays.saturday
-            ],
-            startHour: 6, // Kalendar zeigt erst ab 06:00 Uhr frühs an bis 24:00
-            onEventTap: (events, date) {
-              _dialogBuilder(context, events);
-            },
-            timeLineBuilder: (date) {
-              final hourFormatter = DateFormat.Hm();
-              return Container(
-                height: 60,
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.symmetric(horizontal: 0),
-                child: Text(hourFormatter.format(date)),
-              );
-            },
-            // Zeit position korrigieren
-            timeLineOffset: 30,
-
-            // hervorheben des aktuellen wochentages
-            weekDayBuilder: (date) {
-              final isToday = date.isSameDate(DateTime.now());
-              final dayLetter = DateFormat.E().format(date)[0].toUpperCase(); 
-
-              return Container(
-                decoration: BoxDecoration(
-                  color: isToday ? mainColorComplementaryFirst : Colors.transparent,
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                padding: const EdgeInsets.all(1), 
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      // Erster Buchstabe des Tages
-                      dayLetter, 
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                        color: isToday ? Colors.white : Colors.black,
-                      ),
-                    ),
-                    Text(
-                      date.day.toString(), 
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                        color: isToday ? Colors.white : Colors.black,
-                      ),
-                    ),
+    return StreamBuilder<List<FahrstundenEvent>>(
+      stream: getUserFahrstundenStream(),
+      builder: (BuildContext context,
+          AsyncSnapshot<List<FahrstundenEvent>> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return loadingScreen(height_: 150, width_: 150);
+        } else if (snapshot.hasError) {
+          return Center(child: Text("Error: ${snapshot.error}"));
+        } else {
+          final events = snapshot.data!;
+          return Stack(
+            children: [
+              CalendarControllerProvider<FahrstundenEvent>(
+                controller: EventController<FahrstundenEvent>()..addAll(events),
+                child: WeekView<FahrstundenEvent>(
+                  headerStringBuilder: (date, {secondaryDate}) {
+                    return "Termine von\n${date.day}.${date.month}.${date.year} bis ${secondaryDate!.day - 1}.${secondaryDate.month}.${secondaryDate.year}";
+                  },
+                  headerStyle: const HeaderStyle(
+                    decoration: BoxDecoration(color: tabBarMainColorShade100),
+                  ),
+                  // Ohne Sonntage
+                  weekDays: const [
+                    WeekDays.monday,
+                    WeekDays.tuesday,
+                    WeekDays.wednesday,
+                    WeekDays.thursday,
+                    WeekDays.friday,
+                    WeekDays.saturday
                   ],
+                  startHour:
+                      6, // Kalendar zeigt erst ab 06:00 Uhr frühs an bis 24:00
+                  onEventTap: (events, date) {
+                    _dialogBuilder( context, events);
+                  },
+                  onDateTap: (date) {
+                    //TODO
+                    // Parameter 'events' bleibt leer, da wir hier einen neuen event erstellen möchten
+                    //_dialogBuilder(context: context, date: date);
+                  },
+                  timeLineBuilder: (date) {
+                    final hourFormatter = DateFormat.Hm();
+                    return Container(
+                      height: 60,
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
+                      child: Text(hourFormatter.format(date)),
+                    );
+                  },
+                  // Zeit position korrigieren
+                  timeLineOffset: 30,
+                  // hervorheben des aktuellen wochentages
+                  weekDayBuilder: (date) {
+                    final isToday = date.isSameDate(DateTime.now());
+                    final dayLetter =
+                        DateFormat.E().format(date)[0].toUpperCase();
+
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: isToday
+                            ? mainColorComplementaryFirst
+                            : Colors.transparent,
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.all(1),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            // Erster Buchstabe des Tages
+                            dayLetter,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight:
+                                  isToday ? FontWeight.bold : FontWeight.normal,
+                              color: isToday ? Colors.white : Colors.black,
+                            ),
+                          ),
+                          Text(
+                            date.day.toString(),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight:
+                                  isToday ? FontWeight.bold : FontWeight.normal,
+                              color: isToday ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-        );
-      }
-    },
-  );
-}
+              ),
+              Positioned(
+                bottom: 120.0,
+                right: 16.0,
+                child: ElevatedButton(
+                  onPressed: () {
+                    //TODO
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(16.0),
+                    backgroundColor:
+                        mainColor, // Replace with your preferred color
+                  ),
+                  child: const Icon(Icons.add, color: Colors.white),
+                ),
+              ),
+            ],
+          );
+        }
+      },
+    );
+  }
 
 
   Future<void> _dialogBuilder(
