@@ -17,6 +17,7 @@ const Color tabBarMainColorShade300 = Color.fromARGB(255, 128, 222, 154);
 
 // Main Colors
 const Color mainColor = Color(0xFF00BF6D);
+const Color textFieldColor =  Color(0xFFF5FCF9);
 
 const Color mainColorComplementaryFirst = Color(0xFF87CEEB);
 const Color mainColorComplementaryFirstShade100 = Color.fromARGB(255, 199, 233, 245);

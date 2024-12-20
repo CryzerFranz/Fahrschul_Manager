@@ -4,6 +4,8 @@ import 'package:fahrschul_manager/pages/profil_page/bloc/profil_page_state.dart'
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fahrschul_manager/constants.dart';
+
 
 class ProfilPage extends StatelessWidget {
   const ProfilPage({super.key});
@@ -17,6 +19,7 @@ class ProfilPage extends StatelessWidget {
         if (state is DataLoading) {
           return loadingScreen(height_: 150, width_: 150);
         } else if (state is DataLoaded) {
+          
           return SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -28,16 +31,16 @@ class ProfilPage extends StatelessWidget {
                     height: 120,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFFF5FCF9),
-                      border: Border.all(
-                        color: Colors.green[200]!,
-                        width: 1,
-                      ),
+                      color: mainColor,
+                      // border: Border.all(
+                      //   color: Colors.green[200]!,
+                      //   width: 1,
+                      // ),
                     ),
                     child: const Icon(
                       Icons.person,
                       size: 60,
-                      color: Colors.grey,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -59,14 +62,14 @@ class ProfilPage extends StatelessWidget {
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 12, horizontal: 16),
-                      fillColor: Colors.green.withOpacity(0.1),
+                      fillColor: textFieldColor,
                       filled: true,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(50),
                         borderSide: BorderSide.none,
                       ),
                       suffixIcon: IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.green),
+                        icon: const Icon(Icons.edit, color: mainColor),
                         onPressed: () {
                           // Action when edit is clicked
                         },
@@ -84,10 +87,10 @@ class ProfilPage extends StatelessWidget {
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 12, horizontal: 16),
-                      fillColor: Colors.green.withOpacity(0.1),
+                      fillColor: textFieldColor,
                       filled: true,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(50),
                         borderSide: BorderSide.none,
                       ),
                     ),
