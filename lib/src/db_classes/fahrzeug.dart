@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
@@ -30,13 +32,28 @@ Future<bool> addFahrzeug(
   return true;
 }
 
+Future<bool> updateLabelFahrzeug(
+    {required ParseObject fahrzeug, required String label}) async {
+  try {
+    fahrzeug.set('Label', label);
+    final response = await fahrzeug.save();
+    if (!response.success) {
+      return false;
+    }
+    return true;
+  } catch (e) {
+    throw ("Network error");
+  }
+}
+
 //TODO NUR ZUM TESTEN DA WAHRSCHEINLICH
-Future<List<ParseObject>> fetchAvailableFahrzeugExcludingIds(List<String> ids) async {
-    final QueryBuilder<ParseObject> queryBuilder =
+Future<List<ParseObject>> fetchAvailableFahrzeugExcludingIds(
+    List<String> ids) async {
+  final QueryBuilder<ParseObject> queryBuilder =
       QueryBuilder<ParseObject>(ParseObject('Fahrzeug'))
-      ..whereEqualTo("Fahrschule", Benutzer().fahrschule!.objectId!)
-      ..whereNotContainedIn("objectId", ids)
-      ..includeObject(['Getriebe', 'Marke']); // Include the related objects
+        ..whereEqualTo("Fahrschule", Benutzer().fahrschule!.objectId!)
+        ..whereNotContainedIn("objectId", ids)
+        ..includeObject(['Getriebe', 'Marke']); // Include the related objects
 
   // Execute the query
   final ParseResponse apiResponse = await queryBuilder.query();
@@ -49,7 +66,6 @@ Future<List<ParseObject>> fetchAvailableFahrzeugExcludingIds(List<String> ids) a
   // Return null if there were no results or if the query failed
   return [];
 }
-
 
 //TODO TEST
 Future<List<ParseObject>> fetchAllFahrzeug(ParseObject fahrschule) async {
@@ -68,7 +84,7 @@ Future<List<ParseObject>> fetchAllFahrzeug(ParseObject fahrschule) async {
 }
 
 /// Gibt alle arten von Getriebe von der Datenbank zurück.
-/// 
+///
 /// ### Return value:
 /// - **[List<ParseObject>]**
 Future<List<ParseObject>> fetchAllGetriebe() async {
@@ -85,7 +101,7 @@ Future<List<ParseObject>> fetchAllGetriebe() async {
 }
 
 /// Gibt alle arten von Marken von der Datenbank zurück.
-/// 
+///
 /// ### Return value:
 /// - **[List<ParseObject>]**
 Future<List<ParseObject>> fetchAllMarke() async {
@@ -102,7 +118,7 @@ Future<List<ParseObject>> fetchAllMarke() async {
 }
 
 /// Gibt alle arten von Fahrzeugtypen von der Datenbank zurück.
-/// 
+///
 /// ### Return value:
 /// - **[List<ParseObject>]**
 Future<List<ParseObject>> fetchAllFahrzeugtyp() async {
@@ -215,4 +231,3 @@ Future<ParseObject?> getFahrzeugtypByTyp(final String typ) async {
     throw Exception("Error: getFahrzeugtyp -> $e");
   }
 }
-
