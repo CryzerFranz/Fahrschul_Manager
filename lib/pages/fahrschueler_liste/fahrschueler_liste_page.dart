@@ -162,7 +162,7 @@ class FahrschuelerListContent extends StatelessWidget {
               title: "${data.get<String>("Name")!}, "
                   "${data.get<String>("Vorname")!}",
               widget: Text(
-                  "Fahrstunden: ${data.get<int>("Gesamtfahrstunden")!}"),
+                  "Fahrstunden: ${data.get("Gesamtfahrstunden")!}"),
               colors: colors,
               width: 0.7,
             ),
