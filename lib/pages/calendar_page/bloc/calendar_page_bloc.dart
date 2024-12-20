@@ -1,3 +1,6 @@
+import 'dart:ui';
+
+import 'package:fahrschul_manager/constants.dart';
 import 'package:fahrschul_manager/doc/intern/Fahrstunde.dart';
 import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_event.dart';
 import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_state.dart';
@@ -7,10 +10,58 @@ import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 class CalendarEventBloc extends Bloc<CalendarEvent, CalendarEventState> {
   CalendarEventBloc() : super(EventDataPreview()) {
-    on<PrepareChangeCalendarEventData>(_fetchData);
+    on<PrepareChangeCalendarEventViewData>(_fetchData);
     on<ResetStateEvent>(_resetState);
     on<ExecuteChangeCalendarEventData>(_updateFahrstunde);
+    on<CreateEvent>(_prepareEventData);
+    on<PrepareCalendarEventViewData>(_prepareEventViewData);
   }
+
+  Map<String, Color> _getCorrectColor(Color color)
+  {
+        Color infoBackgroundColor = tabBarMainColorShade100;
+        Color infoBorderColor = mainColor;
+        if (color == mainColorComplementaryFirst) {
+              infoBackgroundColor = mainColorComplementaryFirstShade100;
+              infoBorderColor = mainColorComplementaryFirst;
+            } else if (color == mainColorComplementarySecond) {
+              infoBackgroundColor = mainColorComplementarySecondShade100;
+              infoBorderColor = mainColorComplementarySecond;
+            }
+        return {"background": infoBackgroundColor, "border": infoBorderColor};
+  }
+
+  Future<void> _prepareEventViewData(PrepareCalendarEventViewData event,
+      Emitter<CalendarEventState> emit) async {
+      final Map<String, Color> colors = _getCorrectColor(event.event.color);
+      emit(DataLoading());
+        try{
+        //final DateTime endTime =  event.time.add(const Duration(minutes: 90));
+        final Map<String, String> dates = createDateTimeinfo(date: event.event.date, endDate: event.event.endDate, endTime: event.event.endTime!, startTime: event.event.startTime!);
+        final initialStartTime = createDateTime(date: event.event.date, time: event.event.startTime! );
+        final initialEndTime = createDateTime(date: event.event.date, time: event.event.endTime! );
+
+        //FahrstundenEvent newEvent = FahrstundenEvent(eventID: null, title: "", startTime: event.event., endTime: endTime, endDate: endTime, date: event.time);
+        emit(SelectedEventDataState(event.event,
+          initialStartTime, initialEndTime, dates["Start_Date"]!, dates["Start_Time"]!,colors["background"]!, colors["border"]!));
+        }catch(e)
+        {
+          emit(DataError("Preparing Data for creating failed"));
+        }
+      }
+
+  Future<void> _prepareEventData(CreateEvent event,
+      Emitter<CalendarEventState> emit) async {
+        try{
+        final DateTime endTime =  event.time.add(const Duration(minutes: 90));
+        FahrstundenEvent newEvent = FahrstundenEvent(eventID: null, title: "", startTime: event.time, endTime: endTime, endDate: endTime, date: event.time);
+        add(PrepareChangeCalendarEventViewData(newEvent));
+
+        }catch(e)
+        {
+          emit(DataError("Preparing Data for creating failed"));
+        }
+      }
 
   Future<void> _updateFahrstunde(ExecuteChangeCalendarEventData event,
       Emitter<CalendarEventState> emit) async {
@@ -25,8 +76,6 @@ class CalendarEventBloc extends Bloc<CalendarEvent, CalendarEventState> {
     } catch (e) {
       emit(DataError("Updating failed"));
     }
-
-    //emit(EventDataPreview());
   }
 
   Future<void> _resetState(
@@ -34,9 +83,10 @@ class CalendarEventBloc extends Bloc<CalendarEvent, CalendarEventState> {
     emit(EventDataPreview());
   }
 
-  Future<void> _fetchData(PrepareChangeCalendarEventData event,
+  Future<void> _fetchData(PrepareChangeCalendarEventViewData event,
       Emitter<CalendarEventState> emit) async {
-    emit(DataLoading());
+    final Map<String, Color> colors = _getCorrectColor(event.event.color);
+      emit(DataLoading());
     try {
       // Vollstände Datum
       final initialStartTime = event.event.date.add(Duration(
@@ -62,10 +112,28 @@ class CalendarEventBloc extends Bloc<CalendarEvent, CalendarEventState> {
       if (event.event.fahrschueler != null) {
         availableSchueler.add(event.event.fahrschueler!);
       }
+      final Map<String, String> dates = createDateTimeinfo(date: event.event.date, endDate: event.event.endDate, endTime: event.event.endTime!, startTime: event.event.startTime!);
       emit(DataLoaded(availableFahrzeuge, availableSchueler, event.event,
-          initialStartTime, initialEndTime));
+          initialStartTime, initialEndTime, dates["Start_Date"]!, dates["Start_Time"]!, colors["background"]!, colors["border"]!));
     } catch (e) {
       emit(DataError("Failed to fetch data"));
     }
+  }
+
+  Map<String, String> createDateTimeinfo({required DateTime date, required DateTime endDate, required DateTime startTime, required DateTime endTime})
+  {
+     String dateInfo = date.day == endDate.day
+        ? "${date.day}.${date.month}.${date.year}"
+        : "${date.day}.${date.month}.${date.year} - ${endDate.day}.${endDate.month}.${endDate.year}";
+    String datetimeInfo =
+        "${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')} - ${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}";
+    return {"Start_Date": dateInfo, "Start_Time": datetimeInfo};
+  }
+
+  DateTime createDateTime({required DateTime date, required DateTime time})
+  {
+    return date.add(Duration(
+          hours: time.hour,
+          minutes: time.minute));
   }
 }

@@ -7,7 +7,7 @@ import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 class FahrstundenEvent extends CalendarEventData<FahrstundenEvent> {
   final ParseObject? fahrzeug; 
   final ParseObject? fahrschueler;
-  final String eventID;
+  final String? eventID;
 
   FahrstundenEvent({
     required this.eventID,

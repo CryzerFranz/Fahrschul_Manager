@@ -15,7 +15,9 @@ import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 extension DateTimeExtension on DateTime {
   bool isSameDate(DateTime other) {
-    return this.year == other.year && this.month == other.month && this.day == other.day;
+    return this.year == other.year &&
+        this.month == other.month &&
+        this.day == other.day;
   }
 }
 
@@ -56,12 +58,14 @@ class CalendarPage extends StatelessWidget {
                   startHour:
                       6, // Kalendar zeigt erst ab 06:00 Uhr frühs an bis 24:00
                   onEventTap: (events, date) {
-                    _dialogBuilder( context, events);
+                    _dialogBuilder(context, events);
                   },
                   onDateTap: (date) {
                     //TODO
                     // Parameter 'events' bleibt leer, da wir hier einen neuen event erstellen möchten
                     //_dialogBuilder(context: context, date: date);
+                    _dialogBuilder(context, [], date: date);
+                    //context.read<CalendarEventBloc>().add(CreateEvent(date));
                   },
                   timeLineBuilder: (date) {
                     final hourFormatter = DateFormat.Hm();
@@ -140,42 +144,33 @@ class CalendarPage extends StatelessWidget {
     );
   }
 
-
   Future<void> _dialogBuilder(
-      BuildContext context, List<CalendarEventData<FahrstundenEvent>> events) {
-    FahrstundenEvent eventData = events.first as FahrstundenEvent;
-    late Color infoBackgroundColor;
-    late Color infoBorderColor;
-    String dateInfo = events.first.date.day == events.first.endDate.day
-        ? "${events.first.date.day}.${events.first.date.month}.${events.first.date.year}"
-        : "${events.first.date.day}.${events.first.date.month}.${events.first.date.year} - ${events.first.endDate.day}.${events.first.endDate.month}.${events.first.endDate.year}";
-    String datetimeInfo =
-    "${events.first.startTime!.hour.toString().padLeft(2, '0')}:${events.first.startTime!.minute.toString().padLeft(2, '0')} - ${events.first.endTime!.hour.toString().padLeft(2, '0')}:${events.first.endTime!.minute.toString().padLeft(2, '0')}";
+      BuildContext context, List<CalendarEventData<FahrstundenEvent>> events,
+      {DateTime? date}) {
     return showGeneralDialog<void>(
         context: context,
         barrierDismissible:
             false, // Prevent automatic dismissal when tapping outside
         barrierLabel: "Dismiss", // Optional label for accessibility
         barrierColor: Colors.black54, // Dim background
-        transitionDuration: const Duration(milliseconds: 200), // Optional: animation
+        transitionDuration:
+            const Duration(milliseconds: 200), // Optional: animation
         pageBuilder: (BuildContext dialogContext, Animation<double> animation,
             Animation<double> secondaryAnimation) {
+              if(events.isEmpty && date != null)
+              {
+                context
+                .read<CalendarEventBloc>()
+                .add(CreateEvent(date));
+              }else{
+                context
+                .read<CalendarEventBloc>()
+                .add(PrepareCalendarEventViewData(events.first as FahrstundenEvent));
+              }
+          
           return BlocBuilder<CalendarEventBloc, CalendarEventState>(
               builder: (context, blocState) {
-                if(blocState is EventDataPreviewAfterUpdating)
-                            {
-                              eventData = blocState.updatedEvent;
-                            }
-                if (eventData.color == mainColor) {
-      infoBackgroundColor = tabBarMainColorShade100;
-      infoBorderColor = mainColor;
-    } else if (eventData.color == mainColorComplementaryFirst) {
-      infoBackgroundColor = mainColorComplementaryFirstShade100;
-      infoBorderColor = mainColorComplementaryFirst;
-    } else if (eventData.color == mainColorComplementarySecond) {
-      infoBackgroundColor = mainColorComplementarySecondShade100;
-      infoBorderColor = mainColorComplementarySecond;
-    }
+
             return GestureDetector(
               behavior:
                   HitTestBehavior.opaque, // Ensures taps outside are detected
@@ -195,7 +190,9 @@ class CalendarPage extends StatelessWidget {
                         color: Colors.white, // Dialog background color
                         borderRadius: BorderRadius.circular(20.0),
                         border: Border.all(
-                          color: infoBorderColor,
+                          color: blocState is SelectedEventDataState
+                              ? blocState.infoBorderColor
+                              : Colors.blueGrey,
                           width: 2.3,
                         ),
                       ),
@@ -203,17 +200,14 @@ class CalendarPage extends StatelessWidget {
                         builder: (context) {
                           if (blocState is DataLoading ||
                               blocState is DataLoaded) {
-                            return _stackLoadingEditingWindow(blocState,
-                                context, infoBorderColor, infoBackgroundColor);
-                          } else {
-                            
+                            //TODO WIR WOLLEN HIER HIN
+                            return _stackLoadingEditingWindow(
+                                blocState, context);
+                          } else if (blocState is SelectedEventDataState) {
                             return _stackEventInformation(
-                                dateInfo,
-                                datetimeInfo,
-                                eventData,
-                                infoBorderColor,
-                                infoBackgroundColor,
-                                context);
+                               blocState, context);
+                          } else {
+                            return const Center(child: Text("Error"));
                           }
                         },
                       ),
@@ -226,8 +220,8 @@ class CalendarPage extends StatelessWidget {
         });
   }
 
-  Stack _stackLoadingEditingWindow(CalendarEventState blocState,
-      BuildContext context, Color infoBorderColor, Color infoBackgroundColor) {
+  Stack _stackLoadingEditingWindow(
+      CalendarEventState blocState, BuildContext context) {
     return Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.topCenter,
@@ -253,17 +247,24 @@ class CalendarPage extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: infoBorderColor,
+                color: blocState is DataLoading
+                    ? Colors.blueGrey
+                    : (blocState as DataLoaded)
+                        .infoBorderColor, //infoBorderColor, //TODO TEST
                 width: 2.3,
               ),
             ),
             child: CircleAvatar(
-              backgroundColor: infoBackgroundColor,
+              backgroundColor: blocState is DataLoading
+                  ? Colors.blueGrey
+                  : (blocState as DataLoaded).infoBackgroundColor, //TODO TEST
               radius: 40,
-              child: Icon(
-                Icons.edit_calendar_outlined,
+              child: Icon( blocState is DataLoaded ?
+                Icons.edit_calendar_outlined : Icons.sync,
                 size: 60,
-                color: infoBorderColor,
+                color: blocState is DataLoading
+                    ? Colors.grey[300]
+                    : (blocState as DataLoaded).infoBorderColor, //TODO TEST
               ),
             ),
           ),
@@ -302,12 +303,7 @@ class CalendarPage extends StatelessWidget {
   }
 
   Stack _stackEventInformation(
-      String dateInfo,
-      String datetimeInfo,
-      FahrstundenEvent eventData,
-      Color infoBorderColor,
-      Color infoBackgroundColor,
-      BuildContext context) {
+      SelectedEventDataState blocState, BuildContext context) {
     return Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.topCenter,
@@ -319,7 +315,8 @@ class CalendarPage extends StatelessWidget {
             right: 20.0,
             bottom: 15.0,
           ),
-          child: _eventContent( dateInfo, datetimeInfo, eventData),
+          child: _eventContent(
+              blocState.dateInfo, blocState.datetimeInfo, blocState.event),
         ),
         Positioned(
           top: -40,
@@ -328,17 +325,17 @@ class CalendarPage extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: infoBorderColor,
+                color: blocState.infoBorderColor,
                 width: 2.3,
               ),
             ),
             child: CircleAvatar(
-              backgroundColor: infoBackgroundColor,
+              backgroundColor: blocState.infoBackgroundColor,
               radius: 40,
               child: Icon(
                 Icons.event,
                 size: 60,
-                color: infoBorderColor,
+                color: blocState.infoBorderColor,
               ),
             ),
           ),
@@ -358,9 +355,9 @@ class CalendarPage extends StatelessWidget {
             ),
             child: GestureDetector(
               onTap: () {
-                context.read<CalendarEventBloc>().add(
-                    PrepareChangeCalendarEventData(
-                        eventData));
+                context
+                    .read<CalendarEventBloc>()
+                    .add(PrepareChangeCalendarEventViewData(blocState.event));
               },
               child: const CircleAvatar(
                 backgroundColor: tabBarOrangeShade100,
@@ -482,28 +479,44 @@ class CalendarPage extends StatelessWidget {
     );
   }
 
+//TODO: State DataLoaded nutzen. Ein fertig FahrstundenEvent erstellen dann fetch data und editwindow nutzen
   _editWindow(BuildContext context, DataLoaded blocState) {
     return BlocProvider(
         create: (context) => AsyncEventDataValidationFormBloc(),
         child: Builder(builder: (context) {
           final formBloc = context.read<AsyncEventDataValidationFormBloc>();
 
+          // Werte initialisieren
           formBloc.titleFormBloc.updateInitialValue(blocState.event.title);
           formBloc.startDateTimeFormBloc.updateInitialValue(blocState.fullDate);
-          formBloc.endDateTimeFormBloc.updateInitialValue(blocState.fullEndDate);
+          formBloc.endDateTimeFormBloc
+              .updateInitialValue(blocState.fullEndDate);
           formBloc.fahrzeugDropDownBloc.updateItems(blocState.fahrzeuge);
-          formBloc.fahrzeugDropDownBloc.updateInitialValue(blocState.event.fahrzeug != null ? blocState.fahrzeuge.last : null);
+          formBloc.fahrzeugDropDownBloc.updateInitialValue(
+              blocState.event.fahrzeug != null
+                  ? blocState.fahrzeuge.last
+                  : null);
           formBloc.fahrschuelerDropDownBloc.updateItems(blocState.fahrschueler);
-          formBloc.fahrschuelerDropDownBloc.updateInitialValue(blocState.event.fahrschueler != null ? blocState.fahrschueler.last : null);
-          formBloc.descriptionFormBloc.updateInitialValue(blocState.event.description ?? "");
-
-
+          formBloc.fahrschuelerDropDownBloc.updateInitialValue(
+              blocState.event.fahrschueler != null
+                  ? blocState.fahrschueler.last
+                  : null);
+          formBloc.descriptionFormBloc
+              .updateInitialValue(blocState.event.description ?? "");
 
           return FormBlocListener<AsyncEventDataValidationFormBloc, String,
               String>(
             formBloc: formBloc,
             onSuccess: (context, state) async {
-                context.read<CalendarEventBloc>().add(ExecuteChangeCalendarEventData(blocState.event.eventID, formBloc.titleFormBloc.value, formBloc.descriptionFormBloc.value, formBloc.startDateTimeFormBloc.value, formBloc.endDateTimeFormBloc.value, formBloc.fahrschuelerDropDownBloc.value, formBloc.fahrzeugDropDownBloc.value));
+              context.read<CalendarEventBloc>().add(
+                  ExecuteChangeCalendarEventData(
+                      blocState.event.eventID,
+                      formBloc.titleFormBloc.value,
+                      formBloc.descriptionFormBloc.value,
+                      formBloc.startDateTimeFormBloc.value,
+                      formBloc.endDateTimeFormBloc.value,
+                      formBloc.fahrschuelerDropDownBloc.value,
+                      formBloc.fahrzeugDropDownBloc.value));
             },
             onFailure: (context, state) {
               ScaffoldMessenger.of(context)

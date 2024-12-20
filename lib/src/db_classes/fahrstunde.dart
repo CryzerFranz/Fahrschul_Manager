@@ -1,4 +1,5 @@
 import 'package:fahrschul_manager/constants.dart';
+import 'package:fahrschul_manager/doc/intern/Fahrschule.dart';
 import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_event.dart';
 import 'package:fahrschul_manager/src/db_classes/fahrschueler.dart';
 import 'package:fahrschul_manager/src/db_classes/fahrzeug.dart';
@@ -7,8 +8,7 @@ import 'package:fahrschul_manager/pages/calendar_page/calendar_view_customizatio
 import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
-Future<ParseObject?> fetchFahrstundeById({required String eventId}) async
-{
+Future<ParseObject?> fetchFahrstundeById({required String eventId}) async {
   // Create the query for the Fahrstunde class using the given objectId
   final QueryBuilder<ParseObject> queryBuilder =
       QueryBuilder<ParseObject>(ParseObject('Fahrstunden'))
@@ -26,16 +26,17 @@ Future<ParseObject?> fetchFahrstundeById({required String eventId}) async
   return null;
 }
 
-Future<FahrstundenEvent?> updateFahrstunde({required ExecuteChangeCalendarEventData event}) async
-{
-  ParseObject? eventObject = await fetchFahrstundeById(eventId: event.eventId);
-  if(eventObject == null)
-  {
-    throw("fetching event failed");
+Future<FahrstundenEvent?> updateFahrstunde(
+    {required ExecuteChangeCalendarEventData event}) async {
+  if (event.eventId == null) {
+    throw ("Event not exisiting");
+  }
+  ParseObject? eventObject = await fetchFahrstundeById(eventId: event.eventId!);
+  if (eventObject == null) {
+    throw ("fetching event failed");
   }
 
-  if(event.fahrschueler == null)
-  {
+  if (event.fahrschueler == null) {
     // Wenn kein Fahrschueler ausgewählt ist wird 'UpdatedGesantStd' auf 'true' gesetzt damit
     // dieser Eintrag nicht vom Schedule Job erfasst wird.
     eventObject.set("UpdatedGesamtStd", true);
@@ -48,8 +49,7 @@ Future<FahrstundenEvent?> updateFahrstunde({required ExecuteChangeCalendarEventD
   eventObject.set("EndDatum", event.fullEndDate);
 
   final response = await eventObject.save();
-  if(!response.success)
-  {
+  if (!response.success) {
     return null;
   }
   return createEventData(
@@ -61,8 +61,6 @@ Future<FahrstundenEvent?> updateFahrstunde({required ExecuteChangeCalendarEventD
       fahrzeug: event.fahrzeuge,
       fahrschueler: event.fahrschueler);
 }
-
-
 
 //TODO !!FRONTEND sollte überprüfen das enddatum nicht kleiner als datum ist.!!
 /// Fügt eine Fahrstunde/Termin in die Datenbank ein und erstellt zugleich einen Objekt für das Kalendar Widget.
@@ -107,8 +105,7 @@ Future<FahrstundenEvent> addFahrstunde({
 
   if (fahrschueler != null) {
     termin.set('Fahrschueler', fahrschueler);
-  }
-  else{
+  } else {
     // Wenn kein Fahrschueler ausgewählt ist wird 'UpdatedGesantStd' auf 'true' gesetzt damit
     // dieser Eintrag nicht vom Schedule Job erfasst wird.
     termin.set('UpdatedGesamtStd', true);
@@ -189,9 +186,9 @@ FahrstundenEvent createEventData({
 Future<List<FahrstundenEvent>> getUserFahrstunden() async {
   List<FahrstundenEvent> events = [];
 
-   DateTime today = DateTime.now(); // Get today's date
+  DateTime today = DateTime.now(); // Get today's date
   int currentWeekday = today.weekday; // 1 = Monday, 7 = Sunday
-  
+
   // Calculate the date for the current Monday
   DateTime currentMonday = today.subtract(Duration(days: currentWeekday - 1));
 
@@ -236,8 +233,8 @@ Stream<List<FahrstundenEvent>> getUserFahrstundenStream() async* {
 
 /// Ruft verfügbare Ressourcen (Fahrzeuge und Fahrschüler) innerhalb eines angegebenen Datumsbereichs ab.
 ///
-/// Diese Funktion sucht "Fahrstunden" (Fahrstunden-Einträge) für einen bestimmten Fahrlehrer 
-/// im angegebenen Zeitraum (Start- und Enddatum). Sie ermittelt nicht verfügbare Fahrzeuge 
+/// Diese Funktion sucht "Fahrstunden" (Fahrstunden-Einträge) für einen bestimmten Fahrlehrer
+/// im angegebenen Zeitraum (Start- und Enddatum). Sie ermittelt nicht verfügbare Fahrzeuge
 /// und Fahrschüler basierend auf den Fahrstunden und schließt diese von den verfügbaren Listen aus.
 ///
 /// Es wird eine Map zurückgegeben, die Listen der verfügbaren Fahrzeuge und Fahrschüler enthält.
@@ -256,10 +253,12 @@ Future<Map<String, List<ParseObject>>> fetchAvailableResourcesInRange(
   List<String> unavailableSchuelerIds = [];
   List<ParseObject> availableFahrzeuge = [];
   List<ParseObject> availableSchueler = [];
-
+  //TODO brauche alle fahrstunden der Fahrschule ------> TO TEST
+  final List<ParseObject> fahrlehrerList =
+      await fetchAllFahrlehrerFromFahrschule(Benutzer().fahrschule!.objectId!);
   final QueryBuilder<ParseObject> query =
       QueryBuilder<ParseObject>(ParseObject('Fahrstunden'))
-        ..whereContains("Fahrlehrer", Benutzer().dbUserId!)
+        ..whereContainedIn("Fahrlehrer", fahrlehrerList)
         ..whereLessThanOrEqualTo(
             "Datum", end) // Event starts before or on the end date
         ..whereGreaterThanOrEqualsTo("EndDatum", start)
@@ -282,21 +281,38 @@ Future<Map<String, List<ParseObject>>> fetchAvailableResourcesInRange(
   if (response.success && response.results != null) {
     for (var entry in response.results as List<ParseObject>) {
       if (entry.get<ParseObject>("Fahrzeug") != null) {
-        unavailableFahrzeugeIds.add(entry.get<ParseObject>("Fahrzeug")!.objectId!);
+        unavailableFahrzeugeIds
+            .add(entry.get<ParseObject>("Fahrzeug")!.objectId!);
       }
       if (entry.get<ParseObject>("Fahrschueler") != null) {
-        unavailableSchuelerIds.add(
-            entry.get<ParseObject>("Fahrschueler")!.objectId!);
+        unavailableSchuelerIds
+            .add(entry.get<ParseObject>("Fahrschueler")!.objectId!);
       }
-
-      availableFahrzeuge = await fetchAvailableFahrzeugExcludingIds(unavailableFahrzeugeIds);
-      availableSchueler = await fetchAvailableFahrschuelerExcludingIds(unavailableSchuelerIds);
-
+      //availableFahrzeuge.addAll(await fetchAvailableFahrzeugExcludingIds(unavailableFahrzeugeIds));
+      //availableSchueler = await fetchAvailableFahrschuelerExcludingIds(unavailableSchuelerIds);
     }
-    return {
-      "Fahrzeuge": availableFahrzeuge,
-      "Schueler": availableSchueler,
-    };
+    Set<String> seenFahrzeug = {};
+    Set<String> seenFahrschueler = {};
+    unavailableFahrzeugeIds = unavailableFahrzeugeIds
+        .where((item) => seenFahrzeug.add(item))
+        .toList();
+    unavailableSchuelerIds = unavailableSchuelerIds
+        .where((item) => seenFahrschueler.add(item))
+        .toList();
   }
-  return {};
+  availableFahrzeuge.addAll(await fetchAvailableFahrzeugExcludingIds(unavailableFahrzeugeIds));
+  availableSchueler = await fetchAvailableFahrschuelerExcludingIds(unavailableSchuelerIds);
+
+  return {
+    "Fahrzeuge": availableFahrzeuge,
+    "Schueler": availableSchueler,
+  };
+}
+
+List<ParseObject> getUniqueObjectsByField(
+    List<ParseObject> objects, String fieldName) {
+  Set<dynamic> seenValues = {};
+  return objects
+      .where((object) => seenValues.add(object.get(fieldName)))
+      .toList();
 }
