@@ -6,8 +6,7 @@ import '../calendar_view_customization.dart';
 
 abstract class CalendarEventState {}
 
-class DataLoading extends CalendarEventState {
-}
+class DataLoading extends CalendarEventState {}
 
 class DataLoaded extends CalendarEventState {
   final List<ParseObject> fahrzeuge;
@@ -17,50 +16,45 @@ class DataLoaded extends CalendarEventState {
   final DateTime fullEndDate;
   final String dateInfo;
   final String datetimeInfo;
-   final Color infoBackgroundColor;
+  final Color infoBackgroundColor;
   final Color infoBorderColor;
 
-
-  DataLoaded(this.fahrzeuge, this.fahrschueler, this.event, this.fullDate, this.fullEndDate, this.dateInfo, this.datetimeInfo, this.infoBackgroundColor, this.infoBorderColor);
+  DataLoaded(
+      this.fahrzeuge,
+      this.fahrschueler,
+      this.event,
+      this.fullDate,
+      this.fullEndDate,
+      this.dateInfo,
+      this.datetimeInfo,
+      this.infoBackgroundColor,
+      this.infoBorderColor);
 }
 
 class SelectedEventDataState extends CalendarEventState {
   final FahrstundenEvent event;
-   final DateTime fullDate;
+  final DateTime fullDate;
   final DateTime fullEndDate;
   final String dateInfo;
   final String datetimeInfo;
   final Color infoBackgroundColor;
   final Color infoBorderColor;
 
-  SelectedEventDataState(this.event, this.fullDate, this.fullEndDate ,this.dateInfo, this.datetimeInfo, this.infoBackgroundColor, this.infoBorderColor);
+  SelectedEventDataState(
+      this.event,
+      this.fullDate,
+      this.fullEndDate,
+      this.dateInfo,
+      this.datetimeInfo,
+      this.infoBackgroundColor,
+      this.infoBorderColor);
 }
-
-// class UpdateFahrstunde extends CalendarEventState {
-//   final ParseObject? fahrzeuge;
-//   final ParseObject? fahrschueler;
-//   final FahrstundenEvent event;
-//   final DateTime fullDate;
-//   final DateTime fullEndDate;
-
-//   UpdateFahrstunde(this.fahrzeuge, this.fahrschueler, this.event, this.fullDate, this.fullEndDate);
-// }
-// class DataFetchingCreateState extends CalendarEventState {
-  // final FahrstundenEvent eventToCreate;
-  // DataFetchingCreateState(this.eventToCreate);
-// }
-
 
 class DataError extends CalendarEventState {
   final String message;
   DataError(this.message);
 }
 
-class EventDataPreview extends CalendarEventState{
+class EventDataPreview extends CalendarEventState {
   EventDataPreview();
-}
-
-class EventDataPreviewAfterUpdating extends CalendarEventState{
-  final FahrstundenEvent updatedEvent;
-  EventDataPreviewAfterUpdating(this.updatedEvent);
 }

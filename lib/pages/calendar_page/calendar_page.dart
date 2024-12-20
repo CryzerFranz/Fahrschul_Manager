@@ -61,11 +61,8 @@ class CalendarPage extends StatelessWidget {
                     _dialogBuilder(context, events);
                   },
                   onDateTap: (date) {
-                    //TODO
-                    // Parameter 'events' bleibt leer, da wir hier einen neuen event erstellen möchten
-                    //_dialogBuilder(context: context, date: date);
+                    // Neues event erstellen
                     _dialogBuilder(context, [], date: date);
-                    //context.read<CalendarEventBloc>().add(CreateEvent(date));
                   },
                   timeLineBuilder: (date) {
                     final hourFormatter = DateFormat.Hm();
@@ -126,7 +123,7 @@ class CalendarPage extends StatelessWidget {
                 right: 16.0,
                 child: ElevatedButton(
                   onPressed: () {
-                    //TODO
+                      _dialogBuilder(context, [], date: DateTime.now());
                   },
                   style: ElevatedButton.styleFrom(
                     shape: const CircleBorder(),
@@ -144,19 +141,22 @@ class CalendarPage extends StatelessWidget {
     );
   }
 
+  /// Dialog Fenster wenn auf ein Event oder leeres Zeitfenster oder auf das + getippt wird
   Future<void> _dialogBuilder(
       BuildContext context, List<CalendarEventData<FahrstundenEvent>> events,
       {DateTime? date}) {
     return showGeneralDialog<void>(
         context: context,
         barrierDismissible:
-            false, // Prevent automatic dismissal when tapping outside
-        barrierLabel: "Dismiss", // Optional label for accessibility
-        barrierColor: Colors.black54, // Dim background
+            false, 
+        barrierLabel: "Dismiss", 
+        barrierColor: Colors.black54, 
         transitionDuration:
-            const Duration(milliseconds: 200), // Optional: animation
+            const Duration(milliseconds: 200), 
         pageBuilder: (BuildContext dialogContext, Animation<double> animation,
             Animation<double> secondaryAnimation) {
+              // wenn das Ereignis leer ist und das Datum angegeben ist, dann ist dies eine Erstellung
+              // andernfalls wird eine detaillierte Ansicht des ausgewählten Ereignisses gewünscht
               if(events.isEmpty && date != null)
               {
                 context
@@ -173,21 +173,21 @@ class CalendarPage extends StatelessWidget {
 
             return GestureDetector(
               behavior:
-                  HitTestBehavior.opaque, // Ensures taps outside are detected
+                  HitTestBehavior.opaque,
               onTap: () {
                 context.read<CalendarEventBloc>().add(ResetStateEvent());
-                Navigator.of(dialogContext).pop(); // Close the dialog
+                Navigator.of(dialogContext).pop(); 
               },
               child: Center(
                 child: GestureDetector(
                   onTap:
-                      () {}, // Prevent tap propagation to the outer GestureDetector
+                      () {}, // Verhinderung der Weitergabe von Antippen an den äußeren GestureDetector
                   child: Dialog(
                     backgroundColor:
-                        Colors.transparent, // Custom dialog background
+                        Colors.transparent, 
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white, // Dialog background color
+                        color: Colors.white, 
                         borderRadius: BorderRadius.circular(20.0),
                         border: Border.all(
                           color: blocState is SelectedEventDataState
@@ -200,7 +200,6 @@ class CalendarPage extends StatelessWidget {
                         builder: (context) {
                           if (blocState is DataLoading ||
                               blocState is DataLoaded) {
-                            //TODO WIR WOLLEN HIER HIN
                             return _stackLoadingEditingWindow(
                                 blocState, context);
                           } else if (blocState is SelectedEventDataState) {
@@ -250,21 +249,21 @@ class CalendarPage extends StatelessWidget {
                 color: blocState is DataLoading
                     ? Colors.blueGrey
                     : (blocState as DataLoaded)
-                        .infoBorderColor, //infoBorderColor, //TODO TEST
+                        .infoBorderColor,
                 width: 2.3,
               ),
             ),
             child: CircleAvatar(
               backgroundColor: blocState is DataLoading
                   ? Colors.blueGrey
-                  : (blocState as DataLoaded).infoBackgroundColor, //TODO TEST
+                  : (blocState as DataLoaded).infoBackgroundColor, 
               radius: 40,
               child: Icon( blocState is DataLoaded ?
                 Icons.edit_calendar_outlined : Icons.sync,
                 size: 60,
                 color: blocState is DataLoading
                     ? Colors.grey[300]
-                    : (blocState as DataLoaded).infoBorderColor, //TODO TEST
+                    : (blocState as DataLoaded).infoBorderColor,
               ),
             ),
           ),
@@ -479,7 +478,6 @@ class CalendarPage extends StatelessWidget {
     );
   }
 
-//TODO: State DataLoaded nutzen. Ein fertig FahrstundenEvent erstellen dann fetch data und editwindow nutzen
   _editWindow(BuildContext context, DataLoaded blocState) {
     return BlocProvider(
         create: (context) => AsyncEventDataValidationFormBloc(),
@@ -522,7 +520,7 @@ class CalendarPage extends StatelessWidget {
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
                 ..showSnackBar(
-                    showErrorSnackbar(state.failureResponse!, "Fehler SECOND"));
+                    showErrorSnackbar(state.failureResponse!, "Fehler"));
             },
             child: SingleChildScrollView(
               child: Column(
@@ -597,7 +595,6 @@ class CalendarPage extends StatelessWidget {
                       enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: Colors.green, width: 1),
                       ),
-                      // Optional: Customize the hintText or other properties if needed
                     ),
                   ),
                   const Text(
@@ -619,7 +616,6 @@ class CalendarPage extends StatelessWidget {
                       enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: Colors.green, width: 1),
                       ),
-                      // Optional: Customize the hintText or other properties if needed
                     ),
                   ),
                   const SizedBox(height: 10),

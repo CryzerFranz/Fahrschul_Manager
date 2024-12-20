@@ -41,7 +41,7 @@ Future<FahrstundenEvent?> updateFahrstunde(
     // dieser Eintrag nicht vom Schedule Job erfasst wird.
     eventObject.set("UpdatedGesamtStd", true);
   }
-  eventObject.set("Fahrzeug", event.fahrzeuge);
+  eventObject.set("Fahrzeug", event.fahrzeug);
   eventObject.set("Fahrschueler", event.fahrschueler);
   eventObject.set("Titel", event.titel);
   eventObject.set("Beschreibung", event.description);
@@ -58,7 +58,7 @@ Future<FahrstundenEvent?> updateFahrstunde(
       beschreibung: event.description,
       datum: event.fullDate,
       endDatum: event.fullEndDate,
-      fahrzeug: event.fahrzeuge,
+      fahrzeug: event.fahrzeug,
       fahrschueler: event.fahrschueler);
 }
 
