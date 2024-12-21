@@ -119,6 +119,7 @@ class FahrschuelerListePage extends StatelessWidget {
   }
 
   Future<void> _dialogBuilderAddNew(BuildContext context) {
+    late FahrlehrerCubit cubit;
     return showGeneralDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -132,14 +133,20 @@ class FahrschuelerListePage extends StatelessWidget {
 
         return BlocProvider(
           create: (context) {
-            final cubit = FahrlehrerCubit();
+            cubit = FahrlehrerCubit();
             cubit.fetchAllFahrlehrer(Benutzer().fahrschule!.objectId!);
             return cubit;
           },
           child: FormBlocListener<AsyncFahrschuelerDataValidationFormBloc,
               String, String>(
-            onSuccess: (context, state) {
-              Navigator.of(dialogContext).pop(); // Close dialog on success
+            onSuccess: (context, state)  {
+              cubit.sendMail(eMail: formBloc.emailFormBloc.value, nachname: formBloc.lastNameFormBloc.value, vorname: formBloc.firstNameFormBloc.value);
+              ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+                showSuccessSnackbar("Fahrschüler wurde erstellt", "HURA!"));
+              Navigator.of(dialogContext).pop();
+               // Close dialog on success
             },
             onFailure: (context, state) {},
             child: BlocBuilder<FahrlehrerCubit, FahrlehrerState>(
@@ -265,10 +272,13 @@ class FahrschuelerListePage extends StatelessWidget {
           TextFieldBlocBuilder(
             textFieldBloc: formBloc.firstNameFormBloc,
             decoration: inputDecoration('Vorname'),
+            suffixButton: SuffixButton.clearText,
+
           ),
           const SizedBox(height: 16.0),
           TextFieldBlocBuilder(
             textFieldBloc: formBloc.lastNameFormBloc,
+            suffixButton: SuffixButton.clearText,
             decoration: inputDecoration('Nachname'),
           ),
           const SizedBox(height: 16.0),
