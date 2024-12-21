@@ -1,5 +1,7 @@
 import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_bloc.dart';
+import 'package:fahrschul_manager/pages/fahrschueler_liste/AsyncFahrschuelerDataValidationFormBloc.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_bloc.dart';
+import 'package:fahrschul_manager/pages/fahrschueler_liste/cubit/fahrlehrerCubit.dart';
 import 'package:fahrschul_manager/pages/fahrzeug_add/bloc/fahrzeug_add_bloc.dart';
 import 'package:fahrschul_manager/pages/profil_page/bloc/profil_page_bloc.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
@@ -93,6 +95,8 @@ class MyApp extends StatelessWidget {
           BlocProvider(create: (context) => ProfilPageBloc()),
           BlocProvider(create: (context) => CalendarEventBloc()),
           BlocProvider(create: (context) => AsyncFahrzeugAddValidationFormBloc()),
+          BlocProvider(create: (context) => AsyncFahrschuelerDataValidationFormBloc()),
+          // BlocProvider(create: (context) => FahrlehrerCubit()),
           BlocProvider(create: (context)=> FahrzeugAddBloc()),
         ],
         child:  MaterialApp(

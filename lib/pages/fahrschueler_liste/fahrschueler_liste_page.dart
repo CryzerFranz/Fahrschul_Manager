@@ -1,14 +1,19 @@
 import 'package:animated_segmented_tab_control/animated_segmented_tab_control.dart';
 import 'package:fahrschul_manager/constants.dart';
+import 'package:fahrschul_manager/doc/intern/Fahrschule.dart';
+import 'package:fahrschul_manager/pages/fahrschueler_liste/AsyncFahrschuelerDataValidationFormBloc.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_bloc.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_event.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_state.dart';
+import 'package:fahrschul_manager/pages/fahrschueler_liste/cubit/fahrlehrerCubit.dart';
+import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/widgets/3dCard.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
+import 'package:fahrschul_manager/widgets/snackbar.dart';
 import 'package:fahrschul_manager/widgets/styles.dart';
 import 'package:flutter/material.dart';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 class FahrschuelerListePage extends StatelessWidget {
@@ -80,10 +85,167 @@ class FahrschuelerListePage extends StatelessWidget {
               ],
             ),
           ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(
+                  top: 16.0, left: 16, right: 16, bottom: 125),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: mainColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Theme.of(context).canvasColor,
+                    width: 9.0, // Thickness of the white border
+                  ),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.add),
+                  color: Theme.of(context).canvasColor,
+                  iconSize: 30.0, // Size of the icon
+                  onPressed: () async {
+                    // Handle icon button press
+
+                    // ignore: use_build_context_synchronously
+                    _dialogBuilderAddNew(context);
+                  },
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
+
+  Future<void> _dialogBuilderAddNew(BuildContext context) {
+  return showGeneralDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    barrierLabel: "Dismiss",
+    barrierColor: Colors.black54,
+    transitionDuration: const Duration(milliseconds: 200),
+    pageBuilder: (BuildContext dialogContext, Animation<double> animation,
+        Animation<double> secondaryAnimation) {
+      final formBloc = context.read<AsyncFahrschuelerDataValidationFormBloc>();
+
+      return BlocProvider(
+        create: (context) {
+          final cubit = FahrlehrerCubit();
+          cubit.fetchAllFahrlehrer(Benutzer().fahrschule!.objectId!);
+          return cubit;
+        },
+        child: FormBlocListener<AsyncFahrschuelerDataValidationFormBloc,
+            String, String>(
+          onSuccess: (context, state) {
+            Navigator.of(dialogContext).pop(); // Close dialog on success
+            
+          },
+          onFailure: (context, state) {
+           
+          },
+          child: BlocBuilder<FahrlehrerCubit, FahrlehrerState>(
+            builder: (context, blocState) {
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  Navigator.of(dialogContext).pop();
+                },
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () {}, // Prevent tap propagation
+                    child: Dialog(
+                      backgroundColor: Colors.transparent,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20.0),
+                          border: Border.all(
+                            color: mainColor,
+                            width: 2.3,
+                          ),
+                        ),
+                        child: Builder(
+                          builder: (context) {
+                            if (blocState is FahrlehrerLoading) {
+                              return loadingScreen();
+                            } else if (blocState is FahrlehrerLoaded) {
+                              formBloc.fahrlehrerDropDownBloc.updateItems(blocState.fahrlehrer);
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  TextFieldBlocBuilder(
+                                    textFieldBloc: formBloc.firstNameFormBloc,
+                                    decoration: inputDecoration('Vorname'),
+                                  ),
+                                  const SizedBox(height: 16.0),
+                                  TextFieldBlocBuilder(
+                                    textFieldBloc: formBloc.lastNameFormBloc,
+                                    decoration: inputDecoration('Nachname'),
+                                  ),
+                                  const SizedBox(height: 16.0),
+                                  TextFieldBlocBuilder(
+                                    textFieldBloc: formBloc.emailFormBloc,
+                                    suffixButton: SuffixButton.asyncValidating,
+                                    decoration: inputDecoration('E-Mail'),
+                                  ),
+                                  const SizedBox(height: 16.0),
+                                  DropdownFieldBlocBuilder(
+                                    selectFieldBloc:
+                                        formBloc.fahrlehrerDropDownBloc,
+                                    itemBuilder: (context, value) => FieldItem(
+                                      child: Text(
+                                          "${value.get<String>("Name") ?? ''}, ${value.get<String>("Vorname") ?? ''}"),
+                                    ),
+                                    decoration: const InputDecoration(
+                                      labelText: "Fahrlehrer wählen",
+                                      prefixIcon: Icon(Icons.face),
+                                      focusedBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: mainColor, width: 2),
+                                      ),
+                                      enabledBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: mainColor, width: 1),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16.0),
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: ElevatedButton(
+                                      onPressed: formBloc.submit,
+                                      style: stadiumButtonStyle(),
+                                      child: const Text('Hinzufügen'),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            } else if (blocState is FahrlehrerError) {
+                              return Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  "Error: ${blocState.message}",
+                                  style: const TextStyle(color: Colors.red),
+                                ),
+                              );
+                            } else {
+                              return const Center(child: Text("Unbekannter Status"));
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    },
+  );
+}
 }
 
 class FahrschuelerListContent extends StatelessWidget {
@@ -99,60 +261,69 @@ class FahrschuelerListContent extends StatelessWidget {
   Widget build(BuildContext context) {
     context.read<FahrschuelerListBloc>().add(FetchFahrschuelerListEvent(state));
 
-    return BlocBuilder<FahrschuelerListBloc, FahrschuelerListState>(
-      builder: (context, blocState) {
-        if (blocState is DataLoading) {
-          return loadingScreen(height_: 150, width_: 150);
-        } else if (blocState is DataLoaded) {
-          return ListView.builder(
-            padding: const EdgeInsets.all(20),
-            itemCount: blocState.data.length,
-            itemBuilder: (BuildContext context, int index) {
-              return displayListEntryContent(context: context, data: blocState.data[index], contentState: state);
-            },
-          );
-        } else if (blocState is DataError) {
-          return Center(
-              child: Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(top: 120),
-              ),
-              Icon(
-                Icons.sentiment_dissatisfied,
-                size: 80,
-                color: Colors.red[600],
-                shadows: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.5), // Shadow color
-                    spreadRadius: 1, // How far the shadow spreads
-                    blurRadius: 10, // The softness of the shadow
-                    offset: const Offset(5, 5), // X and Y offset
+    return Stack(
+      children: [
+        BlocBuilder<FahrschuelerListBloc, FahrschuelerListState>(
+          builder: (context, blocState) {
+            if (blocState is DataLoading) {
+              return loadingScreen(height_: 150, width_: 150);
+            } else if (blocState is DataLoaded) {
+              return ListView.builder(
+                padding: const EdgeInsets.all(20),
+                itemCount: blocState.data.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return displayListEntryContent(
+                      context: context,
+                      data: blocState.data[index],
+                      contentState: state);
+                },
+              );
+            } else if (blocState is DataError) {
+              return Center(
+                  child: Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(top: 120),
                   ),
+                  Icon(
+                    Icons.sentiment_dissatisfied,
+                    size: 80,
+                    color: Colors.red[600],
+                    shadows: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5), // Shadow color
+                        spreadRadius: 1, // How far the shadow spreads
+                        blurRadius: 10, // The softness of the shadow
+                        offset: const Offset(5, 5), // X and Y offset
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  const Text("Keine Fahrschüler"),
                 ],
-              ),
-              const SizedBox(height: 6),
-              const Text("Keine Fahrschüler"),
-            ],
-          ));
-        } else {
-          return const Center(child: Text("No data"));
-        }
-      },
+              ));
+            } else {
+              return const Center(child: Text("No data"));
+            }
+          },
+        ),
+      ],
     );
   }
 
   /// Erstellt den Content für jedes einzelne Listen element
-  /// 
-   /// ### Parameter:
+  ///
+  /// ### Parameter:
   /// - **`BuildContext` [context]** : BuildContext
   /// - **`ParseObject` [data]** : ParseObject vom ausgewählten Index der Liste
   /// - **`String` [contentState]** : Der Aktuelle Tab
-  /// 
+  ///
   /// ### Return value:
   /// - **[Widget]** : UI Element
-  Widget displayListEntryContent({
-      required BuildContext context,required ParseObject data ,required String contentState}) {
+  Widget displayListEntryContent(
+      {required BuildContext context,
+      required ParseObject data,
+      required String contentState}) {
     IconData icon = contentState != stateActive ? Icons.add : Icons.check;
     return Column(
       children: [
@@ -161,8 +332,7 @@ class FahrschuelerListContent extends StatelessWidget {
             Custom3DCard(
               title: "${data.get<String>("Name")!}, "
                   "${data.get<String>("Vorname")!}",
-              widget: Text(
-                  "Fahrstunden: ${data.get("Gesamtfahrstunden")!}"),
+              widget: Text("Fahrstunden: ${data.get("Gesamtfahrstunden")!}"),
               colors: colors,
               width: 0.7,
             ),
@@ -170,12 +340,11 @@ class FahrschuelerListContent extends StatelessWidget {
             Custom3DCard(
               widget: IconButton(
                   onPressed: () {
-                    if(contentState == stateActive)
-                    {
+                    if (contentState == stateActive) {
                       context.read<FahrschuelerListBloc>().add(
-                                  ChangeStateFahrschuelerEvent(
-                                      stateDone, stateActive, data));
-                    }else{
+                          ChangeStateFahrschuelerEvent(
+                              stateDone, stateActive, data));
+                    } else {
                       _dialogBuilder(context, data, contentState);
                     }
                   },
