@@ -119,133 +119,195 @@ class FahrschuelerListePage extends StatelessWidget {
   }
 
   Future<void> _dialogBuilderAddNew(BuildContext context) {
-  return showGeneralDialog<void>(
-    context: context,
-    barrierDismissible: false,
-    barrierLabel: "Dismiss",
-    barrierColor: Colors.black54,
-    transitionDuration: const Duration(milliseconds: 200),
-    pageBuilder: (BuildContext dialogContext, Animation<double> animation,
-        Animation<double> secondaryAnimation) {
-      final formBloc = context.read<AsyncFahrschuelerDataValidationFormBloc>();
+    return showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: "Dismiss",
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (BuildContext dialogContext, Animation<double> animation,
+          Animation<double> secondaryAnimation) {
+        final formBloc =
+            context.read<AsyncFahrschuelerDataValidationFormBloc>();
 
-      return BlocProvider(
-        create: (context) {
-          final cubit = FahrlehrerCubit();
-          cubit.fetchAllFahrlehrer(Benutzer().fahrschule!.objectId!);
-          return cubit;
-        },
-        child: FormBlocListener<AsyncFahrschuelerDataValidationFormBloc,
-            String, String>(
-          onSuccess: (context, state) {
-            Navigator.of(dialogContext).pop(); // Close dialog on success
-            
+        return BlocProvider(
+          create: (context) {
+            final cubit = FahrlehrerCubit();
+            cubit.fetchAllFahrlehrer(Benutzer().fahrschule!.objectId!);
+            return cubit;
           },
-          onFailure: (context, state) {
-           
-          },
-          child: BlocBuilder<FahrlehrerCubit, FahrlehrerState>(
-            builder: (context, blocState) {
-              return GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  Navigator.of(dialogContext).pop();
-                },
-                child: Center(
-                  child: GestureDetector(
-                    onTap: () {}, // Prevent tap propagation
-                    child: Dialog(
-                      backgroundColor: Colors.transparent,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20.0),
-                          border: Border.all(
-                            color: mainColor,
-                            width: 2.3,
+          child: FormBlocListener<AsyncFahrschuelerDataValidationFormBloc,
+              String, String>(
+            onSuccess: (context, state) {
+              Navigator.of(dialogContext).pop(); // Close dialog on success
+            },
+            onFailure: (context, state) {},
+            child: BlocBuilder<FahrlehrerCubit, FahrlehrerState>(
+              builder: (context, blocState) {
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () {}, // Prevent tap propagation
+                      child: Dialog(
+                        backgroundColor: Colors.transparent,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20.0),
+                            border: Border.all(
+                              color: mainColor,
+                              width: 2.3,
+                            ),
                           ),
-                        ),
-                        child: Builder(
-                          builder: (context) {
-                            if (blocState is FahrlehrerLoading) {
-                              return loadingScreen();
-                            } else if (blocState is FahrlehrerLoaded) {
-                              formBloc.fahrlehrerDropDownBloc.updateItems(blocState.fahrlehrer);
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
+                          child: Builder(
+                            builder: (context) {
+                              if(blocState is FahrlehrerError)
+                              {
+                                return const Center(child: Text("Error"));
+                              }
+                              return Stack(
+                                clipBehavior: Clip.none,
+                                alignment: Alignment.topCenter,
                                 children: [
-                                  TextFieldBlocBuilder(
-                                    textFieldBloc: formBloc.firstNameFormBloc,
-                                    decoration: inputDecoration('Vorname'),
-                                  ),
-                                  const SizedBox(height: 16.0),
-                                  TextFieldBlocBuilder(
-                                    textFieldBloc: formBloc.lastNameFormBloc,
-                                    decoration: inputDecoration('Nachname'),
-                                  ),
-                                  const SizedBox(height: 16.0),
-                                  TextFieldBlocBuilder(
-                                    textFieldBloc: formBloc.emailFormBloc,
-                                    suffixButton: SuffixButton.asyncValidating,
-                                    decoration: inputDecoration('E-Mail'),
-                                  ),
-                                  const SizedBox(height: 16.0),
-                                  DropdownFieldBlocBuilder(
-                                    selectFieldBloc:
-                                        formBloc.fahrlehrerDropDownBloc,
-                                    itemBuilder: (context, value) => FieldItem(
-                                      child: Text(
-                                          "${value.get<String>("Name") ?? ''}, ${value.get<String>("Vorname") ?? ''}"),
-                                    ),
-                                    decoration: const InputDecoration(
-                                      labelText: "Fahrlehrer wählen",
-                                      prefixIcon: Icon(Icons.face),
-                                      focusedBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: mainColor, width: 2),
-                                      ),
-                                      enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: mainColor, width: 1),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16.0),
                                   Padding(
-                                    padding: const EdgeInsets.only(bottom: 10),
-                                    child: ElevatedButton(
-                                      onPressed: formBloc.submit,
-                                      style: stadiumButtonStyle(),
-                                      child: const Text('Hinzufügen'),
+                                    padding: const EdgeInsets.only(
+                                      top: 60.0,
+                                      left: 20.0,
+                                      right: 20.0,
+                                      bottom: 15.0,
+                                    ),
+                                    child: blocState is FahrlehrerLoading
+                                        ? SizedBox(height: 300, child: loadingScreen())
+                                        : _editWindow(
+                                            formBloc, (blocState as FahrlehrerLoaded).fahrlehrer), // blocState kann in diesen Moment nur FahrlehrerLoaded sein
+                                  ),
+                                  Positioned(
+                                    top: -40,
+                                    child: Container(
+                                      // Border für CircleAvatar
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: mainColor,
+                                          width: 2.3,
+                                        ),
+                                      ),
+                                      child: CircleAvatar(
+                                        backgroundColor:
+                                            tabBarMainColorShade100,
+                                        radius: 40,
+                                        child: Icon(
+                                          blocState is FahrlehrerLoaded
+                                              ? Icons.person_add
+                                              : Icons.sync,
+                                          size: 60,
+                                          color: mainColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  // Rechter Button
+                                  Positioned(
+                                    top: -15,
+                                    right: -15,
+                                    child: Container(
+                                      // Border für CircleAvatar
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: tabBarRedShade300,
+                                          width: 2.3,
+                                        ),
+                                      ),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          //context.read<CalendarEventBloc>().add(ResetStateEvent());
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const CircleAvatar(
+                                          backgroundColor: tabBarRedShade100,
+                                          radius: 15,
+                                          child: Icon(
+                                            Icons.close,
+                                            color: tabBarRedShade300,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
                               );
-                            } else if (blocState is FahrlehrerError) {
-                              return Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Text(
-                                  "Error: ${blocState.message}",
-                                  style: const TextStyle(color: Colors.red),
-                                ),
-                              );
-                            } else {
-                              return const Center(child: Text("Unbekannter Status"));
-                            }
-                          },
+                            },
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
+
+  SingleChildScrollView _editWindow(AsyncFahrschuelerDataValidationFormBloc formBloc, List<ParseObject> fahrlehrer) {
+    formBloc.fahrlehrerDropDownBloc.updateItems(fahrlehrer);
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextFieldBlocBuilder(
+            textFieldBloc: formBloc.firstNameFormBloc,
+            decoration: inputDecoration('Vorname'),
+          ),
+          const SizedBox(height: 16.0),
+          TextFieldBlocBuilder(
+            textFieldBloc: formBloc.lastNameFormBloc,
+            decoration: inputDecoration('Nachname'),
+          ),
+          const SizedBox(height: 16.0),
+          TextFieldBlocBuilder(
+            textFieldBloc: formBloc.emailFormBloc,
+            suffixButton: SuffixButton.asyncValidating,
+            decoration: inputDecoration('E-Mail'),
+          ),
+          const SizedBox(height: 16.0),
+          DropdownFieldBlocBuilder(
+            selectFieldBloc: formBloc.fahrlehrerDropDownBloc,
+            itemBuilder: (context, value) => FieldItem(
+              child: Text(
+                  "${value.get<String>("Name") ?? ''}, ${value.get<String>("Vorname") ?? ''}"),
+            ),
+            decoration: const InputDecoration(
+              labelText: "Fahrlehrer wählen",
+              prefixIcon: Icon(Icons.face),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: mainColor, width: 2),
+              ),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: mainColor, width: 1),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16.0),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: ElevatedButton(
+              onPressed: formBloc.submit,
+              style: stadiumButtonStyle(),
+              child: const Text('Hinzufügen'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class FahrschuelerListContent extends StatelessWidget {
