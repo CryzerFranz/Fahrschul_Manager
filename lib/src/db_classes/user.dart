@@ -1,3 +1,4 @@
+import 'package:fahrschul_manager/constants.dart';
 import 'package:fahrschul_manager/doc/intern/Status.dart';
 import 'package:fahrschul_manager/main.dart';
 import 'package:fahrschul_manager/pages/authentication/Login_page.dart';
@@ -160,8 +161,13 @@ class Benutzer {
     }
 
     final QueryBuilder<ParseObject> parseQuery = QueryBuilder<ParseObject>(ParseObject('Fahrschueler'))
-    ..whereContains('Fahrlehrer', dbUserId!)
+    ..whereContains('Fahrschule', Benutzer().fahrschule!.objectId!)
     ..whereContains('Status', stateId);
+
+    if(state != stateUnassigned)
+    {
+      parseQuery.whereContains('Fahrlehrer', dbUserId!);
+    }
 
     final apiResponse = await parseQuery.query();
 

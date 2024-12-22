@@ -2,10 +2,13 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:fahrschul_manager/doc/intern/Fahrschule.dart';
 import 'package:fahrschul_manager/doc/intern/User.dart';
+import 'package:flutter/material.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server/gmail.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
-import 'package:random_password_generator/random_password_generator.dart'; // Import Parse SDK
+import 'package:random_password_generator/random_password_generator.dart';
+
+import '../../../src/registration.dart'; // Import Parse SDK
 
 // Define States
 class FahrlehrerState extends Equatable {
@@ -49,15 +52,25 @@ class FahrlehrerCubit extends Cubit<FahrlehrerState> {
     }
   }
 
-  Future<void> sendMail({required String eMail,required  String vorname,required  String nachname}) async
+  Future<void> _createFahrschueler({required String eMail,required  String firstName,required  String lastName, required String password,ParseObject? fahrlehrer}) async
+  {
+    try{
+     final obj = await createFahrschueler(fahrlehrer: fahrlehrer, eMail: eMail, lastName: lastName, firstName: firstName,password: password, fahrschule: Benutzer().fahrschule!);
+    }
+    catch(e){
+      throw("Creating Fahrschueler failed");
+    }
+  }
+  
+  Future<void> sendMail({required String eMail,required  String firstName,required  String lastName, ParseObject? fahrlehrer}) async
   {
     emit(FahrlehrerLoading());
     try {
       final password = RandomPasswordGenerator().randomPassword(
           letters: true, numbers: true, specialChar: true, uppercase: true);
-
+      await _createFahrschueler(eMail: eMail, firstName: firstName, lastName: lastName, password: password, fahrlehrer: fahrlehrer);
       String message = """
-Hallo $vorname $nachname,
+Hallo $firstName $lastName,
 
 für Sie wurde ein Konto errichtet in der App FahrschulManager.
 Ihre anmelde Daten lauten:

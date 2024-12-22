@@ -140,7 +140,11 @@ class FahrschuelerListePage extends StatelessWidget {
           child: FormBlocListener<AsyncFahrschuelerDataValidationFormBloc,
               String, String>(
             onSuccess: (context, state)  {
-              cubit.sendMail(eMail: formBloc.emailFormBloc.value, nachname: formBloc.lastNameFormBloc.value, vorname: formBloc.firstNameFormBloc.value);
+              cubit.sendMail(eMail: formBloc.emailFormBloc.value, lastName: formBloc.lastNameFormBloc.value, firstName: formBloc.firstNameFormBloc.value, fahrlehrer: formBloc.fahrlehrerDropDownBloc.value);
+              formBloc.emailFormBloc.clear();
+              formBloc.firstNameFormBloc.clear();
+              formBloc.lastNameFormBloc.clear();
+
               ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(

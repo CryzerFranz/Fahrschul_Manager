@@ -9,6 +9,14 @@ Future<bool> updateFahrschuelerState({required ParseObject fahrschueler, require
   {
     return false;
   }
+  //Wenn "Nicht zugewiesen" dann setze den Fahrlehrer auf null
+  if(state == stateUnassigned)
+  {
+    fahrschueler.set("Fahrlehrer", null);
+  }
+  else{
+    fahrschueler.set("Fahrlehrer", Benutzer().dbUser!);
+  }
   fahrschueler.set('Status', stateObject);
   final response = await fahrschueler.save();
   if(!response.success)

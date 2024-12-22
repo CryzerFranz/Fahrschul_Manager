@@ -7,8 +7,8 @@ import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 ///
 /// ### Parameters:
 ///
-/// - **`String` [vorname]** : Vorname des Fahrschülers.
-/// - **`String` [name]** : Name des Fahrschülers.
+/// - **`String` [firstName]** : Vorname des Fahrschülers.
+/// - **`String` [lastName]** : Name des Fahrschülers.
 /// - **`String` [eMail]** : E-Mail adresse vom Fahrschüler.
 /// - **`String` [password]** : Passwort des Benutzers.
 /// - **`ParseObject` [fahrschule]** : Fahrschule zudem der Fahrschüler gehört.
@@ -21,10 +21,10 @@ import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 /// ### Exception:
 /// - **[FormatException]** : Übergebene Parameter passen nicht zum erwartetem Format.
 /// - **[Exception]** : Etwas ist beim registrieren schief gelaufen.
-Future<ParseObject> createFahrschueler(String vorname, String name,
-    String eMail, final String password, final ParseObject fahrschule,
-    {ParseObject? fahrlehrer}) async {
-  if (eMail.isEmpty || vorname.isEmpty || name.isEmpty || password.isEmpty) {
+Future<ParseObject> createFahrschueler({ required String firstName,required  String lastName,
+    required String eMail,required final String password,required  final ParseObject fahrschule,
+    ParseObject? fahrlehrer}) async {
+  if (eMail.isEmpty || firstName.isEmpty || lastName.isEmpty || password.isEmpty) {
     throw const FormatException("Empty values are not allowed");
   }
 
@@ -33,13 +33,14 @@ Future<ParseObject> createFahrschueler(String vorname, String name,
     if (fahrlehrer == null) {
       status = await fetchStatus("Nicht zugewiesen");
     }
+    else{
     status = await fetchStatus("Passiv");
-
+    }
     final parseUser = await createUser(eMail, password);
 
     final fahrschuelerObj = ParseObject('Fahrschueler')
-      ..set('Name', name)
-      ..set('Vorname', vorname)
+      ..set('Name', lastName)
+      ..set('Vorname', firstName)
       ..set('Email', eMail)
       ..set('UserObject', parseUser)
       ..set('Gesamtfahrstunden', 0)
