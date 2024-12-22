@@ -6,9 +6,10 @@ import 'package:fahrschul_manager/pages/fahrschueler_liste/AsyncFahrschuelerData
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_bloc.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/cubit/fahrlehrerCubit.dart';
 import 'package:fahrschul_manager/pages/fahrzeug_add/bloc/fahrzeug_add_bloc.dart';
+import 'package:fahrschul_manager/pages/home/Home_page.dart';
+import 'package:fahrschul_manager/pages/home/bloc/homePage_Bloc.dart';
 import 'package:fahrschul_manager/pages/profil_page/bloc/profil_page_bloc.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
-import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/authentication/Login_page.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncLoginValidationFormBloc.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationValidationFormBloc.dart';
@@ -85,34 +86,46 @@ Future<String?> getClientID() async {
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late Future<bool> _userLoggedFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _userLoggedFuture = Benutzer().hasUserLogged();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (context) => NavBarBloc()),
-          BlocProvider(
-              create: (context) => AsyncRegistrationValidationFormBloc()),
-          BlocProvider(create: (context) => AsyncLoginValidationFormBloc()),
-          BlocProvider(create: (context) => FahrschuelerListBloc()),
-          BlocProvider(create: (context) => PasswordChangeBloc()),
-          BlocProvider(create: (context) => ProfilPageBloc()),
-          BlocProvider(create: (context) => CalendarEventBloc()),
-          BlocProvider(create: (context) => AsyncFahrzeugAddValidationFormBloc()),
-          BlocProvider(create: (context) => AsyncFahrschuelerDataValidationFormBloc()),
-          BlocProvider(create: (context) => AsyncPasswordResetValidationFormBloc()),
-          // BlocProvider(create: (context) => FahrlehrerCubit()),
-          BlocProvider(create: (context)=> FahrzeugAddBloc()),
-        ],
-        child:  MaterialApp(
-      navigatorKey: navigatorKey,
-      title: 'Flutter - Parse Server',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: FutureBuilder<bool>(
-          future: Benutzer().hasUserLogged(),
+      providers: [
+        BlocProvider(create: (context) => NavBarBloc()),
+        BlocProvider(create: (context) => AsyncRegistrationValidationFormBloc()),
+        BlocProvider(create: (context) => AsyncLoginValidationFormBloc()),
+        BlocProvider(create: (context) => FahrschuelerListBloc()),
+        BlocProvider(create: (context) => PasswordChangeBloc()),
+        BlocProvider(create: (context) => ProfilPageBloc()),
+        BlocProvider(create: (context) => CalendarEventBloc()),
+        BlocProvider(create: (context) => HomePageBloc()),
+        BlocProvider(create: (context) => AsyncFahrzeugAddValidationFormBloc()),
+        BlocProvider(create: (context) => AsyncFahrschuelerDataValidationFormBloc()),
+        BlocProvider(create: (context) => AsyncPasswordResetValidationFormBloc()),
+        BlocProvider(create: (context) => FahrzeugAddBloc()),
+      ],
+      child: MaterialApp(
+        navigatorKey: navigatorKey,
+        title: 'Flutter - Parse Server',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: FutureBuilder<bool>(
+          future: _userLoggedFuture,
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.none:
@@ -120,13 +133,18 @@ class MyApp extends StatelessWidget {
                 return ScaffoldLoadingScreen();
               default:
                 if (snapshot.hasData && snapshot.data!) {
-                  //return FirstLoginPasswordChangePage();
+                  print("Der BENUTZER ${Benutzer().dbUser}");
                   return HomePage();
                 } else {
                   return SignInPage();
                 }
             }
-          }),
-    ));
+          },
+        ),
+      ),
+    );
   }
 }
+
+
+

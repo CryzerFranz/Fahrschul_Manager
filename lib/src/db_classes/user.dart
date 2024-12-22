@@ -103,7 +103,8 @@ class Benutzer {
       return false;
     }
     _isFahrlehrer = await _checkIsUserFahrlehrer();
-    if(!await _setUser())
+    final isUserSet = await _setUser();
+    if(!isUserSet)
     {
       await clear();
       return false;
@@ -125,7 +126,8 @@ class Benutzer {
     final response = await _parseUser!.login();
     if(response.success){
       _isLogged = true;
-      return await _initUserSetup();
+      final isUserSet = await _initUserSetup();
+      return isUserSet;
     }
     return false;
   }
@@ -181,6 +183,47 @@ class Benutzer {
     }
 
     return apiResponse.results as List<ParseObject>;
+  }
+
+
+  Future<int?> countFahrschuelerByState({required String state}) async
+  {
+    if(_isFahrlehrer == null || _dbUser == null)
+    {
+      throw("Invalid User");
+    }
+    if(!_isFahrlehrer!)
+    {
+        throw("Permission denied");
+    }
+
+    final String? stateId = await fetchStatusID(state);
+    if(stateId == null)
+    {
+      throw("Status existiert nicht.");
+    }
+
+    final QueryBuilder<ParseObject> parseQuery = QueryBuilder<ParseObject>(ParseObject('Fahrschueler'))
+    ..whereContains('Fahrschule', Benutzer().fahrschule!.objectId!)
+    ..whereContains('Status', stateId);
+
+    if(state != stateUnassigned)
+    {
+      parseQuery.whereContains('Fahrlehrer', dbUserId!);
+    }
+
+    final apiResponse = await parseQuery.count();
+
+    if (!apiResponse.success) 
+    {
+      throw Exception(apiResponse.error?.message);
+    }
+    if(apiResponse.results == null)
+    {
+      return null ;
+    }
+
+    return apiResponse.count;
   } 
 
   /// Überprüft ob der eingeloggte User ein Fahrlehrer ist
@@ -249,7 +292,8 @@ class Benutzer {
         _parseUser = parseResponse.results!.first;
         if(!_isLogged){
           _isLogged = true;
-          return await _initUserSetup();
+          final isInit = await _initUserSetup();
+          return isInit;
         }
         return true;
       }
