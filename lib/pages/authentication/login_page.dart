@@ -1,6 +1,8 @@
 import 'package:fahrschul_manager/main.dart';
 import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/authentication/Registration_page.dart';
+import 'package:fahrschul_manager/pages/authentication/first_login/first_login_password_change_page.dart';
+import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncLoginValidationFormBloc.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:fahrschul_manager/widgets/snackbar.dart';
@@ -20,24 +22,31 @@ class _SigninScreenState extends State<SignInPage> {
 
   @override
   Widget build(BuildContext context) {
-    
-          final formBloc = context.read<AsyncLoginValidationFormBloc>();
-          return loginPageScaffold(formBloc);
-       
+    final formBloc = context.read<AsyncLoginValidationFormBloc>();
+    return loginPageScaffold(formBloc);
   }
 
   FormBlocListener loginPageScaffold(AsyncLoginValidationFormBloc formBloc) {
     return FormBlocListener<AsyncLoginValidationFormBloc, String, String>(
       onSuccess: (context, state) {
-        //Wenn success dann nächste Seite
-        navigatorKey.currentState?.pushReplacement(
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
+        //Überprüfen ob es sich um den ersten Login bei dem Nutzer handelt
+        if (Benutzer().parseUser!.get<bool>("firstSession")!) {
+          // Passwort neusetzen lassen
+          navigatorKey.currentState?.pushReplacement(
+            MaterialPageRoute(
+                builder: (context) => FirstLoginPasswordChangePage()),
+          );
+        } else {
+          //Zur Homepage
+          navigatorKey.currentState?.pushReplacement(
+            MaterialPageRoute(builder: (context) => HomePage()),
+          );
+        }
       },
       onFailure: (context, state) {
         ScaffoldMessenger.of(context)
-                  ..hideCurrentSnackBar()
-                  ..showSnackBar(showErrorSnackbar(state.failureResponse!, "Fehler"));
+          ..hideCurrentSnackBar()
+          ..showSnackBar(showErrorSnackbar(state.failureResponse!, "Fehler"));
       },
       child: Scaffold(
         backgroundColor: Colors.white,

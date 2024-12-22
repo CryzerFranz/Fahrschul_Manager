@@ -1,3 +1,6 @@
+import 'package:fahrschul_manager/pages/authentication/first_login/AsyncPasswordResetValidationFormBloc.dart';
+import 'package:fahrschul_manager/pages/authentication/first_login/bloc/password_change_bloc.dart';
+import 'package:fahrschul_manager/pages/authentication/first_login/first_login_password_change_page.dart';
 import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_bloc.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/AsyncFahrschuelerDataValidationFormBloc.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_bloc.dart';
@@ -92,10 +95,12 @@ class MyApp extends StatelessWidget {
               create: (context) => AsyncRegistrationValidationFormBloc()),
           BlocProvider(create: (context) => AsyncLoginValidationFormBloc()),
           BlocProvider(create: (context) => FahrschuelerListBloc()),
+          BlocProvider(create: (context) => PasswordChangeBloc()),
           BlocProvider(create: (context) => ProfilPageBloc()),
           BlocProvider(create: (context) => CalendarEventBloc()),
           BlocProvider(create: (context) => AsyncFahrzeugAddValidationFormBloc()),
           BlocProvider(create: (context) => AsyncFahrschuelerDataValidationFormBloc()),
+          BlocProvider(create: (context) => AsyncPasswordResetValidationFormBloc()),
           // BlocProvider(create: (context) => FahrlehrerCubit()),
           BlocProvider(create: (context)=> FahrzeugAddBloc()),
         ],
@@ -115,6 +120,7 @@ class MyApp extends StatelessWidget {
                 return ScaffoldLoadingScreen();
               default:
                 if (snapshot.hasData && snapshot.data!) {
+                  //return FirstLoginPasswordChangePage();
                   return HomePage();
                 } else {
                   return SignInPage();
