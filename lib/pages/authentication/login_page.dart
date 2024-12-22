@@ -1,7 +1,7 @@
 import 'package:fahrschul_manager/main.dart';
-import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/authentication/Registration_page.dart';
 import 'package:fahrschul_manager/pages/authentication/first_login/first_login_password_change_page.dart';
+import 'package:fahrschul_manager/pages/home/Home_page.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncLoginValidationFormBloc.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
