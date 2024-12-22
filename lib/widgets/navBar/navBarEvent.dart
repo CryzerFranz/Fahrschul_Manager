@@ -15,12 +15,29 @@ class NavBarItemTapped extends NavBarEvent {
   List<Object> get props => [index];
 }
 
-// State
-class NavBarState extends Equatable {
-  final int selectedIndex;
+class NavBarRoleInitialized extends NavBarEvent {
+  final bool isFahrlehrer;
 
-  const NavBarState(this.selectedIndex);
-
+  NavBarRoleInitialized(this.isFahrlehrer);
+  
   @override
-  List<Object> get props => [selectedIndex];
+  // TODO: implement props
+  List<Object?> get props => [isFahrlehrer];
+}
+
+// State
+abstract class NavBarState {
+  final int selectedIndex;
+  final bool isFahrlehrer;
+
+  const NavBarState(this.selectedIndex, this.isFahrlehrer);
+}
+
+class NavBarInitial extends NavBarState {
+  NavBarInitial(bool isFahrlehrer) : super(isFahrlehrer ? 2 : 1, isFahrlehrer);
+}
+
+class NavBarUpdated extends NavBarState {
+  const NavBarUpdated(int selectedIndex, bool isFahrlehrer)
+      : super(selectedIndex, isFahrlehrer);
 }

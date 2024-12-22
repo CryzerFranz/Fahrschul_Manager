@@ -1,11 +1,8 @@
 import 'package:fahrschul_manager/pages/home/homepage_fahrlehrer.dart';
 import 'package:fahrschul_manager/pages/home/homepage_fahrschueler.dart';
-import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../constants.dart';
 import '../../src/db_classes/user.dart';
 import '../../widgets/navBar/navBar.dart';
 import '../../widgets/navBar/navBarBloc.dart';
@@ -14,9 +11,6 @@ import '../calendar_page/calendar_page.dart';
 import '../fahrschueler_liste/fahrschueler_liste_page.dart';
 import '../fahrschule_page.dart';
 import '../profil_page/profil_page.dart';
-import 'bloc/homePage_Bloc.dart';
-import 'bloc/homePage_Event.dart';
-import 'bloc/homePage_State.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -30,22 +24,21 @@ class HomePage extends StatelessWidget {
   ];
 
   final List<Widget> _pagesFahrschueler = const [
-    FahrschuelerListePage(),
     CalendarPage(),
     HomePageFahrschueler(),
     FahrschulePage(),
-    ProfilPage(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    late List<Widget> assignedPages;
-    if(Benutzer().isFahrlehrer!)
-    {
-      assignedPages = _pagesFahrlehrer;
-    }else{
-      assignedPages = _pagesFahrschueler;
-    }
+    final isFahrlehrer = Benutzer().isFahrlehrer ?? false;
+
+    // Initialize role in NavBarBloc
+    context.read<NavBarBloc>().add(NavBarRoleInitialized(isFahrlehrer));
+
+    // Select pages based on role
+    final assignedPages = isFahrlehrer ? _pagesFahrlehrer : _pagesFahrschueler;
+
     return Scaffold(
       extendBody: true,
       body: BlocBuilder<NavBarBloc, NavBarState>(
@@ -57,7 +50,6 @@ class HomePage extends StatelessWidget {
     );
   }
 }
-
 
 
 

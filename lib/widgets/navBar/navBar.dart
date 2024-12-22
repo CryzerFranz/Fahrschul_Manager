@@ -9,6 +9,20 @@ class CustomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<NavBarBloc, NavBarState>(
       builder: (context, state) {
+        final icons = state.isFahrlehrer
+            ? [
+                Icons.people_alt_rounded,
+                Icons.calendar_month_rounded,
+                Icons.home,
+                Icons.emoji_transportation,
+                Icons.person,
+              ]
+            : [
+                Icons.calendar_month_rounded,
+                Icons.home,
+                Icons.emoji_transportation,
+              ];
+
         return Padding(
           padding: EdgeInsets.only(
             left: MediaQuery.of(context).size.width * 0.05,
@@ -31,13 +45,9 @@ class CustomNavBar extends StatelessWidget {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                buildNavBarIcon(context, Icons.people_alt_rounded, 0),
-                buildNavBarIcon(context, Icons.calendar_month_rounded, 1),
-                buildNavBarIcon(context, Icons.home, 2),
-                buildNavBarIcon(context, Icons.emoji_transportation, 3),
-                buildNavBarIcon(context, Icons.person, 4),
-              ],
+              children: List.generate(icons.length, (index) {
+                return buildNavBarIcon(context, icons[index], index);
+              }),
             ),
           ),
         );
@@ -52,8 +62,8 @@ class CustomNavBar extends StatelessWidget {
           icon: Icon(
             icon,
             color: state.selectedIndex == index
-                ? navBarSelectedColor // Use navBarSelectedColor
-                : navBarUnSelectedColor, // Use navBarUnSelectedColor
+                ? navBarSelectedColor
+                : navBarUnSelectedColor,
           ),
           onPressed: () {
             context.read<NavBarBloc>().add(NavBarItemTapped(index));
