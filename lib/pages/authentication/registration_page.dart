@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:fahrschul_manager/main.dart';
-import 'package:fahrschul_manager/pages/Home_page.dart';
 import 'package:fahrschul_manager/pages/authentication/Login_page.dart';
+import 'package:fahrschul_manager/pages/home/Home_page.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationValidationFormBloc.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:fahrschul_manager/widgets/snackbar.dart';
