@@ -29,7 +29,8 @@ and vehicle management, the driving school will become more productive and bette
 
 # Database schema
 
-![Datenbank_schema(1)](https://github.com/user-attachments/assets/a9c12976-d770-4a6c-8f84-ac8e53670606)
+
+![Datenbank_schema(2)](https://github.com/user-attachments/assets/1b93237d-6d88-4ca7-bbc2-5a66eda68c07)
 
 
 # Packages in this project
