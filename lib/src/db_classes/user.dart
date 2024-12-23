@@ -42,12 +42,13 @@ class Benutzer {
       final QueryBuilder<ParseObject> parseQuery;
       if (_isFahrlehrer!) {
         parseQuery = QueryBuilder<ParseObject>(ParseObject('Fahrlehrer'))
-          ..whereContains('UserObject', _parseUser!.objectId!);
+          ..whereContains('UserObject', _parseUser!.objectId!)
+          ..includeObject(['Fahrschule']);
       } else {
         parseQuery = QueryBuilder<ParseObject>(ParseObject('Fahrschueler'))
-          ..whereContains('UserObject', _parseUser!.objectId!);
+          ..whereContains('UserObject', _parseUser!.objectId!)
+          ..includeObject(['Fahrlehrer', 'Fahrschule']);
       }
-      parseQuery.includeObject(['Fahrschule']);
       final apiResponse = await parseQuery.query();
       if (apiResponse.success &&
           apiResponse.results != null &&

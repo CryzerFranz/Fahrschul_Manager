@@ -26,6 +26,15 @@ Future<bool> updateFahrschuelerState({required ParseObject fahrschueler, require
   return true;
 }
 
+bool hasFahrlehrer(ParseObject fahrschueler)
+{
+  if(fahrschueler.get<ParseObject?>("Fahrlehrer") != null)
+  {
+    return true;
+  }
+  return false;
+}
+
 Future<ParseObject> fetchFahrschueler(String id) async {
   final apiResponse = await ParseObject('Fahrschueler').getObject(id);
   return apiResponse.results!.first as ParseObject;
