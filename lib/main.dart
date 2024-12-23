@@ -133,7 +133,6 @@ class _MyAppState extends State<MyApp> {
                 return ScaffoldLoadingScreen();
               default:
                 if (snapshot.hasData && snapshot.data!) {
-                  print("Der BENUTZER ${Benutzer().dbUser}");
                   return HomePage();
                 } else {
                   return SignInPage();
