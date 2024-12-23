@@ -27,6 +27,7 @@ class HomePage extends StatelessWidget {
     CalendarPage(),
     HomePageFahrschueler(),
     FahrschulePage(),
+    ProfilPage(),
   ];
 
   @override

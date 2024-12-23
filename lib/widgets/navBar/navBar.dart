@@ -21,6 +21,7 @@ class CustomNavBar extends StatelessWidget {
                 Icons.calendar_month_rounded,
                 Icons.home,
                 Icons.emoji_transportation,
+                Icons.person,
               ];
 
         return Padding(
