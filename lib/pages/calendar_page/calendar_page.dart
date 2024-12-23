@@ -6,6 +6,7 @@ import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_event.d
 import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_state.dart';
 import 'package:fahrschul_manager/src/db_classes/fahrstunde.dart';
 import 'package:fahrschul_manager/pages/calendar_page/calendar_view_customization.dart';
+import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:fahrschul_manager/widgets/snackbar.dart';
 import 'package:fahrschul_manager/widgets/styles.dart';
@@ -62,7 +63,10 @@ class CalendarPage extends StatelessWidget {
                   },
                   onDateTap: (date) {
                     // Neues event erstellen
-                    _dialogBuilder(context, [], date: date);
+                    if(Benutzer().isFahrlehrer!)
+                    {
+                      _dialogBuilder(context, [], date: date);
+                    }
                   },
                   timeLineBuilder: (date) {
                     final hourFormatter = DateFormat.Hm();
@@ -118,6 +122,7 @@ class CalendarPage extends StatelessWidget {
                   },
                 ),
               ),
+              if(Benutzer().isFahrlehrer!)...[
               Positioned(
                 bottom: 120.0,
                 right: 16.0,
@@ -133,7 +138,7 @@ class CalendarPage extends StatelessWidget {
                   ),
                   child: const Icon(Icons.add, color: Colors.white),
                 ),
-              ),
+              )],
             ],
           );
         }
@@ -198,8 +203,8 @@ class CalendarPage extends StatelessWidget {
                       ),
                       child: Builder(
                         builder: (context) {
-                          if (blocState is DataLoading ||
-                              blocState is DataLoaded) {
+                          if ((blocState is DataLoading ||
+                              blocState is DataLoaded) && Benutzer().isFahrlehrer!) {
                             return _stackLoadingEditingWindow(
                                 blocState, context);
                           } else if (blocState is SelectedEventDataState) {
@@ -340,6 +345,7 @@ class CalendarPage extends StatelessWidget {
           ),
         ),
         // Linker button
+        if(Benutzer().isFahrlehrer!)...[
         Positioned(
           top: -15,
           left: -15,
@@ -368,7 +374,7 @@ class CalendarPage extends StatelessWidget {
               ),
             ),
           ),
-        ),
+        )],
         // Rechter Button
         Positioned(
           top: -15,
