@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fahrschul_manager/constants.dart';
 import 'package:fahrschul_manager/doc/intern/Status.dart';
 import 'package:fahrschul_manager/main.dart';
@@ -28,6 +30,45 @@ class Benutzer {
   ParseUser? get parseUser => _parseUser;
   ParseObject? get dbUser => _dbUser;
   String? get dbUserId => _dbUser?.objectId;
+
+  // Login check
+  StreamController<bool>? _loginStatusController;
+  Stream<bool>? _loginStatusStream;
+  Timer? _loginCheckTimer;
+
+   /// Initialisierung des Streams für regelmäßige Prüfungen des Anmeldestatus
+  Future<void> initializeLoginCheck()  async {
+    // Ensure only one instance of the stream exists
+    if (_loginStatusController == null) {
+      _loginStatusController = StreamController<bool>.broadcast();
+      _loginStatusStream = _loginStatusController!.stream;
+
+      // Timer für login check
+      _loginCheckTimer = Timer.periodic(
+        Duration(seconds: 2),
+        (_) async {
+          bool isLogged = await hasUserLogged();
+          _loginStatusController!.add(isLogged);
+
+          if (!isLogged) {
+            // auslogggen
+            await disposeLoginCheck();
+            await logout();
+          }
+        },
+      );
+    }
+  }
+
+  Stream<bool>? get loginStatusStream => _loginStatusStream;
+
+  /// Beenden und clean
+  Future<void> disposeLoginCheck() async {
+    _loginCheckTimer?.cancel();
+    _loginCheckTimer = null;
+    _loginStatusController?.close();
+    _loginStatusController = null;
+  }
 
   void initialize() {
     _isLogged = false;
@@ -62,6 +103,7 @@ class Benutzer {
 
   /// Instanz zurücksetzen
   Future<void> clear() async {
+    await disposeLoginCheck();
      _isLogged = false;
     _isFahrlehrer = null;
     _fahrschule = null;
@@ -110,6 +152,7 @@ class Benutzer {
       await clear();
       return false;
     }
+    await initializeLoginCheck();
     _fahrschule = _dbUser!.get<ParseObject>('Fahrschule');
     return true;
   }
@@ -127,6 +170,7 @@ class Benutzer {
     final response = await _parseUser!.login();
     if(response.success){
       _isLogged = true;
+      //await initializeLoginCheck();
       final isUserSet = await _initUserSetup();
       return isUserSet;
     }
