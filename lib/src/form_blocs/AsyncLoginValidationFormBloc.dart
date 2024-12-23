@@ -40,7 +40,7 @@ class AsyncLoginValidationFormBloc extends FormBloc<String, String> {
           .login(emailTFFormBloc.value.trim(), passwordTFFormBloc.value.trim());
       if(isValid)
       {
-        emitSuccess();
+        emitSuccess(canSubmitAgain: true);
       }
       else{
         emailTFFormBloc.addFieldError("Angegebene Daten sind Falsch.");
@@ -49,6 +49,10 @@ class AsyncLoginValidationFormBloc extends FormBloc<String, String> {
       }
     } catch (e) {
       emitFailure(failureResponse: "Netzwerk fehler");
+    }
+    finally{
+      reload();
+      passwordTFFormBloc.clear();
     }
   }
 
