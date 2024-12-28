@@ -5,6 +5,7 @@ import 'package:fahrschul_manager/src/db_classes/fahrschueler.dart';
 import 'package:fahrschul_manager/src/db_classes/fahrzeug.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/pages/calendar_page/calendar_view_customization.dart';
+import 'package:fahrschul_manager/src/utils/date.dart';
 import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
@@ -26,25 +27,25 @@ Future<ParseObject?> fetchFahrstundeById({required String eventId}) async {
   return null;
 }
 
-Future<ParseObject?> getFirstFahrstundeAfterNow() async {
+Future<List<ParseObject>> retrieveUpcomingFahrstunden() async {
   try {
     final query = QueryBuilder<ParseObject>(ParseObject('Fahrstunden'))
       ..whereEqualTo("Fahrlehrer", Benutzer().dbUser!.objectId)
       ..whereGreaterThan('Datum', DateTime.now()) 
       ..orderByAscending('Datum')
       ..includeObject(['Fahrzeug', 'Fahrschueler'])
-      ..setLimit(1); 
+      ..setLimit(5); 
 
     // Execute the query
     final response = await query.query();
 
     if (response.success && response.results != null && response.results!.isNotEmpty) {
-      return response.results!.first as ParseObject;
+      return response.results as List<ParseObject>;
     } else {
-      return null;
+      return [];
     }
   } catch (e) {
-    return null;
+    return [];
   }
 }
 
@@ -364,6 +365,21 @@ class Fahrstunde {
   String endDateToString()
   {
     return "${endDate.day}.${endDate.month}.${endDate.year} - ${endDate.hour.toString().padLeft(2, '0')}:${endDate.minute.toString().padLeft(2, '0')}";
+  }
+
+  // Map<String, String> getDateAndTimeSummery()
+  // {
+  //   return generateDateTimeSummary(date: date, endDate: endDate, startTime: date, endTime: endDate);
+  // }
+
+  String getDateRange()
+  {
+    return generateDateRangeText(start: date, end: endDate);
+  }
+
+   String getTimeRange()
+  {
+    return generateTimeRangeText(start: date, end: endDate);
   }
 
   String getFahrzeug(){

@@ -10,14 +10,14 @@ class DataLoaded extends HomePageState {
   final int passiveCount;
   final double percentActive;
   final double percentPassive;
-  final Fahrstunde? nextFahrstunde;
+  final List<Fahrstunde> appointments;
 
   DataLoaded({
     required this.activeCount,
     required this.passiveCount,
     required this.percentActive,
     required this.percentPassive,
-    required this.nextFahrstunde
+    required this.appointments
   });
 }
 

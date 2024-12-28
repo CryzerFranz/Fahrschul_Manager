@@ -27,40 +27,91 @@ class HomePageFahrlehrer extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 35),
-              
               Custom3DCard(
                 colors: [mainColor, mainColor, tabBarMainColorShade100],
                 title: "Deine Fahrschüler",
-                widget:AspectRatio(
-  aspectRatio: 1.7, // Ensures a square container
-  child: Container(
-    decoration: BoxDecoration(
-      color: Colors.transparent, // Background color of the container
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.5), // Shadow color
-          spreadRadius: 0, // How much the shadow spreads
-          blurRadius: 10, // How soft the shadow is
-          offset: Offset(0, 0), // Offset of the shadow (x, y)
-        ),
-      ],
-      shape: BoxShape.circle, // Makes the shadow circular
-    ),
-    child: PieChart(
-      PieChartData(
-        borderData: FlBorderData(show: false),
-        sectionsSpace: 10,
-        centerSpaceRadius: 30,
-        sections: showingSections(state),
-      ),
-      duration: const Duration(milliseconds: 150),
-      curve: Curves.linear,
-    ),
-  ),
-),
+                widget: AspectRatio(
+                  aspectRatio: 1.7, // Ensures a square container
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors
+                          .transparent, // Background color of the container
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5), // Shadow color
+                          spreadRadius: 0, // How much the shadow spreads
+                          blurRadius: 10, // How soft the shadow is
+                          offset: Offset(0, 0), // Offset of the shadow (x, y)
+                        ),
+                      ],
+                      shape: BoxShape.circle, // Makes the shadow circular
+                    ),
+                    child: PieChart(
+                      PieChartData(
+                        borderData: FlBorderData(show: false),
+                        sectionsSpace: 10,
+                        centerSpaceRadius: 30,
+                        sections: showingSections(state),
+                      ),
+                      duration: const Duration(milliseconds: 150),
+                      curve: Curves.linear,
+                    ),
+                  ),
+                ),
               ),
               SizedBox(height: 30),
-              Custom3DCard(title: "Dein nächster Termin" ,widget: nextFahrstundeContent(state.nextFahrstunde), colors: [mainColor, mainColor, tabBarMainColorShade100])
+              Custom3DCard(
+  title: "Dein nächster Termin",
+  colors: const [
+               mainColor,
+               mainColor,
+               tabBarMainColorShade100],
+  widget: LayoutBuilder(
+    builder: (context, constraints) {
+      return Container(
+        height: 150,
+        color: Colors.transparent,
+        child: PageView.builder(
+          scrollDirection: Axis.horizontal, // Enables horizontal scrolling
+          itemCount: state.appointments.length, // Dynamic length based on the list
+          itemBuilder: (context, index) {
+            return Container(
+              width: constraints.maxWidth, // Full width of Custom3DCard
+              //margin: const EdgeInsets.symmetric(horizontal: 8.0), // Optional spacing
+              // decoration: BoxDecoration(
+              //   color: Colors.blueAccent, // Background color for visibility
+              //   borderRadius: BorderRadius.circular(8), // Optional rounded corners
+              // ),
+              alignment: Alignment.center,
+              child: nextFahrstundeContent(state.appointments[index], index, state.appointments.length)
+            );
+          },
+        ),
+      );
+    },
+  ),
+)
+              // Container(
+              // height: 172,
+              // color: Colors.transparent,
+              // child: ListView.builder(
+              // scrollDirection:
+              // Axis.horizontal, // Enables horizontal scrolling
+              // itemCount: state
+              // .appointments.length, // Dynamic length based on the list
+              // itemBuilder: (context, index) {
+              // return Custom3DCard(
+              // title: "Dein nächster Termin",
+              // widget:
+              // nextFahrstundeContent(state.appointments[index]),
+              // colors: const [
+              // mainColor,
+              // mainColor,
+              // tabBarMainColorShade100
+              // ]);
+              // },
+              // ),
+              // ),
             ],
           ),
         );
@@ -69,109 +120,127 @@ class HomePageFahrlehrer extends StatelessWidget {
     });
   }
 
-  Widget nextFahrstundeContent(Fahrstunde? next) {
-  if (next == null) {
-    return const Center(
-      child: Text(
-        "Keine Fahrstunde steht als nächstes mehr an!",
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        textAlign: TextAlign.center,
-      ),
+  Widget nextFahrstundeContent(Fahrstunde? next, int currentIndex, int length) {
+    if (next == null) {
+      return const Center(
+        child: Text(
+          "Keine Fahrstunde steht als nächstes mehr an!",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+    String fahrschuelerText = next.getFahrschueler();
+    String fahrzeugText = next.getFahrzeug();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Icon( fahrschuelerText == "-" ? 
+                    FontAwesomeIcons.userXmark : FontAwesomeIcons.user ,
+                    size: 18,
+                    color: fahrschuelerText == "-" ? tabBarRedShade300 : Colors.white,
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Fahrschüler:",
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600),
+                      ),
+                      Text(
+                        fahrschuelerText,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Row(
+                children: [
+                  Icon( fahrzeugText == "-" ?
+                     Icons.car_crash : FontAwesomeIcons.car,
+                    size: fahrzeugText == "-" ? 24 : 18,
+                    color: fahrzeugText == "-" ? tabBarRedShade300 : Colors.white,
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Fahrzeug:",
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600),
+                      ),
+                      Text(
+                        next.getFahrzeug(),
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Center(child: Column(children:[
+          const Icon(Icons.access_time_outlined, size: 20, color: Colors.white),
+        const SizedBox(height: 3),
+          Text(next.getDateRange(), style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600),),
+          const SizedBox(height: 5),
+          Text(next.getTimeRange(), style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600),),
+        ])),
+        //Row(
+        //  children: [
+        //    const Icon(
+        //      FontAwesomeIcons.clock,
+        //      size: 18,
+        //      color: Colors.white,
+        //    ),
+        //    const SizedBox(width: 8),
+        //    Text(
+        //      "Start: ${next.dateToString()}",
+        //      style: const TextStyle(fontSize: 14),
+        //    ),
+        //  ],
+        //),
+        //const SizedBox(height: 5),
+        //Row(
+        //  children: [
+        //    const Icon(
+        //      FontAwesomeIcons.clock,
+        //      size: 18,
+        //      color: Colors.red,
+        //    ),
+        //    const SizedBox(width: 8),
+        //    Text(
+        //      "Ende: ${next.endDateToString()}",
+        //      style: const TextStyle(fontSize: 14),
+        //    ),
+        //  ],
+        //),
+        const SizedBox(height: 5),
+        Center(child:Text("${++currentIndex} von $length", style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                )))
+      ],
     );
   }
-
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                const Icon(
-                  FontAwesomeIcons.user,
-                  size: 18,
-                  color: Colors.white,
-                ),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Fahrschüler:",
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                    ),
-                    Text(
-                      next.getFahrschueler(),
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Row(
-              children: [
-                const Icon(
-                  FontAwesomeIcons.car,
-                  size: 18,
-                  color: Colors.white,
-                ),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Fahrzeug:",
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                    ),
-                    Text(
-                      next.getFahrzeug(),
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 10),
-      Row(
-        children: [
-          const Icon(
-            FontAwesomeIcons.clock,
-            size: 18,
-            color: Colors.white,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            "Start: ${next.dateToString()}",
-            style: const TextStyle(fontSize: 14),
-          ),
-        ],
-      ),
-      const SizedBox(height: 5),
-      Row(
-        children: [
-          const Icon(
-            FontAwesomeIcons.clock,
-            size: 18,
-            color: Colors.red,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            "Ende: ${next.endDateToString()}",
-            style: const TextStyle(fontSize: 14),
-          ),
-        ],
-      ),
-    ],
-  );
-}
 
   List<PieChartSectionData> showingSections(DataLoaded state) {
     return List.generate(2, (i) {

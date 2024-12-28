@@ -25,21 +25,20 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
         int total = activeFahrschueler + passiveFahrschueler;
         double activePercentage = (activeFahrschueler / total) * 100;
         double passivePercentage = (passiveFahrschueler / total) * 100;
-        ParseObject? nextFahrstunde = await getFirstFahrstundeAfterNow();
-        Fahrstunde? terminate;
+        List<ParseObject> nextFahrstunden = await retrieveUpcomingFahrstunden();
+        List<Fahrstunde> appointments = [];
 
-        if(nextFahrstunde != null)
+        for(ParseObject fahrstunde in nextFahrstunden)
         {
-         ParseObject? fahrzeug = nextFahrstunde.get<ParseObject>("Fahrzeug");
-         ParseObject? fahrschueler = nextFahrstunde.get<ParseObject>("Fahrschueler");
-         if(fahrzeug != null)
-         {
-          fahrzeug = await fetchFahrzeugById(Benutzer().fahrschule!, fahrzeug.objectId!);
-         }
-         terminate = Fahrstunde(date: nextFahrstunde.get<DateTime>("Datum")!, endDate: nextFahrstunde.get<DateTime>("EndDatum")!, fahrschueler:  fahrschueler, fahrzeug: fahrzeug);
+          ParseObject? fahrzeug = fahrstunde.get<ParseObject>("Fahrzeug");
+          ParseObject? fahrschueler = fahrstunde.get<ParseObject>("Fahrschueler");
+          if(fahrzeug != null)
+          {
+           fahrzeug = await fetchFahrzeugById(Benutzer().fahrschule!, fahrzeug.objectId!);
+          }
+          appointments.add(Fahrstunde(date: fahrstunde.get<DateTime>("Datum")!, endDate: fahrstunde.get<DateTime>("EndDatum")!, fahrschueler:  fahrschueler, fahrzeug: fahrzeug));
         }
-
-        emit(DataLoaded(nextFahrstunde: terminate, activeCount: activeFahrschueler, passiveCount: passiveFahrschueler, percentActive: activePercentage, percentPassive: passivePercentage));
+        emit(DataLoaded(appointments: appointments, activeCount: activeFahrschueler, passiveCount: passiveFahrschueler, percentActive: activePercentage, percentPassive: passivePercentage));
     } catch (e) {
       emit(DataError('Failed to fetch user data.'));
     }

@@ -14,3 +14,16 @@
   DateTime combineDateAndTime({required DateTime date, required DateTime time}) {
     return date.add(Duration(hours: time.hour, minutes: time.minute));
   }
+
+  String generateTimeRangeText({required DateTime start, required DateTime end})
+  {
+     return
+        "${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')} - ${end.hour.toString().padLeft(2, '0')}:${end.minute.toString().padLeft(2, '0')}";
+  }
+
+  String generateDateRangeText({required DateTime start, required DateTime end})
+  {
+    return start.day == end.day
+        ? "${start.day}.${start.month}.${start.year}"
+        : "${start.day}.${start.month}.${start.year} - ${end.day}.${end.month}.${end.year}";
+  }
