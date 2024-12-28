@@ -26,6 +26,28 @@ Future<ParseObject?> fetchFahrstundeById({required String eventId}) async {
   return null;
 }
 
+Future<ParseObject?> getFirstFahrstundeAfterNow() async {
+  try {
+    final query = QueryBuilder<ParseObject>(ParseObject('Fahrstunden'))
+      ..whereEqualTo("Fahrlehrer", Benutzer().dbUser!.objectId)
+      ..whereGreaterThan('Datum', DateTime.now()) 
+      ..orderByAscending('Datum')
+      ..includeObject(['Fahrzeug', 'Fahrschueler'])
+      ..setLimit(1); 
+
+    // Execute the query
+    final response = await query.query();
+
+    if (response.success && response.results != null && response.results!.isNotEmpty) {
+      return response.results!.first as ParseObject;
+    } else {
+      return null;
+    }
+  } catch (e) {
+    return null;
+  }
+}
+
 Future<FahrstundenEvent?> updateFahrstunde(
     {required ExecuteChangeCalendarEventData event}) async {
   if (event.eventId == null) {
@@ -315,4 +337,53 @@ List<ParseObject> getUniqueObjectsByField(
   return objects
       .where((object) => seenValues.add(object.get(fieldName)))
       .toList();
+}
+
+class Fahrstunde {
+  final DateTime date;
+  final DateTime endDate;
+  final ParseObject? fahrschueler;
+  final ParseObject? fahrzeug;
+
+  // Constructor with required named parameters
+  Fahrstunde({
+    required this.date,
+    required this.endDate,
+    this.fahrschueler,
+    this.fahrzeug,
+  });
+
+  // Optional: Add a method to calculate the difference between the two DateTimes
+  Duration get duration => endDate.difference(date);
+
+  String dateToString()
+  {
+    return "${date.day}.${date.month}.${date.year} - ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
+  }
+
+  String endDateToString()
+  {
+    return "${endDate.day}.${endDate.month}.${endDate.year} - ${endDate.hour.toString().padLeft(2, '0')}:${endDate.minute.toString().padLeft(2, '0')}";
+  }
+
+  String getFahrzeug(){
+    if(fahrzeug == null)
+    {
+      return "-";
+    }
+    return "${fahrzeug!.get<ParseObject>("Marke")!.get<String>("Name")} (${fahrzeug!.get<String>("Label")})";
+  }
+
+  String getFahrschueler(){
+    if(fahrschueler == null)
+    {
+      return "-";
+    }
+    return "${fahrschueler!.get<String>("Name")}, ${fahrschueler!.get<String>("Vorname")}";
+  }
+
+  @override
+  String toString() {
+    return 'Start: \$startDateTime, End: \$endDateTime, Duration: \${duration.inHours} hours';
+  }
 }
