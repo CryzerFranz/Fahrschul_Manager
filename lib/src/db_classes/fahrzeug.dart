@@ -83,6 +83,22 @@ Future<List<ParseObject>> fetchAllFahrzeug(ParseObject fahrschule) async {
   return apiResponse.results as List<ParseObject>;
 }
 
+Future<ParseObject?> fetchFahrzeugById(ParseObject fahrschule, String objectId) async {
+  final QueryBuilder<ParseObject> parseQuery =
+      QueryBuilder<ParseObject>(ParseObject('Fahrzeug'))
+        ..whereContains("Fahrschule", fahrschule.objectId!)
+        ..whereEqualTo("objectId", objectId)
+        ..includeObject(["Marke", "Getriebe", "Fahrzeugtyp"]);
+
+  final apiResponse = await parseQuery.query();
+
+  if (!apiResponse.success || apiResponse.results == null) {
+    return null;
+  }
+
+  return apiResponse.results!.first as ParseObject;
+}
+
 /// Gibt alle arten von Getriebe von der Datenbank zurück.
 ///
 /// ### Return value:
