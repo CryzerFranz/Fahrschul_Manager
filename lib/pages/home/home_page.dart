@@ -1,3 +1,4 @@
+import 'package:fahrschul_manager/pages/fahrschule/fahrschule_page.dart';
 import 'package:fahrschul_manager/pages/home/homepage_fahrlehrer.dart';
 import 'package:fahrschul_manager/pages/home/homepage_fahrschueler.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +10,6 @@ import '../../widgets/navBar/navBarBloc.dart';
 import '../../widgets/navBar/navBarEvent.dart';
 import '../calendar_page/calendar_page.dart';
 import '../fahrschueler_liste/fahrschueler_liste_page.dart';
-import '../fahrschule_page.dart';
 import '../profil_page/profil_page.dart';
 
 class HomePage extends StatelessWidget {
