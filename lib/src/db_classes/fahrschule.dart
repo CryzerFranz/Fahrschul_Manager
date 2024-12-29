@@ -168,3 +168,20 @@ Future<List<ParseObject>> fetchAllFahrlehrerFromFahrschule(
     throw ("Failed fetching data");
   }
 }
+
+Future<List<ParseObject>> fetchAllLocationsFromFahrschule({required final String id}) async
+{
+  try{
+    final query = QueryBuilder<ParseObject>(ParseObject('Zuordnung_Ort_Fahrschule'))
+      ..whereEqualTo('Fahrschule', id)
+      ..includeObject(['Ort']);
+      final response = await query.query();
+    if (!response.success || response.results == null) {
+      return [];
+    }
+    return response.results as List<ParseObject>;
+  }catch(e){
+    throw("Failed fetching data");
+  }
+}
+
