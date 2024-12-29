@@ -1,10 +1,8 @@
 import 'package:fahrschul_manager/pages/authentication/first_login/AsyncPasswordResetValidationFormBloc.dart';
 import 'package:fahrschul_manager/pages/authentication/first_login/bloc/password_change_bloc.dart';
-import 'package:fahrschul_manager/pages/authentication/first_login/first_login_password_change_page.dart';
 import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_bloc.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/AsyncFahrschuelerDataValidationFormBloc.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_bloc.dart';
-import 'package:fahrschul_manager/pages/fahrschueler_liste/cubit/fahrlehrerCubit.dart';
 import 'package:fahrschul_manager/pages/fahrzeug_add/bloc/fahrzeug_add_bloc.dart';
 import 'package:fahrschul_manager/pages/home/Home_page.dart';
 import 'package:fahrschul_manager/pages/home/bloc/homePage_Bloc.dart';
@@ -20,6 +18,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
+
+import 'pages/fahrschule/bloc/fahrschule_page_bloc.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -116,6 +116,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (context) => AsyncFahrschuelerDataValidationFormBloc()),
         BlocProvider(create: (context) => AsyncPasswordResetValidationFormBloc()),
         BlocProvider(create: (context) => FahrzeugAddBloc()),
+        BlocProvider(create: (context) => FahrschulePageBloc()),
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
