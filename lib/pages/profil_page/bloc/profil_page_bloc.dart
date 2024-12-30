@@ -12,13 +12,6 @@ class ProfilPageBloc extends Bloc<ProfilPageEvent, ProfilPageState> {
       FetchProfilPageEvent event, Emitter<ProfilPageState> emit) async {
     emit(DataLoading());
     try {
-      // Logik für das Abrufen der Benutzerdaten
-      final hasUserLogged = await Benutzer().hasUserLogged();
-      if (!hasUserLogged) {
-        emit(DataError('No user logged in.'));
-        return;
-      }
-
       final vorname = Benutzer().dbUser!.get<String>("Vorname")!;
       final nachname = Benutzer().dbUser!.get<String>("Name")!;
       final email = Benutzer().dbUser!.get<String>("Email")!;
