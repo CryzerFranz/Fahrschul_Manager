@@ -328,6 +328,7 @@ class FahrschulePage extends StatelessWidget {
               formBloc.plzDropDownBloc.clear();
               formBloc.hausnummerBloc.clear();
               formBloc.strasseBloc.clear();
+              context.read<FahrschulePageBloc>().add(FetchData());
               ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(

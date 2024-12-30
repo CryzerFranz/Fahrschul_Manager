@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:fahrschul_manager/constants.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/AsyncPersonDataValidationFormBloc.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/cubit/PersonAddCubit.dart';
+import 'package:fahrschul_manager/pages/fahrschule/bloc/fahrschule_page_bloc.dart';
+import 'package:fahrschul_manager/pages/fahrschule/bloc/fahrschule_page_event.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:fahrschul_manager/widgets/snackbar.dart';
@@ -41,6 +45,10 @@ Future<void> dialogBuilderAddNew(BuildContext context, bool createFahrlehrer) {
               formBloc.firstNameFormBloc.clear();
               formBloc.lastNameFormBloc.clear();
               String obj = createFahrlehrer ? "Fahrlehrer" : "Fahrschüler";
+              if(createFahrlehrer)
+              {
+                context.read<FahrschulePageBloc>().add(FetchData());
+              }
               ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
