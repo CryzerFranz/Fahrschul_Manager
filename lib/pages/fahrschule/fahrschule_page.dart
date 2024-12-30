@@ -1,4 +1,5 @@
 import 'package:fahrschul_manager/pages/fuhrpark_page.dart';
+import 'package:fahrschul_manager/widgets/addPersonDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
@@ -106,7 +107,8 @@ class FahrschulePage extends StatelessWidget {
                                           Icons.person_add,
                                           size: 20,
                                         ), // Car icon
-                                        onPressed: () {
+                                        onPressed: () async {
+                                          dialogBuilderAddNew(context, true);
                                           // Action when button is pressed
                                         },
                                         color: Colors.white,
