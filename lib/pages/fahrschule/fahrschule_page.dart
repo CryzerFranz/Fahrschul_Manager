@@ -46,21 +46,16 @@ class FahrschulePage extends StatelessWidget {
                       colors: const [mainColor, mainColor, tabBarMainColorShade100],
                       widget: LayoutBuilder(
                         builder: (context, constraints) {
-                          final pageController = PageController();
+                          final pageController = PageController(); //Für den Page indicator
                           return Column(
                             children: [
                               Container(
                                 height: 120,
                                 color: Colors.transparent,
                                 child: PageView.builder(
-                                  controller: pageController,
+                                  controller: pageController,       //controller zuweisen
                                   scrollDirection: Axis.horizontal,
                                   itemCount: state.fahrlehrer.length,
-                                  onPageChanged: (index) {
-                                    context
-                                        .read<FahrschulePageBloc>()
-                                        .add(PageChangedEvent(index));
-                                  },
                                   itemBuilder: (context, index) {
                                     return Container(
                                       width: constraints.maxWidth,
@@ -71,10 +66,10 @@ class FahrschulePage extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              SmoothPageIndicator(
+                              SmoothPageIndicator(          //verbunden mit dem PageView durch den controller
                                 controller: pageController,
                                 count: state.fahrlehrer.length,
-                                effect: WormEffect(
+                                effect: const WormEffect(
                                   dotHeight: 12,
                                   dotWidth: 12,
                                   activeDotColor: mainColorComplementarySecond,
