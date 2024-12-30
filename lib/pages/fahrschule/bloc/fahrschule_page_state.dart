@@ -7,12 +7,12 @@ class DataLoading extends FahrschulePageState {}
 class DataLoaded extends FahrschulePageState {
   final List<ParseObject> fahrlehrer;
   final List<ParseObject> locations;
-  final int currentIndex;
+
 
   DataLoaded({
     required this.fahrlehrer,
     required this.locations,
-    required this.currentIndex
+
   });
 }
 

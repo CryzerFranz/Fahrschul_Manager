@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class FahrschulePageBloc extends Bloc<FahrschulePageEvent, FahrschulePageState> {
   FahrschulePageBloc() : super(DataLoading()) {
     on<FetchData>(_onFetchData);
-    on<PageChangedEvent>(_onPageChanged);
   }
 
   Future<void> _onFetchData(
@@ -24,7 +23,7 @@ class FahrschulePageBloc extends Bloc<FahrschulePageEvent, FahrschulePageState> 
       emit(DataLoaded(
         fahrlehrer: fahrlehrerList,
         locations: locations,
-        currentIndex: 0,
+
       ));
     } catch (e) {
       // Emit an error state if the data fetching fails
@@ -32,16 +31,6 @@ class FahrschulePageBloc extends Bloc<FahrschulePageEvent, FahrschulePageState> 
     }
   }
 
-  void _onPageChanged(
-      PageChangedEvent event, Emitter<FahrschulePageState> emit) {
-    if (state is DataLoaded) {
-      // Update the current index while retaining existing data
-      final loadedState = state as DataLoaded;
-      emit(DataLoaded(
-        fahrlehrer: loadedState.fahrlehrer,
-        locations: loadedState.locations,
-        currentIndex: event.index,
-      ));
-    }
+  
   }
-}
+
