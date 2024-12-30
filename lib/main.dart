@@ -29,14 +29,14 @@ void main() async {
 
   const keyParseServerUrl = 'https://parseapi.back4app.com';
 
-  final String? _clientKey = await getClientID();
-  final String? _applicationID = await getApplicationID();
+  final String? clientKey = await getClientID();
+  final String? applicationID = await getApplicationID();
 
-  if (_applicationID != null && _clientKey != null) {
+  if (applicationID != null && clientKey != null) {
     await Parse().initialize(
-      _applicationID,
+      applicationID,
       keyParseServerUrl,
-      clientKey: _clientKey,
+      clientKey: clientKey,
       debug: true,
     );
     Benutzer().initialize();
@@ -136,7 +136,7 @@ class _MyAppState extends State<MyApp> {
                 return ScaffoldLoadingScreen();
               default:
                 if (snapshot.hasData && snapshot.data!) {
-                  return HomePage();
+                  return const HomePage();
                 } else {
                   return SignInPage();
                 }

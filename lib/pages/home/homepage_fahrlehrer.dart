@@ -28,7 +28,7 @@ class HomePageFahrlehrer extends StatelessWidget {
             children: [
               const SizedBox(height: 35),
               Custom3DCard(
-                colors: [mainColor, mainColor, tabBarMainColorShade100],
+                colors: const [mainColor, mainColor, tabBarMainColorShade100],
                 title: "Deine Fahrschüler",
                 widget: AspectRatio(
                   aspectRatio: 1.7, // Ensures a square container
@@ -41,7 +41,7 @@ class HomePageFahrlehrer extends StatelessWidget {
                           color: Colors.grey.withOpacity(0.5), // Shadow color
                           spreadRadius: 0, // How much the shadow spreads
                           blurRadius: 10, // How soft the shadow is
-                          offset: Offset(0, 0), // Offset of the shadow (x, y)
+                          offset: const Offset(0, 0), // Offset of the shadow (x, y)
                         ),
                       ],
                       shape: BoxShape.circle, // Makes the shadow circular
@@ -59,7 +59,7 @@ class HomePageFahrlehrer extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               Custom3DCard(
                 title: "Dein nächster Termin",
                 colors: const [mainColor, mainColor, tabBarMainColorShade100],
@@ -105,32 +105,11 @@ class HomePageFahrlehrer extends StatelessWidget {
                   },
                 ),
               )
-              // Container(
-              // height: 172,
-              // color: Colors.transparent,
-              // child: ListView.builder(
-              // scrollDirection:
-              // Axis.horizontal, // Enables horizontal scrolling
-              // itemCount: state
-              // .appointments.length, // Dynamic length based on the list
-              // itemBuilder: (context, index) {
-              // return Custom3DCard(
-              // title: "Dein nächster Termin",
-              // widget:
-              // nextFahrstundeContent(state.appointments[index]),
-              // colors: const [
-              // mainColor,
-              // mainColor,
-              // tabBarMainColorShade100
-              // ]);
-              // },
-              // ),
-              // ),
             ],
           ),
         );
       }
-      return Text("Error");
+      return const Text("Error");
     });
   }
 
@@ -229,35 +208,6 @@ class HomePageFahrlehrer extends StatelessWidget {
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
         ])),
-        //Row(
-        //  children: [
-        //    const Icon(
-        //      FontAwesomeIcons.clock,
-        //      size: 18,
-        //      color: Colors.white,
-        //    ),
-        //    const SizedBox(width: 8),
-        //    Text(
-        //      "Start: ${next.dateToString()}",
-        //      style: const TextStyle(fontSize: 14),
-        //    ),
-        //  ],
-        //),
-        //const SizedBox(height: 5),
-        //Row(
-        //  children: [
-        //    const Icon(
-        //      FontAwesomeIcons.clock,
-        //      size: 18,
-        //      color: Colors.red,
-        //    ),
-        //    const SizedBox(width: 8),
-        //    Text(
-        //      "Ende: ${next.endDateToString()}",
-        //      style: const TextStyle(fontSize: 14),
-        //    ),
-        //  ],
-        //),
         const SizedBox(height: 5),
         Center(
             child: Text("${++currentIndex} von $length",
