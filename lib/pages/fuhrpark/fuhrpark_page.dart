@@ -45,7 +45,7 @@ class FuhrparkPage extends StatelessWidget {
                           padding: EdgeInsets.only(top: 120),
                         ),
                         Icon(
-                          Icons.sentiment_dissatisfied,
+                          FontAwesomeIcons.car,
                           size: 80,
                           color: Colors.red[600],
                           shadows: [
