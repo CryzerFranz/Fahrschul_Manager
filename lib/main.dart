@@ -120,6 +120,7 @@ class _MyAppState extends State<MyApp> {
 <<<<<<< Updated upstream
         BlocProvider(create: (context) => FahrschulePageBloc()),
 =======
+        BlocProvider(create: (context) => FuhrparkBloc()),
 
 >>>>>>> Stashed changes
       ],
