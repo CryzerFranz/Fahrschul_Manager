@@ -1,6 +1,6 @@
 import 'package:fahrschul_manager/constants.dart';
-import 'package:fahrschul_manager/pages/fahrschueler_liste/AsyncFahrschuelerDataValidationFormBloc.dart';
-import 'package:fahrschul_manager/pages/fahrschueler_liste/cubit/fahrlehrerCubit.dart';
+import 'package:fahrschul_manager/pages/fahrschueler_liste/AsyncPersonDataValidationFormBloc.dart';
+import 'package:fahrschul_manager/pages/fahrschueler_liste/cubit/PersonAddCubit.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:fahrschul_manager/widgets/snackbar.dart';
@@ -10,7 +10,7 @@ import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 Future<void> dialogBuilderAddNew(BuildContext context, bool createFahrlehrer) {
-    late FahrlehrerCubit cubit;
+    late PersonAddCubit cubit;
     return showGeneralDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -20,11 +20,11 @@ Future<void> dialogBuilderAddNew(BuildContext context, bool createFahrlehrer) {
       pageBuilder: (BuildContext dialogContext, Animation<double> animation,
           Animation<double> secondaryAnimation) {
         final formBloc =
-            context.read<AsyncFahrschuelerDataValidationFormBloc>();
+            context.read<AsyncPersonDataValidationFormBloc>();
 
         return BlocProvider(
           create: (context) {
-            cubit = FahrlehrerCubit();
+            cubit = PersonAddCubit();
             if(!createFahrlehrer) {
               cubit.fetchAllFahrlehrer(Benutzer().fahrschule!.objectId!);
             }
@@ -33,23 +33,23 @@ Future<void> dialogBuilderAddNew(BuildContext context, bool createFahrlehrer) {
             }
             return cubit;
           },
-          child: FormBlocListener<AsyncFahrschuelerDataValidationFormBloc,
+          child: FormBlocListener<AsyncPersonDataValidationFormBloc,
               String, String>(
             onSuccess: (context, state)  {
               cubit.sendMail(createFahrlehrer: createFahrlehrer, eMail: formBloc.emailFormBloc.value, lastName: formBloc.lastNameFormBloc.value, firstName: formBloc.firstNameFormBloc.value, fahrlehrer: formBloc.fahrlehrerDropDownBloc.value);
               formBloc.emailFormBloc.clear();
               formBloc.firstNameFormBloc.clear();
               formBloc.lastNameFormBloc.clear();
-
+              String obj = createFahrlehrer ? "Fahrlehrer" : "Fahrschüler";
               ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
-                showSuccessSnackbar("Fahrschüler wurde erstellt", "HURA!"));
+                showSuccessSnackbar("$obj wurde erstellt", "HURA!"));
               Navigator.of(dialogContext).pop();
                // Close dialog on success
             },
             onFailure: (context, state) {},
-            child: BlocBuilder<FahrlehrerCubit, FahrlehrerState>(
+            child: BlocBuilder<PersonAddCubit, PersonAddState>(
               builder: (context, blocState) {
                 return GestureDetector(
                   behavior: HitTestBehavior.opaque,
@@ -75,7 +75,7 @@ Future<void> dialogBuilderAddNew(BuildContext context, bool createFahrlehrer) {
                           ),
                           child: Builder(
                             builder: (context) {
-                              if(blocState is FahrlehrerError)
+                              if(blocState is PersonAddError)
                               {
                                 return const Center(child: Text("Error"));
                               }
@@ -90,10 +90,10 @@ Future<void> dialogBuilderAddNew(BuildContext context, bool createFahrlehrer) {
                                       right: 20.0,
                                       bottom: 15.0,
                                     ),
-                                    child: blocState is FahrlehrerLoading
+                                    child: blocState is PersonAddLoading
                                         ? SizedBox(height: 300, child: loadingScreen())
                                         : editWindow(
-                                            formBloc, (blocState as FahrlehrerLoaded).fahrlehrer, createFahrlehrer), // blocState kann in diesen Moment nur FahrlehrerLoaded sein
+                                            formBloc, (blocState as PersonAddLoaded).fahrlehrer, createFahrlehrer), // blocState kann in diesen Moment nur FahrlehrerLoaded sein
                                   ),
                                   Positioned(
                                     top: -40,
@@ -111,7 +111,7 @@ Future<void> dialogBuilderAddNew(BuildContext context, bool createFahrlehrer) {
                                             tabBarMainColorShade100,
                                         radius: 40,
                                         child: Icon(
-                                          blocState is FahrlehrerLoaded
+                                          blocState is PersonAddLoaded
                                               ? Icons.person_add
                                               : Icons.sync,
                                           size: 60,
@@ -169,7 +169,7 @@ Future<void> dialogBuilderAddNew(BuildContext context, bool createFahrlehrer) {
     );
   }
 
-  SingleChildScrollView editWindow(AsyncFahrschuelerDataValidationFormBloc formBloc, List<ParseObject> fahrlehrer, bool createFahrlehrer) {
+  SingleChildScrollView editWindow(AsyncPersonDataValidationFormBloc formBloc, List<ParseObject> fahrlehrer, bool createFahrlehrer) {
     formBloc.fahrlehrerDropDownBloc.updateItems(fahrlehrer);
     return SingleChildScrollView(
       child: Column(

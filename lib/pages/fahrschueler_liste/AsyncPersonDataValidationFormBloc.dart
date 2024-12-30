@@ -8,7 +8,7 @@ import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 /// Eine FormBloc klasse zur asynchronen Validierung einer Form.
 /// Diese gilt für die erste Seite der Registrierung
-class AsyncFahrschuelerDataValidationFormBloc extends FormBloc<String, String> {
+class AsyncPersonDataValidationFormBloc extends FormBloc<String, String> {
   // ------------------------Widget list -------------------------
   TextFieldBloc firstNameFormBloc = TextFieldBloc(
     validators: [
@@ -61,7 +61,7 @@ class AsyncFahrschuelerDataValidationFormBloc extends FormBloc<String, String> {
   }
 
   /// Konstruktor
-  AsyncFahrschuelerDataValidationFormBloc() {
+  AsyncPersonDataValidationFormBloc() {
     addFieldBlocs(fieldBlocs: [
       firstNameFormBloc,
       lastNameFormBloc,

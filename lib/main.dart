@@ -1,7 +1,7 @@
 import 'package:fahrschul_manager/pages/authentication/first_login/AsyncPasswordResetValidationFormBloc.dart';
 import 'package:fahrschul_manager/pages/authentication/first_login/bloc/password_change_bloc.dart';
 import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_bloc.dart';
-import 'package:fahrschul_manager/pages/fahrschueler_liste/AsyncFahrschuelerDataValidationFormBloc.dart';
+import 'package:fahrschul_manager/pages/fahrschueler_liste/AsyncPersonDataValidationFormBloc.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_bloc.dart';
 import 'package:fahrschul_manager/pages/fahrzeug_add/bloc/fahrzeug_add_bloc.dart';
 import 'package:fahrschul_manager/pages/home/Home_page.dart';
@@ -113,7 +113,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (context) => CalendarEventBloc()),
         BlocProvider(create: (context) => HomePageBloc()),
         BlocProvider(create: (context) => AsyncFahrzeugAddValidationFormBloc()),
-        BlocProvider(create: (context) => AsyncFahrschuelerDataValidationFormBloc()),
+        BlocProvider(create: (context) => AsyncPersonDataValidationFormBloc()),
         BlocProvider(create: (context) => AsyncPasswordResetValidationFormBloc()),
         BlocProvider(create: (context) => FahrzeugAddBloc()),
         BlocProvider(create: (context) => FahrschulePageBloc()),

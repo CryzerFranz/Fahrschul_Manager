@@ -10,44 +10,44 @@ import 'package:random_password_generator/random_password_generator.dart';
 import '../../../src/registration.dart'; // Import Parse SDK
 
 // Define States
-class FahrlehrerState extends Equatable {
+class PersonAddState extends Equatable {
   @override
   List<Object> get props => [];
 }
 
-class FahrlehrerLoading extends FahrlehrerState {}
+class PersonAddLoading extends PersonAddState {}
 
-class FahrlehrerLoaded extends FahrlehrerState {
+class PersonAddLoaded extends PersonAddState {
   final List<ParseObject> fahrlehrer;
 
-  FahrlehrerLoaded(this.fahrlehrer);
+  PersonAddLoaded(this.fahrlehrer);
 
   @override
   List<Object> get props => [fahrlehrer];
 }
 
-class FahrlehrerError extends FahrlehrerState {
+class PersonAddError extends PersonAddState {
   final String message;
 
-  FahrlehrerError(this.message);
+  PersonAddError(this.message);
 
   @override
   List<Object> get props => [message];
 }
 
 // Cubit Class
-class FahrlehrerCubit extends Cubit<FahrlehrerState> {
-  FahrlehrerCubit() : super(FahrlehrerLoading());
+class PersonAddCubit extends Cubit<PersonAddState> {
+  PersonAddCubit() : super(PersonAddLoading());
 
   Future<void> fetchAllFahrlehrer(String fahrschuleId) async {
     try {
-      emit(FahrlehrerLoading());
+      emit(PersonAddLoading());
 
       // Fetch data from Parse Server
       final list = await fetchAllFahrlehrerFromFahrschule(fahrschuleId);
-      emit(FahrlehrerLoaded(list));
+      emit(PersonAddLoaded(list));
     } catch (e) {
-      emit(FahrlehrerError("Error: $e"));
+      emit(PersonAddError("Error: $e"));
     }
   }
 
@@ -56,7 +56,7 @@ class FahrlehrerCubit extends Cubit<FahrlehrerState> {
   //hängen wir im loading screen fest.
   Future<void>dummyFetch() async 
   {
-    emit(FahrlehrerLoaded(const []));
+    emit(PersonAddLoaded(const []));
   }
 
   Future<void> _createPerson({required String eMail,required  String firstName,required  String lastName, required String password, required bool shouldCreateFahrlehrer,ParseObject? fahrlehrer}) async
@@ -76,7 +76,7 @@ class FahrlehrerCubit extends Cubit<FahrlehrerState> {
   
   Future<void> sendMail({required String eMail,required  String firstName,required  String lastName,required bool createFahrlehrer, ParseObject? fahrlehrer}) async
   {
-    emit(FahrlehrerLoading());
+    emit(PersonAddLoading());
     try {
       final password = RandomPasswordGenerator().randomPassword(
           letters: true, numbers: true, specialChar: true, uppercase: true);
@@ -106,6 +106,6 @@ Sie wurden von ${Benutzer().dbUser!.get<String>("Vorname")} ${Benutzer().dbUser!
       final sendReport = await send(mail, smtpServer);
   }catch(e)
   {
-      emit(FahrlehrerError("Error: $e"));
+      emit(PersonAddError("Error: $e"));
   }
 }}

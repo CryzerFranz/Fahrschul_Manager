@@ -1,11 +1,11 @@
 import 'package:animated_segmented_tab_control/animated_segmented_tab_control.dart';
 import 'package:fahrschul_manager/constants.dart';
 import 'package:fahrschul_manager/doc/intern/Fahrschule.dart';
-import 'package:fahrschul_manager/pages/fahrschueler_liste/AsyncFahrschuelerDataValidationFormBloc.dart';
+import 'package:fahrschul_manager/pages/fahrschueler_liste/AsyncPersonDataValidationFormBloc.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_bloc.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_event.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_state.dart';
-import 'package:fahrschul_manager/pages/fahrschueler_liste/cubit/fahrlehrerCubit.dart';
+import 'package:fahrschul_manager/pages/fahrschueler_liste/cubit/PersonAddCubit.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/widgets/3dCard.dart';
 import 'package:fahrschul_manager/widgets/addPersonDialog.dart';
