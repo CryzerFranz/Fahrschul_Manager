@@ -117,12 +117,8 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (context) => AsyncPersonDataValidationFormBloc()),
         BlocProvider(create: (context) => AsyncPasswordResetValidationFormBloc()),
         BlocProvider(create: (context) => FahrzeugAddBloc()),
-<<<<<<< Updated upstream
         BlocProvider(create: (context) => FahrschulePageBloc()),
-=======
         BlocProvider(create: (context) => FuhrparkBloc()),
-
->>>>>>> Stashed changes
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
