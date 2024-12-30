@@ -45,7 +45,7 @@ class Benutzer {
 
       // Timer für login check
       _loginCheckTimer = Timer.periodic(
-        Duration(seconds: 90000),
+        Duration(seconds: 10),
         (_) async {
           bool isLogged = await hasUserLogged();
           _loginStatusController!.add(isLogged);
