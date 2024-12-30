@@ -1,5 +1,3 @@
-import 'package:fahrschul_manager/doc/intern/Fahrzeug.dart';
-import 'package:fahrschul_manager/doc/intern/User.dart';
 import 'package:fahrschul_manager/pages/fahrzeug_add/bloc/fahrzeug_add_bloc.dart';
 import 'package:fahrschul_manager/pages/fahrzeug_add/bloc/fahrzeug_add_event.dart';
 import 'package:fahrschul_manager/pages/fahrzeug_add/bloc/fahrzeug_add_state.dart';
@@ -8,7 +6,6 @@ import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
 import 'package:fahrschul_manager/widgets/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
-import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 class FahrzeugAddPage extends StatelessWidget {
   const FahrzeugAddPage({super.key});

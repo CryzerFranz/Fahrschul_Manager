@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:fahrschul_manager/doc/intern/Fahrzeug.dart';
-import 'package:fahrschul_manager/doc/intern/User.dart';
 import 'package:fahrschul_manager/pages/fuhrpark/cubit/fahrzeug_cubit.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
