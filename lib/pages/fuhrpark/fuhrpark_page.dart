@@ -59,7 +59,7 @@ class FuhrparkPage extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 6),
-                        const Text("Keine Fahrschüler"),
+                        const Text("Keine Fahrzeuge"),
                       ],
                     ),
                   );
