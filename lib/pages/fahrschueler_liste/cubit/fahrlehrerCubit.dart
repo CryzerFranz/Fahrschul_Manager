@@ -2,7 +2,6 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:fahrschul_manager/doc/intern/Fahrschule.dart';
 import 'package:fahrschul_manager/doc/intern/User.dart';
-import 'package:flutter/material.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server/gmail.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
@@ -52,23 +51,36 @@ class FahrlehrerCubit extends Cubit<FahrlehrerState> {
     }
   }
 
-  Future<void> _createFahrschueler({required String eMail,required  String firstName,required  String lastName, required String password,ParseObject? fahrlehrer}) async
+  //Wenn wir einen Fahrlehrer erstellen wollen, brauchen wir keine liste der Fahrlehrer von der
+  //Datenbank abzugreifen. Aber wir müssen den initial state FahrlehrerLoading überschreiben, sonst
+  //hängen wir im loading screen fest.
+  Future<void>dummyFetch() async 
+  {
+    emit(FahrlehrerLoaded(const []));
+  }
+
+  Future<void> _createPerson({required String eMail,required  String firstName,required  String lastName, required String password, required bool shouldCreateFahrlehrer,ParseObject? fahrlehrer}) async
   {
     try{
-     final obj = await createFahrschueler(fahrlehrer: fahrlehrer, eMail: eMail, lastName: lastName, firstName: firstName,password: password, fahrschule: Benutzer().fahrschule!);
+      if(!shouldCreateFahrlehrer) {
+        final obj = await createFahrschueler(fahrlehrer: fahrlehrer, eMail: eMail, lastName: lastName, firstName: firstName,password: password, fahrschule: Benutzer().fahrschule!);
+      }
+      else{
+        await createFahrlehrer(eMail: eMail, fahrschulObject: Benutzer().fahrschule!, name: lastName, vorname: firstName, password: password, createSession: false);
+      }
     }
     catch(e){
-      throw("Creating Fahrschueler failed");
+      throw("Creating person failed");
     }
   }
   
-  Future<void> sendMail({required String eMail,required  String firstName,required  String lastName, ParseObject? fahrlehrer}) async
+  Future<void> sendMail({required String eMail,required  String firstName,required  String lastName,required bool createFahrlehrer, ParseObject? fahrlehrer}) async
   {
     emit(FahrlehrerLoading());
     try {
       final password = RandomPasswordGenerator().randomPassword(
           letters: true, numbers: true, specialChar: true, uppercase: true);
-      await _createFahrschueler(eMail: eMail, firstName: firstName, lastName: lastName, password: password, fahrlehrer: fahrlehrer);
+      await _createPerson(shouldCreateFahrlehrer: createFahrlehrer,eMail: eMail, firstName: firstName, lastName: lastName, password: password, fahrlehrer: fahrlehrer);
       String message = """
 Hallo $firstName $lastName,
 
