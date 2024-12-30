@@ -23,141 +23,206 @@ class FahrschulePage extends StatelessWidget {
         if (state is DataLoading) {
           return loadingScreen(height_: 150, width_: 150);
         } else if (state is DataLoaded) {
-          return Stack(
-            children: [
-              SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                      top: 80.0, bottom: 16, left: 16, right: 16),
-                  child: Center(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          Benutzer().fahrschule!.get<String>("Name")!,
-                          style: const TextStyle(
-                            fontSize: 32.0,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.1,
-                            color: mainColor,
-                          ),
+          return Stack(children: [
+            SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    top: 80.0, bottom: 16, left: 16, right: 16),
+                child: Center(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        Benutzer().fahrschule!.get<String>("Name")!,
+                        style: const TextStyle(
+                          fontSize: 32.0,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                          color: mainColor,
                         ),
-                        const SizedBox(height: 30),
-                        Custom3DCard(
-                          title: "Die Fahrlehrer",
-                          colors: const [mainColor, mainColor, tabBarMainColorShade100],
-                          widget: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final pageController = PageController(); // Für den Page indicator
-                              return Column(
-                                children: [
-                                  Container(
-                                    height: 120,
-                                    color: Colors.transparent,
-                                    child: PageView.builder(
-                                      controller: pageController,       //controller zuweisen
-                                      scrollDirection: Axis.horizontal,
-                                      itemCount: state.fahrlehrer.length,
-                                      itemBuilder: (context, index) {
-                                        return Container(
-                                          width: constraints.maxWidth,
-                                          alignment: Alignment.center,
-                                          child: fahrlehrerView(state.fahrlehrer[index]),
-                                        );
-                                      },
+                      ),
+                      const SizedBox(height: 30),
+                      Custom3DCard(
+                        title: "Die Fahrlehrer",
+                        colors: const [
+                          mainColor,
+                          mainColor,
+                          tabBarMainColorShade100
+                        ],
+                        widget: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final pageController =
+                                PageController(); // For page indicator
+                            return Stack(
+                              children: [
+                                Column(
+                                  children: [
+                                    Container(
+                                      height: 120,
+                                      color: Colors.transparent,
+                                      child: PageView.builder(
+                                        controller:
+                                            pageController, // Assign the controller
+                                        scrollDirection: Axis.horizontal,
+                                        itemCount: state.fahrlehrer.length,
+                                        itemBuilder: (context, index) {
+                                          return Container(
+                                            width: constraints.maxWidth,
+                                            alignment: Alignment.center,
+                                            child: fahrlehrerView(
+                                                state.fahrlehrer[index]),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    SmoothPageIndicator(
+                                      // Connected to PageView via controller
+                                      controller: pageController,
+                                      count: state.fahrlehrer.length,
+                                      effect: const WormEffect(
+                                        dotHeight: 12,
+                                        dotWidth: 12,
+                                        activeDotColor:
+                                            mainColorComplementarySecond,
+                                        dotColor:
+                                            mainColorComplementaryFirstShade100,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (Benutzer().isFahrlehrer!) ...[
+                                  Positioned(
+                                    bottom: 0, // Position the button at the top
+                                    right:
+                                        10, // Position the button to the right
+                                    child: CircleAvatar(
+                                      radius: 18, // Adjust size
+                                      backgroundColor:
+                                          mainColorComplementarySecond, // Button color
+                                      child: IconButton(
+                                        icon: Icon(
+                                          Icons.person_add,
+                                          size: 20,
+                                        ), // Car icon
+                                        onPressed: () {
+                                          // Action when button is pressed
+                                        },
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(height: 10),
-                                  SmoothPageIndicator(          //verbunden mit dem PageView durch den controller
-                                    controller: pageController,
-                                    count: state.fahrlehrer.length,
-                                    effect: const WormEffect(
-                                      dotHeight: 12,
-                                      dotWidth: 12,
-                                      activeDotColor: mainColorComplementarySecond,
-                                      dotColor: mainColorComplementaryFirstShade100,
-                                    ),
-                                  ),
-                                  
-
-                                ],
-                              );
-                            },
-                          ),
+                                ]
+                              ],
+                            );
+                          },
                         ),
-                        const SizedBox(height: 20),
-                        Custom3DCard(
-                          title: "Die Standorte",
-                          colors: const [mainColor, mainColor, tabBarMainColorShade100],
-                          widget: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final pageController = PageController(); // Für den Page indicator
-                              return Column(
-                                children: [
-                                  Container(
-                                    height: 50,
-                                    color: Colors.transparent,
-                                    child: PageView.builder(
-                                      controller: pageController,       //controller zuweisen
-                                      scrollDirection: Axis.horizontal,
-                                      itemCount: state.locations.length,
-                                      itemBuilder: (context, index) {
-                                        return Container(
-                                          width: constraints.maxWidth,
-                                          alignment: Alignment.center,
-                                          child: locationsView(state.locations[index]),
-                                        );
-                                      },
+                      ),
+                      const SizedBox(height: 20),
+                      Custom3DCard(
+                        title: "Die Standorte",
+                        colors: const [
+                          mainColor,
+                          mainColor,
+                          tabBarMainColorShade100
+                        ],
+                        widget: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final pageController =
+                                PageController(); // Für den Page indicator
+                            return Stack(
+                              children: [
+                                Column(
+                                  children: [
+                                    Container(
+                                      height: 50,
+                                      color: Colors.transparent,
+                                      child: PageView.builder(
+                                        controller:
+                                            pageController, //controller zuweisen
+                                        scrollDirection: Axis.horizontal,
+                                        itemCount: state.locations.length,
+                                        itemBuilder: (context, index) {
+                                          return Container(
+                                            width: constraints.maxWidth,
+                                            alignment: Alignment.center,
+                                            child: locationsView(
+                                                state.locations[index]),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    SmoothPageIndicator(
+                                      //verbunden mit dem PageView durch den controller
+                                      controller: pageController,
+                                      count: state.locations.length,
+                                      effect: const WormEffect(
+                                        dotHeight: 12,
+                                        dotWidth: 12,
+                                        activeDotColor:
+                                            mainColorComplementarySecond,
+                                        dotColor:
+                                            mainColorComplementaryFirstShade100,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (Benutzer().isFahrlehrer!) ...[
+                                  Positioned(
+                                    bottom: 0, // Position the button at the top
+                                    right:
+                                        10, // Position the button to the right
+                                    child: CircleAvatar(
+                                      radius: 18, // Adjust size
+                                      backgroundColor:
+                                          mainColorComplementarySecond, // Button color
+                                      child: IconButton(
+                                        icon: Icon(
+                                          Icons.add_location_alt_rounded,
+                                          size: 20,
+                                        ), // Car icon
+                                        onPressed: () {
+                                          // Action when button is pressed
+                                        },
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(height: 10),
-                                  SmoothPageIndicator(          //verbunden mit dem PageView durch den controller
-                                    controller: pageController,
-                                    count: state.locations.length,
-                                    effect: const WormEffect(
-                                      dotHeight: 12,
-                                      dotWidth: 12,
-                                      activeDotColor: mainColorComplementarySecond,
-                                      dotColor: mainColorComplementaryFirstShade100,
-                                    ),
-                                  ),
-                                  
-
-                                ],
-                              );
-                            },
-                          ),
+                                ]
+                              ],
+                            );
+                          },
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              // Fuhrpark button
+            ),
+            // Fuhrpark button
+            if (Benutzer().isFahrlehrer!) ...[
               Positioned(
                 top: 50,
                 right: 20,
                 child: FloatingActionButton(
-               shape: const CircleBorder(),
+                  shape: const CircleBorder(),
                   onPressed: () {
                     Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const FuhrparkPage(),
-              ),
-            );
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FuhrparkPage(),
+                      ),
+                    );
                   },
                   backgroundColor: mainColor,
-                  child: const Icon(
-                    Icons.directions_car,
-                    color: Colors.white,
-                    size: 37
-                  ),
+                  child: const Icon(Icons.directions_car,
+                      color: Colors.white, size: 37),
                 ),
               ),
             ],
-          );
+          ]);
         } else {
           return const Center(child: Text("Network error"));
         }
@@ -165,27 +230,31 @@ class FahrschulePage extends StatelessWidget {
     );
   }
 
-  Widget locationsView(ParseObject location)
-  {
+  Widget locationsView(ParseObject location) {
     return Center(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text("${location.get<String>("Strasse")!} - ${location.get<String>("Hausnummer")!}", style: const TextStyle(
-              fontSize: 14.0,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),),
-          const SizedBox(height: 5),
-          Text("${location.get<ParseObject>("Ort")!.get<String>("PLZ")}, ${location.get<ParseObject>("Ort")!.get<String>("Name")}", style: const TextStyle(
-              fontSize: 14.0,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),),
-        ],
-      )
-    );
+        child: Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          "${location.get<String>("Strasse")!} - ${location.get<String>("Hausnummer")!}",
+          style: const TextStyle(
+            fontSize: 14.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          "${location.get<ParseObject>("Ort")!.get<String>("PLZ")}, ${location.get<ParseObject>("Ort")!.get<String>("Name")}",
+          style: const TextStyle(
+            fontSize: 14.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    ));
   }
 
   Widget fahrlehrerView(ParseObject fahrlehrer) {
