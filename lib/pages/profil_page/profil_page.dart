@@ -1,7 +1,9 @@
 import 'package:fahrschul_manager/pages/profil_page/bloc/profil_page_event.dart';
 import 'package:fahrschul_manager/pages/profil_page/bloc/profil_page_bloc.dart';
 import 'package:fahrschul_manager/pages/profil_page/bloc/profil_page_state.dart';
+import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
+import 'package:fahrschul_manager/widgets/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fahrschul_manager/constants.dart';
@@ -95,6 +97,15 @@ class ProfilPage extends StatelessWidget {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 30),
+                  ElevatedButton(
+              onPressed: () async {
+                      await Benutzer().logout();
+                    },
+              style: stadiumButtonStyle(),
+              child:
+                   const Text('LogOut'),
+            ),
                 ],
               ),
             ),
