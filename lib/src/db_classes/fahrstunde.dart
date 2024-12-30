@@ -232,6 +232,10 @@ Future<List<FahrstundenEvent>> getUserFahrstunden() async {
   }
 
   for (ParseObject result in apiResponse.results!) {
+    if(result.get<ParseObject?>("Fahrzeug") == null && result.get<ParseObject?>("Fahrschueler") == null )
+    {
+      await result.delete();
+    }else{
     events.add(createEventData(
         eventId: result.objectId!,
         titel: result.get<String>("Titel")!,
@@ -240,6 +244,7 @@ Future<List<FahrstundenEvent>> getUserFahrstunden() async {
         beschreibung: result.get<String?>("Beschreibung"),
         fahrschueler: result.get<ParseObject?>("Fahrschueler"),
         fahrzeug: result.get<ParseObject?>("Fahrzeug")));
+    }
   }
   return events;
 }
@@ -250,7 +255,7 @@ Stream<List<FahrstundenEvent>> getUserFahrstundenStream() async* {
   yield await getUserFahrstunden();
 
   // Regelmäßige Aktualisierungen nach dem ersten Abruf starten
-  yield* Stream.periodic(Duration(seconds: 5), (_) => getUserFahrstunden())
+  yield* Stream.periodic(Duration(seconds: 90000), (_) => getUserFahrstunden())
       .asyncMap((future) => future);
 }
 
