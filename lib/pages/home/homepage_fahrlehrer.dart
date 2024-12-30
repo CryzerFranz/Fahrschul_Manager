@@ -91,14 +91,14 @@ class HomePageFahrlehrer extends StatelessWidget {
                         SmoothPageIndicator(
                           controller: pageController,
                           count: state.appointments.length,
-                          effect: const JumpingDotEffect(
-                            verticalOffset: 16,
-                            jumpScale: 1.5,
-                            dotHeight: 12,
-                            dotWidth: 12,
-                            activeDotColor: mainColorComplementarySecond,
-                            dotColor: mainColorComplementaryFirstShade100,
-                          ),
+                          effect: const WormEffect(
+                                        dotHeight: 12,
+                                        dotWidth: 12,
+                                        activeDotColor:
+                                            mainColorComplementarySecond,
+                                        dotColor:
+                                            mainColorComplementaryFirstShade100,
+                                      ),
                         )
                       ],
                     );
