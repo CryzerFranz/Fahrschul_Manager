@@ -1,5 +1,5 @@
 import 'package:fahrschul_manager/pages/fahrschule/cubit/location_cubit.dart';
-import 'package:fahrschul_manager/pages/fuhrpark_page.dart';
+import 'package:fahrschul_manager/pages/fuhrpark/fuhrpark_page.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationValidationFormBloc.dart';
 import 'package:fahrschul_manager/widgets/addPersonDialog.dart';
 import 'package:fahrschul_manager/widgets/snackbar.dart';
