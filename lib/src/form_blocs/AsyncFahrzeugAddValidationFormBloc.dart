@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:fahrschul_manager/doc/intern/Fahrzeug.dart';
 import 'package:fahrschul_manager/doc/intern/User.dart';
+import 'package:fahrschul_manager/pages/fuhrpark/cubit/fahrzeug_cubit.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 class AsyncFahrzeugAddValidationFormBloc extends FormBloc<String, String> {
-
   final labelBloc = TextFieldBloc(
     validators: [
       (String? value) {
@@ -26,51 +26,56 @@ class AsyncFahrzeugAddValidationFormBloc extends FormBloc<String, String> {
   final getriebeDropDownBloc = SelectFieldBloc<ParseObject, String>();
   final anhaenger = BooleanFieldBloc();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   @override
-  Future<void> onSubmitting() async{
+  Future<void> onSubmitting() async {
     try {
       labelBloc.validate();
 
-      bool isValid=await addFahrzeug(
-        label: labelBloc.value,
-        marke: markeDropDownBloc.value!,
-        fahrzeugtyp: typDropDownBloc.value!,
-        getriebe: getriebeDropDownBloc.value!,
-        anhaengerkupplung: anhaenger.value);
-        if (isValid) {
+      bool isValid = await addFahrzeug(
+          label: labelBloc.value,
+          marke: markeDropDownBloc.value!,
+          fahrzeugtyp: typDropDownBloc.value!,
+          getriebe: getriebeDropDownBloc.value!,
+          anhaengerkupplung: anhaenger.value);
+      if (isValid) {
         emitSuccess(canSubmitAgain: true);
-
-
-       
-        
       } else {
         emitFailure(failureResponse: "Session fail");
       }
     } catch (e) {
       emitFailure(failureResponse: e.toString());
-    }
-    finally{
+    } finally {
       reload();
     }
   }
 
+  void onSubmittingDelete(FuhrparkCubit cubit) async {
+    try {
+      await cubit.deleteFahrzeug(fahrzeug: cubit.fahrzeug);
+      emitSuccess(canSubmitAgain: true);
+    } catch (e) {
+      emitFailure(failureResponse: e.toString());
+    } finally {
+      reload();
+    }
+  }
 
-/// Konstruktor
+  void onSubmittingUpdateLabel(FuhrparkCubit cubit) async {
+    try {
+      bool isValid = await updateLabelFahrzeug(fahrzeug: cubit.fahrzeug, label: labelBloc.value);
+      if(isValid) {
+        emitSuccess(canSubmitAgain: true);
+      }else{
+        emitFailure(failureResponse: "Error");
+      }
+    } catch (e) {
+      emitFailure(failureResponse: e.toString());
+    } finally {
+      reload();
+    }
+  }
+
+  /// Konstruktor
   AsyncFahrzeugAddValidationFormBloc() {
     addFieldBlocs(fieldBlocs: [
       labelBloc,
@@ -80,4 +85,4 @@ class AsyncFahrzeugAddValidationFormBloc extends FormBloc<String, String> {
       anhaenger,
     ]);
   }
-  }
+}
