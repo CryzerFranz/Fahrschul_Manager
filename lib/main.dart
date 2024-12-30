@@ -4,6 +4,7 @@ import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_bloc.da
 import 'package:fahrschul_manager/pages/fahrschueler_liste/AsyncPersonDataValidationFormBloc.dart';
 import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_bloc.dart';
 import 'package:fahrschul_manager/pages/fahrzeug_add/bloc/fahrzeug_add_bloc.dart';
+import 'package:fahrschul_manager/pages/fuhrpark/bloc/fuhrpark_bloc.dart';
 import 'package:fahrschul_manager/pages/home/Home_page.dart';
 import 'package:fahrschul_manager/pages/home/bloc/homePage_Bloc.dart';
 import 'package:fahrschul_manager/pages/profil_page/bloc/profil_page_bloc.dart';
@@ -116,7 +117,11 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (context) => AsyncPersonDataValidationFormBloc()),
         BlocProvider(create: (context) => AsyncPasswordResetValidationFormBloc()),
         BlocProvider(create: (context) => FahrzeugAddBloc()),
+<<<<<<< Updated upstream
         BlocProvider(create: (context) => FahrschulePageBloc()),
+=======
+
+>>>>>>> Stashed changes
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
