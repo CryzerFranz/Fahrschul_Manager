@@ -163,6 +163,46 @@ class AsyncRegistrationValidationFormBloc extends FormBloc<String, String> {
     }
   }
 
+  void onSubmittingLocation() async {
+    try{
+      bool isValidPLZ = await _checkPlz();
+      final isValidStrasse = await strasseBloc.validate();
+      final isValidHausnummer = await hausnummerBloc.validate();
+      final isValidPLZSelected = await plzDropDownBloc.validate();
+      if(isValidPLZ && isValidHausnummer && isValidStrasse && isValidPLZSelected)
+      {
+        emitSuccess(canSubmitAgain: true);
+      }
+      else{
+        emitFailure(failureResponse: "Error at PLZ");
+      }
+    }catch(e)
+    {
+      emitFailure(failureResponse: "Network error");
+    }finally{
+      reload();
+    }
+  }
+
+  Future<bool> _checkPlz() async 
+  {
+    if (plzBloc.value.length < 5 && plzDropDownBloc.value == null) {
+        plzBloc.addFieldError("Gültige PLZ eingeben oder Stadt auswählen");
+       
+        return false;
+      }
+       if (plzBloc.value.length == 5 && plzDropDownBloc.value == null) {
+        List<ParseObject> ortObjects = await fetchOrtObjects(plzBloc.value);
+        if (ortObjects.isEmpty) {
+          plzBloc.addFieldError("Gültige PLZ eingeben oder Stadt auswählen");
+          
+        return false;
+        }
+        plzDropDownBloc.changeValue(ortObjects.first);
+      }
+      return true;
+  }
+
   void onSubmittingFirstPage() async {
     try {
       final isValidFahrschule = await fahrschulnameBloc.validate();
