@@ -33,7 +33,7 @@ class FuhrparkPage extends StatelessWidget {
                   return ListView.builder(
                     itemCount: state.fahrzeuginfos.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return AnzeigeFahrzeuge(
+                      return anzeigeFahrzeuge(
                           context: context, data: state.fahrzeuginfos[index]);
                     },
                   );
@@ -81,7 +81,7 @@ class FuhrparkPage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => FahrzeugAddPage(),
+                  builder: (context) => const FahrzeugAddPage(),
                 ),
               );
             },
@@ -97,53 +97,97 @@ class FuhrparkPage extends StatelessWidget {
   }
 }
 
-Widget AnzeigeFahrzeuge({
+Widget anzeigeFahrzeuge({
   required BuildContext context,
   required ParseObject data,
 }) {
-  return Column(
+  return Padding(
+    padding: const EdgeInsets.only(left:16.0, right: 16, top: 8),
+    child: Column(
+      children: [
+        Row(
+          children: [
+            Custom3DCard(
+              colors: const [
+                mainColor,
+                mainColor,
+                tabBarMainColorShade100,
+              ],
+              width: 0.7,
+              title:
+                  "${data.get<ParseObject>("Marke")!.get<String>("Name")} | ${data.get<String>("Label")!}",
+              widget: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Row(
         children: [
-          Custom3DCard(
-            colors: const [
-              mainColor,
-              mainColor,
-              tabBarMainColorShade100,
-            ],
-            width: 0.7,
-            title:
-                "${data.get<ParseObject>("Marke")!.get<String>("Name")}, ${data.get<ParseObject>("Fahrzeugtyp")!.get<String>("Typ")} | ${data.get<String>("Label")!}",
-            widget: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                    "Getriebe: ${data.get<ParseObject>("Getriebe")!.get<String>("Typ")}"),
-                const SizedBox(width: 10),
-                Text(
-                  data.get<bool>("Anhaengerkupplung")!
-                      ? "Anhängerkupplung: Vorhanden"
-                      : "Anhängerkupplung: Nicht Vorhanden",
-                ),
-              ],
-            ),
-          ),
+          Icon(Icons.airport_shuttle_outlined, color: Colors.white),
           const SizedBox(width: 10),
-          Custom3DCard(
-            widget: IconButton(
-              padding: const EdgeInsets.only(top: 22.5, bottom: 22.5),
-              onPressed: () async {
-                dialogBuilderFahrzeug(context, data);
-              },
-              icon: const Icon(Icons.edit),
+          Text(
+            "Typ: ${data.get<ParseObject>("Fahrzeugtyp")!.get<String>("Typ")}",
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.black87,
             ),
-            colors: const [tabBarMainColorShade100, mainColor],
-            width: 0.17,
           ),
         ],
       ),
       const SizedBox(height: 10),
+      Row(
+        children: [
+          Icon(Icons.settings, color: Colors.blue),
+          const SizedBox(width: 10),
+          Text(
+            "Getriebe: ${data.get<ParseObject>("Getriebe")!.get<String>("Typ")}",
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 10),
+      Row(
+        children: [
+          Icon(
+            data.get<bool>("Anhaengerkupplung")!
+                ? Icons.check_circle
+                : Icons.cancel,
+            color: data.get<bool>("Anhaengerkupplung")!
+                ? Colors.white
+                : Colors.red,
+          ),
+          const SizedBox(width: 10),
+          const Text(
+            "Anhängerkupplung"
+                ,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
     ],
+    ),
+            ),
+            const SizedBox(width: 10),
+            Custom3DCard(
+              widget: IconButton(
+                padding: const EdgeInsets.only(top: 48.0, bottom: 48.0),
+                onPressed: () async {
+                  dialogBuilderFahrzeug(context, data);
+                },
+                icon: const Icon(Icons.edit),
+              ),
+              colors: const [tabBarMainColorShade100, mainColor],
+              width: 0.17,
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+      ],
+    ),
   );
 }
 
