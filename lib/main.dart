@@ -48,23 +48,6 @@ void main() async {
   }
 }
 
-class ErrorApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-          title: 'Internal Error',
-          theme: ThemeData(
-            primarySwatch: Colors.red,
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-          ),
-          home: const Scaffold(
-              body: Center(
-                  child: Text("!Internal Error!",
-                      style: TextStyle(color: Colors.red)))),
-        );
-  }
-}
-
 Future<String?> getApplicationID() async {
   const platform = MethodChannel('com.example.fahrschul_manager/keys');
   try {
@@ -86,6 +69,25 @@ Future<String?> getClientID() async {
     return null;
   }
 }
+
+class ErrorApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+          title: 'Internal Error',
+          theme: ThemeData(
+            primarySwatch: Colors.red,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          home: const Scaffold(
+              body: Center(
+                  child: Text("!Internal Error!",
+                      style: TextStyle(color: Colors.red)))),
+        );
+  }
+}
+
+
 
 class MyApp extends StatefulWidget {
   @override
