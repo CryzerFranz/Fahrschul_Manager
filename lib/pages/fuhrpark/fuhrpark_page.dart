@@ -19,7 +19,7 @@ class FuhrparkPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.read<FuhrparkBloc>().add(FetchFuhrparkEvent(stateActive));
+    context.read<FuhrparkBloc>().add(FetchFuhrparkEvent());
     return BlocBuilder<FuhrparkBloc, FuhrparkState>(
       builder: (context, state) {
         return Scaffold(
@@ -121,11 +121,11 @@ Widget anzeigeFahrzeuge({
     children: [
       Row(
         children: [
-          Icon(Icons.airport_shuttle_outlined, color: Colors.white),
+          const Icon(Icons.airport_shuttle_outlined, color: Colors.white),
           const SizedBox(width: 10),
           Text(
             "Typ: ${data.get<ParseObject>("Fahrzeugtyp")!.get<String>("Typ")}",
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               color: Colors.black87,
             ),
@@ -135,11 +135,11 @@ Widget anzeigeFahrzeuge({
       const SizedBox(height: 10),
       Row(
         children: [
-          Icon(Icons.settings, color: Colors.blue),
+          const Icon(Icons.settings, color: Colors.blue),
           const SizedBox(width: 10),
           Text(
             "Getriebe: ${data.get<ParseObject>("Getriebe")!.get<String>("Typ")}",
-            style: TextStyle(
+             style: const TextStyle(
               fontSize: 14,
               color: Colors.black87,
             ),
@@ -215,10 +215,16 @@ Future<void> dialogBuilderFahrzeug(BuildContext context, ParseObject fahrzeug) {
               ..hideCurrentSnackBar()
               ..showSnackBar(
                   showSuccessSnackbar("Änderungen wirksam", "HURA!"));
+            context.read<FuhrparkBloc>().add(FetchFuhrparkEvent());
             Navigator.of(dialogContext).pop();
             // Close dialog on success
           },
-          onFailure: (context, state) {},
+          onFailure: (context, state) {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                  showErrorSnackbar("Etwas ist schief gelaufen", "Ohhh!"));
+          },
           child: BlocBuilder<FuhrparkCubit, FuhrparkCubitState>(
             builder: (context, blocState) {
               return GestureDetector(
