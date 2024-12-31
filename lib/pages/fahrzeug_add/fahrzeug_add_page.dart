@@ -1,8 +1,11 @@
 import 'package:fahrschul_manager/pages/fahrzeug_add/bloc/fahrzeug_add_bloc.dart';
 import 'package:fahrschul_manager/pages/fahrzeug_add/bloc/fahrzeug_add_event.dart';
 import 'package:fahrschul_manager/pages/fahrzeug_add/bloc/fahrzeug_add_state.dart';
+import 'package:fahrschul_manager/pages/fuhrpark/bloc/fuhrpark_bloc.dart';
+import 'package:fahrschul_manager/pages/fuhrpark/bloc/fuhrpark_event.dart';
 import 'package:fahrschul_manager/src/form_blocs/AsyncFahrzeugAddValidationFormBloc.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
+import 'package:fahrschul_manager/widgets/snackbar.dart';
 import 'package:fahrschul_manager/widgets/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
@@ -29,16 +32,18 @@ class FahrzeugAddPage extends StatelessWidget {
           return FormBlocListener<AsyncFahrzeugAddValidationFormBloc, String,
               String>(
             onSuccess: (context, state) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Fahrzeug erfolgreich hinzugefügt!")),
-              );
+               ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                  showSuccessSnackbar("Auto hinzugefügt", "HURA!"));
+            Navigator.of(context).pop();
+            context.read<FuhrparkBloc>().add(FetchFuhrparkEvent());
             },
             onFailure: (context, state) {
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  SnackBar(content: Text("Fehler: ${state.failureResponse}")),
-                );
+             ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                  showErrorSnackbar("Etwas ist schief gelaufen", "Ohhh!"));
             },
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
@@ -93,7 +98,7 @@ class FahrzeugAddPage extends StatelessWidget {
             ),
           );
         } else {
-          return Text("Fehler");
+          return const Text("Fehler");
         }
       }),
     );
