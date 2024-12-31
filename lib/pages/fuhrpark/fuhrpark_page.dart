@@ -106,6 +106,11 @@ Widget AnzeigeFahrzeuge({
       Row(
         children: [
           Custom3DCard(
+            colors: const [
+              mainColor,
+              mainColor,
+              tabBarMainColorShade100,
+            ],
             width: 0.7,
             title:
                 "${data.get<ParseObject>("Marke")!.get<String>("Name")}, ${data.get<ParseObject>("Fahrzeugtyp")!.get<String>("Typ")} | ${data.get<String>("Label")!}",
@@ -114,7 +119,7 @@ Widget AnzeigeFahrzeuge({
               children: [
                 Text(
                     "Getriebe: ${data.get<ParseObject>("Getriebe")!.get<String>("Typ")}"),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Text(
                   data.get<bool>("Anhaengerkupplung")!
                       ? "Anhängerkupplung: Vorhanden"
@@ -126,13 +131,13 @@ Widget AnzeigeFahrzeuge({
           const SizedBox(width: 10),
           Custom3DCard(
             widget: IconButton(
-              padding: EdgeInsets.only(top: 22.5, bottom: 22.5),
+              padding: const EdgeInsets.only(top: 22.5, bottom: 22.5),
               onPressed: () async {
                 dialogBuilderFahrzeug(context, data);
               },
-              icon: Icon(Icons.edit),
+              icon: const Icon(Icons.edit),
             ),
-            colors: [mainColorComplementaryFirst, mainColor],
+            colors: const [tabBarMainColorShade100, mainColor],
             width: 0.17,
           ),
         ],
