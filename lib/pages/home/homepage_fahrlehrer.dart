@@ -41,7 +41,8 @@ class HomePageFahrlehrer extends StatelessWidget {
                           color: Colors.grey.withOpacity(0.5), // Shadow color
                           spreadRadius: 0, // How much the shadow spreads
                           blurRadius: 10, // How soft the shadow is
-                          offset: const Offset(0, 0), // Offset of the shadow (x, y)
+                          offset:
+                              const Offset(0, 0), // Offset of the shadow (x, y)
                         ),
                       ],
                       shape: BoxShape.circle, // Makes the shadow circular
@@ -66,42 +67,50 @@ class HomePageFahrlehrer extends StatelessWidget {
                 widget: LayoutBuilder(
                   builder: (context, constraints) {
                     final pageController = PageController();
-
-                    return Column(
-                      children: [
-                        Container(
-                          height: 150,
-                          color: Colors.transparent,
-                          child: PageView.builder(
-                            controller: pageController,
-                            scrollDirection: Axis.horizontal,
-                            itemCount: state.appointments.length,
-                            itemBuilder: (context, index) {
-                              return Container(
-                                  width: constraints.maxWidth,
-                                  alignment: Alignment.center,
-                                  child: nextFahrstundeContent(
-                                      state.appointments[index],
-                                      index,
-                                      state.appointments.length));
-                            },
-                          ),
+                    if (state.appointments.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          "Keine Fahrstunde steht als nächstes mehr an!",
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 10),
-                        SmoothPageIndicator(
-                          controller: pageController,
-                          count: state.appointments.length,
-                          effect: const WormEffect(
-                                        dotHeight: 12,
-                                        dotWidth: 12,
-                                        activeDotColor:
-                                            mainColorComplementarySecond,
-                                        dotColor:
-                                            mainColorComplementaryFirstShade100,
-                                      ),
-                        )
-                      ],
-                    );
+                      );
+                    } else {
+                      return Column(
+                        children: [
+                          Container(
+                            height: 150,
+                            color: Colors.transparent,
+                            child: PageView.builder(
+                              controller: pageController,
+                              scrollDirection: Axis.horizontal,
+                              itemCount: state.appointments.length,
+                              itemBuilder: (context, index) {
+                                return Container(
+                                    width: constraints.maxWidth,
+                                    alignment: Alignment.center,
+                                    child: nextFahrstundeContent(
+                                        state.appointments[index],
+                                        index,
+                                        state.appointments.length));
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SmoothPageIndicator(
+                            controller: pageController,
+                            count: state.appointments.length,
+                            effect: const WormEffect(
+                              dotHeight: 12,
+                              dotWidth: 12,
+                              activeDotColor: mainColorComplementarySecond,
+                              dotColor: mainColorComplementaryFirstShade100,
+                            ),
+                          )
+                        ],
+                      );
+                    }
                   },
                 ),
               )
@@ -113,16 +122,7 @@ class HomePageFahrlehrer extends StatelessWidget {
     });
   }
 
-  Widget nextFahrstundeContent(Fahrstunde? next, int currentIndex, int length) {
-    if (next == null) {
-      return const Center(
-        child: Text(
-          "Keine Fahrstunde steht als nächstes mehr an!",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
-      );
-    }
+  Widget nextFahrstundeContent(Fahrstunde next, int currentIndex, int length) {
     String fahrschuelerText = next.getFahrschueler();
     String fahrzeugText = next.getFahrzeug();
     return Column(
