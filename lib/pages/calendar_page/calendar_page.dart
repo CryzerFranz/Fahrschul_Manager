@@ -4,6 +4,7 @@ import 'package:fahrschul_manager/pages/calendar_page/AsyncEventDataValidationFo
 import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_bloc.dart';
 import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_event.dart';
 import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_state.dart';
+import 'package:fahrschul_manager/pages/calendar_page/cubit/enableBooleanFormBlocCubit.dart';
 import 'package:fahrschul_manager/src/db_classes/fahrstunde.dart';
 import 'package:fahrschul_manager/pages/calendar_page/calendar_view_customization.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
@@ -63,8 +64,7 @@ class CalendarPage extends StatelessWidget {
                   },
                   onDateTap: (date) {
                     // Neues event erstellen
-                    if(Benutzer().isFahrlehrer!)
-                    {
+                    if (Benutzer().isFahrlehrer!) {
                       _dialogBuilder(context, [], date: date);
                     }
                   },
@@ -122,23 +122,24 @@ class CalendarPage extends StatelessWidget {
                   },
                 ),
               ),
-              if(Benutzer().isFahrlehrer!)...[
-              Positioned(
-                bottom: 120.0,
-                right: 16.0,
-                child: ElevatedButton(
-                  onPressed: () {
+              if (Benutzer().isFahrlehrer!) ...[
+                Positioned(
+                  bottom: 120.0,
+                  right: 16.0,
+                  child: ElevatedButton(
+                    onPressed: () {
                       _dialogBuilder(context, [], date: DateTime.now());
-                  },
-                  style: ElevatedButton.styleFrom(
-                    shape: const CircleBorder(),
-                    padding: const EdgeInsets.all(16.0),
-                    backgroundColor:
-                        mainColor, // Replace with your preferred color
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: const CircleBorder(),
+                      padding: const EdgeInsets.all(16.0),
+                      backgroundColor:
+                          mainColor, // Replace with your preferred color
+                    ),
+                    child: const Icon(Icons.add, color: Colors.white),
                   ),
-                  child: const Icon(Icons.add, color: Colors.white),
-                ),
-              )],
+                )
+              ],
             ],
           );
         }
@@ -152,47 +153,38 @@ class CalendarPage extends StatelessWidget {
       {DateTime? date}) {
     return showGeneralDialog<void>(
         context: context,
-        barrierDismissible:
-            false, 
-        barrierLabel: "Dismiss", 
-        barrierColor: Colors.black54, 
-        transitionDuration:
-            const Duration(milliseconds: 200), 
+        barrierDismissible: false,
+        barrierLabel: "Dismiss",
+        barrierColor: Colors.black54,
+        transitionDuration: const Duration(milliseconds: 200),
         pageBuilder: (BuildContext dialogContext, Animation<double> animation,
             Animation<double> secondaryAnimation) {
-              // wenn das Ereignis leer ist und das Datum angegeben ist, dann ist dies eine Erstellung
-              // andernfalls wird eine detaillierte Ansicht des ausgewählten Ereignisses gewünscht
-              if(events.isEmpty && date != null)
-              {
-                context
-                .read<CalendarEventBloc>()
-                .add(CreateEvent(date));
-              }else{
-                context
-                .read<CalendarEventBloc>()
-                .add(PrepareCalendarEventViewData(events.first as FahrstundenEvent));
-              }
-          
+          // wenn das Ereignis leer ist und das Datum angegeben ist, dann ist dies eine Erstellung
+          // andernfalls wird eine detaillierte Ansicht des ausgewählten Ereignisses gewünscht
+          if (events.isEmpty && date != null) {
+            context.read<CalendarEventBloc>().add(CreateEvent(date));
+          } else {
+            context.read<CalendarEventBloc>().add(
+                PrepareCalendarEventViewData(events.first as FahrstundenEvent));
+          }
+
           return BlocBuilder<CalendarEventBloc, CalendarEventState>(
               builder: (context, blocState) {
-
             return GestureDetector(
-              behavior:
-                  HitTestBehavior.opaque,
+              behavior: HitTestBehavior.opaque,
               onTap: () {
                 context.read<CalendarEventBloc>().add(ResetStateEvent());
-                Navigator.of(dialogContext).pop(); 
+                Navigator.of(dialogContext).pop();
               },
               child: Center(
                 child: GestureDetector(
                   onTap:
                       () {}, // Verhinderung der Weitergabe von Antippen an den äußeren GestureDetector
                   child: Dialog(
-                    backgroundColor:
-                        Colors.transparent, 
+                    backgroundColor: Colors.transparent,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white, 
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(20.0),
                         border: Border.all(
                           color: blocState is SelectedEventDataState
@@ -204,12 +196,12 @@ class CalendarPage extends StatelessWidget {
                       child: Builder(
                         builder: (context) {
                           if ((blocState is DataLoading ||
-                              blocState is DataLoaded) && Benutzer().isFahrlehrer!) {
+                                  blocState is DataLoaded) &&
+                              Benutzer().isFahrlehrer!) {
                             return _stackLoadingEditingWindow(
                                 blocState, context);
                           } else if (blocState is SelectedEventDataState) {
-                            return _stackEventInformation(
-                               blocState, context);
+                            return _stackEventInformation(blocState, context);
                           } else {
                             return const Center(child: Text("Error"));
                           }
@@ -253,18 +245,19 @@ class CalendarPage extends StatelessWidget {
               border: Border.all(
                 color: blocState is DataLoading
                     ? Colors.blueGrey
-                    : (blocState as DataLoaded)
-                        .infoBorderColor,
+                    : (blocState as DataLoaded).infoBorderColor,
                 width: 2.3,
               ),
             ),
             child: CircleAvatar(
               backgroundColor: blocState is DataLoading
                   ? Colors.blueGrey
-                  : (blocState as DataLoaded).infoBackgroundColor, 
+                  : (blocState as DataLoaded).infoBackgroundColor,
               radius: 40,
-              child: Icon( blocState is DataLoaded ?
-                Icons.edit_calendar_outlined : Icons.sync,
+              child: Icon(
+                blocState is DataLoaded
+                    ? Icons.edit_calendar_outlined
+                    : Icons.sync,
                 size: 60,
                 color: blocState is DataLoading
                     ? Colors.grey[300]
@@ -345,36 +338,37 @@ class CalendarPage extends StatelessWidget {
           ),
         ),
         // Linker button
-        if(Benutzer().isFahrlehrer!)...[
-        Positioned(
-          top: -15,
-          left: -15,
-          child: Container(
-            // Border für CircleAvatar
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: tabBarOrangeShade300,
-                width: 2.3,
-              ),
-            ),
-            child: GestureDetector(
-              onTap: () {
-                context
-                    .read<CalendarEventBloc>()
-                    .add(PrepareChangeCalendarEventViewData(blocState.event));
-              },
-              child: const CircleAvatar(
-                backgroundColor: tabBarOrangeShade100,
-                radius: 15,
-                child: Icon(
-                  Icons.edit,
+        if (Benutzer().isFahrlehrer!) ...[
+          Positioned(
+            top: -15,
+            left: -15,
+            child: Container(
+              // Border für CircleAvatar
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
                   color: tabBarOrangeShade300,
+                  width: 2.3,
+                ),
+              ),
+              child: GestureDetector(
+                onTap: () {
+                  context
+                      .read<CalendarEventBloc>()
+                      .add(PrepareChangeCalendarEventViewData(blocState.event));
+                },
+                child: const CircleAvatar(
+                  backgroundColor: tabBarOrangeShade100,
+                  radius: 15,
+                  child: Icon(
+                    Icons.edit,
+                    color: tabBarOrangeShade300,
+                  ),
                 ),
               ),
             ),
-          ),
-        )],
+          )
+        ],
         // Rechter Button
         Positioned(
           top: -15,
@@ -485,6 +479,8 @@ class CalendarPage extends StatelessWidget {
   }
 
   _editWindow(BuildContext context, DataLoaded blocState) {
+    bool readOnlyField = false;
+    late BooleanFieldCubit cubit;
     return BlocProvider(
         create: (context) => AsyncEventDataValidationFormBloc(),
         child: Builder(builder: (context) {
@@ -508,132 +504,164 @@ class CalendarPage extends StatelessWidget {
           formBloc.descriptionFormBloc
               .updateInitialValue(blocState.event.description ?? "");
 
-          return FormBlocListener<AsyncEventDataValidationFormBloc, String,
-              String>(
-            formBloc: formBloc,
-            onSuccess: (context, state) async {
-              context.read<CalendarEventBloc>().add(
-                  ExecuteChangeCalendarEventData(
-                      blocState.event.eventID,
-                      formBloc.titleFormBloc.value,
-                      formBloc.descriptionFormBloc.value,
-                      formBloc.startDateTimeFormBloc.value,
-                      formBloc.endDateTimeFormBloc.value,
-                      formBloc.fahrschuelerDropDownBloc.value,
-                      formBloc.fahrzeugDropDownBloc.value));
-            },
-            onFailure: (context, state) {
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                    showErrorSnackbar(state.failureResponse!, "Fehler"));
-            },
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Titel (Centered)
-                  TextFieldBlocBuilder(
-                    textFieldBloc: formBloc.titleFormBloc,
-                    decoration: inputDecoration("Titel"),
-                  ),
-                  const SizedBox(height: 7),
-                  DateTimeFieldBlocBuilder(
-                    dateTimeFieldBloc: formBloc.startDateTimeFormBloc,
-                    canSelectTime: true,
-                    format: DateFormat(
-                      'dd-MM-yyyy  HH:mm',
+          return BlocProvider(
+              create: (context) {
+                cubit = BooleanFieldCubit(formBloc.fahrschuelerDropDownBloc.value == null ? true : false);
+                return cubit;
+              },
+              child: BlocBuilder<BooleanFieldCubit, BooleanFieldState>(
+                builder: (context, cubitState) {
+                  return FormBlocListener<AsyncEventDataValidationFormBloc, String,
+                      String>(
+                    formBloc: formBloc,
+                    onSuccess: (context, state) async {
+                      context.read<CalendarEventBloc>().add(
+                          ExecuteChangeCalendarEventData(
+                              blocState.event.eventID,
+                              formBloc.titleFormBloc.value,
+                              formBloc.descriptionFormBloc.value,
+                              formBloc.startDateTimeFormBloc.value,
+                              formBloc.endDateTimeFormBloc.value,
+                              formBloc.fahrschuelerDropDownBloc.value,
+                              formBloc.fahrzeugDropDownBloc.value,
+                              formBloc.releaseFieldBloc.value));
+                    },
+                    onFailure: (context, state) {
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                            showErrorSnackbar(state.failureResponse!, "Fehler"));
+                    },
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Titel (Centered)
+                          TextFieldBlocBuilder(
+                            textFieldBloc: formBloc.titleFormBloc,
+                            decoration: inputDecoration("Titel"),
+                          ),
+                          const SizedBox(height: 7),
+                          DateTimeFieldBlocBuilder(
+                            dateTimeFieldBloc: formBloc.startDateTimeFormBloc,
+                            canSelectTime: true,
+                            format: DateFormat(
+                              'dd-MM-yyyy  HH:mm',
+                            ),
+                            initialDate: blocState.event.date,
+                            firstDate: DateTime(1900),
+                            lastDate: DateTime(2100),
+                            decoration: const InputDecoration(
+                              labelText: 'Start',
+                              prefixIcon: Icon(Icons.calendar_today),
+                              helperText: 'Start Zeit des Termins',
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          DateTimeFieldBlocBuilder(
+                            dateTimeFieldBloc: formBloc.endDateTimeFormBloc,
+                            canSelectTime: true,
+                            format: DateFormat('dd-MM-yyyy  HH:mm'),
+                            initialDate: blocState.event.endDate,
+                            firstDate: DateTime(1900),
+                            lastDate: DateTime(2100),
+                            decoration: const InputDecoration(
+                              labelText: 'Ende',
+                              prefixIcon: Icon(Icons.calendar_today),
+                              helperText: 'End Zeit des Termins',
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          const Text(
+                            "Beschreibung:",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          TextFieldBlocBuilder(
+                            textFieldBloc: formBloc.descriptionFormBloc,
+                            decoration: inputDecoration("Description"),
+                            maxLines: 5,
+                          ),
+                  
+                          const SizedBox(height: 15),
+                  
+                          const Text(
+                            "Fahrzeug:", // Label
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          DropdownFieldBlocBuilder(
+                            selectFieldBloc: formBloc.fahrzeugDropDownBloc,
+                            itemBuilder: (context, value) => FieldItem(
+                              child: Text(
+                                  "${value.get<ParseObject>("Marke")!.get<String>("Name")!}, (${value.get<String>("Label")!})"),
+                            ),
+                            decoration: const InputDecoration(
+                              labelText: "Fahrzeug wählen",
+                              prefixIcon: Icon(Icons.directions_car),
+                              focusedBorder: UnderlineInputBorder(
+                                borderSide:
+                                    BorderSide(color: Colors.green, width: 2),
+                              ),
+                              enabledBorder: UnderlineInputBorder(
+                                borderSide:
+                                    BorderSide(color: Colors.green, width: 1),
+                              ),
+                            ),
+                          ),
+                          const Text(
+                            "Fahrschüler:", // Label
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          DropdownFieldBlocBuilder(
+                            selectFieldBloc: formBloc.fahrschuelerDropDownBloc,
+                            itemBuilder: (context, value) => FieldItem(
+                              child: Text(
+                                  "${value.get<String>("Name")!}, ${value.get<String>("Vorname")!}"),
+                            ),
+                            decoration: const InputDecoration(
+                              labelText: "Schüler wählen",
+                              prefixIcon: Icon(Icons.directions_car),
+                              focusedBorder: UnderlineInputBorder(
+                                borderSide:
+                                    BorderSide(color: Colors.green, width: 2),
+                              ),
+                              enabledBorder: UnderlineInputBorder(
+                                borderSide:
+                                    BorderSide(color: Colors.green, width: 1),
+                              ),
+                            ),
+                            onChanged: (value) {
+                              if (value == null) {
+                                cubit.changeState(value: true);
+                              } else {
+                                cubit.changeState(value: false);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          CheckboxFieldBlocBuilder(
+                            isEnabled: (cubitState as ChangeReadOnlyState).value,
+                            booleanFieldBloc: formBloc.releaseFieldBloc,
+                            body: Container(
+                              alignment: Alignment.centerLeft,
+                              child: const Text('Öffentlich freigeben'),
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: formBloc.submit,
+                            style: stadiumButtonStyle(),
+                            child: const Text("Ändern"),
+                          )
+                        ],
+                      ),
                     ),
-                    initialDate: blocState.event.date,
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime(2100),
-                    decoration: const InputDecoration(
-                      labelText: 'Start',
-                      prefixIcon: Icon(Icons.calendar_today),
-                      helperText: 'Start Zeit des Termins',
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  DateTimeFieldBlocBuilder(
-                    dateTimeFieldBloc: formBloc.endDateTimeFormBloc,
-                    canSelectTime: true,
-                    format: DateFormat('dd-MM-yyyy  HH:mm'),
-                    initialDate: blocState.event.endDate,
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime(2100),
-                    decoration: const InputDecoration(
-                      labelText: 'Ende',
-                      prefixIcon: Icon(Icons.calendar_today),
-                      helperText: 'End Zeit des Termins',
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  const Text(
-                    "Beschreibung:",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  TextFieldBlocBuilder(
-                    textFieldBloc: formBloc.descriptionFormBloc,
-                    decoration: inputDecoration("Description"),
-                    maxLines: 5,
-                  ),
+                  );
+                }
+              )
 
-                  const SizedBox(height: 15),
-
-                  const Text(
-                    "Fahrzeug:", // Label
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  DropdownFieldBlocBuilder(
-                    selectFieldBloc: formBloc.fahrzeugDropDownBloc,
-                    itemBuilder: (context, value) => FieldItem(
-                      child: Text(
-                          "${value.get<ParseObject>("Marke")!.get<String>("Name")!}, (${value.get<String>("Label")!})"),
-                    ),
-                    decoration: const InputDecoration(
-                      labelText: "Fahrzeug wählen",
-                      prefixIcon: Icon(Icons.directions_car),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.green, width: 2),
-                      ),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.green, width: 1),
-                      ),
-                    ),
-                  ),
-                  const Text(
-                    "Fahrschüler:", // Label
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  DropdownFieldBlocBuilder(
-                    selectFieldBloc: formBloc.fahrschuelerDropDownBloc,
-                    itemBuilder: (context, value) => FieldItem(
-                      child: Text(
-                          "${value.get<String>("Name")!}, ${value.get<String>("Vorname")!}"),
-                    ),
-                    decoration: const InputDecoration(
-                      labelText: "Schüler wählen",
-                      prefixIcon: Icon(Icons.directions_car),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.green, width: 2),
-                      ),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.green, width: 1),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: formBloc.submit,
-                    style: stadiumButtonStyle(),
-                    child: const Text("Ändern"),
-                  )
-                ],
-              ),
-            ),
-          );
+              ///
+              );
         }));
   }
 }

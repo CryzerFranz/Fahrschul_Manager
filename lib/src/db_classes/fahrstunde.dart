@@ -9,6 +9,8 @@ import 'package:fahrschul_manager/src/utils/date.dart';
 import 'package:flutter/material.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
+
+
 Future<ParseObject?> fetchFahrstundeById({required String eventId}) async {
   // Create the query for the Fahrstunde class using the given objectId
   final QueryBuilder<ParseObject> queryBuilder =
@@ -31,15 +33,17 @@ Future<List<ParseObject>> retrieveUpcomingFahrstunden() async {
   try {
     final query = QueryBuilder<ParseObject>(ParseObject('Fahrstunden'))
       ..whereEqualTo("Fahrlehrer", Benutzer().dbUser!.objectId)
-      ..whereGreaterThan('Datum', DateTime.now()) 
+      ..whereGreaterThan('Datum', DateTime.now())
       ..orderByAscending('Datum')
       ..includeObject(['Fahrzeug', 'Fahrschueler'])
-      ..setLimit(5); 
+      ..setLimit(5);
 
     // Execute the query
     final response = await query.query();
 
-    if (response.success && response.results != null && response.results!.isNotEmpty) {
+    if (response.success &&
+        response.results != null &&
+        response.results!.isNotEmpty) {
       return response.results as List<ParseObject>;
     } else {
       return [];
@@ -49,6 +53,32 @@ Future<List<ParseObject>> retrieveUpcomingFahrstunden() async {
   }
 }
 
+Future<bool> registerUserToFahrstunde(
+    {required String id}) async {
+      try{
+  ParseObject? eventObject = await fetchFahrstundeById(eventId: id);
+  if (eventObject == null) {
+    throw ("fetching event failed");
+  }
+
+  eventObject.set("Fahrschueler", Benutzer().dbUser);
+  eventObject.set("Freigeben", false);
+  eventObject.set('UpdatedGesamtStd', false);
+
+
+  final response = await eventObject.save();
+  if (!response.success) {
+    return false;
+  }
+  return true;
+      }catch(e)
+      {
+        throw("Network error");
+      }
+}
+
+/// Daten ändern eines existierenden Fahrstunde.
+/// Es handelt sich hierbei um eine Änderungen eines Eintrags in der Tabelle/Klasse `Fahrstunden`
 Future<FahrstundenEvent?> updateFahrstunde(
     {required ExecuteChangeCalendarEventData event}) async {
   if (event.eventId == null) {
@@ -64,23 +94,31 @@ Future<FahrstundenEvent?> updateFahrstunde(
     // dieser Eintrag nicht vom Schedule Job erfasst wird.
     eventObject.set("UpdatedGesamtStd", true);
   }
+  else
+  {
+    eventObject.set('UpdatedGesamtStd', false);
+
+  }
   eventObject.set("Fahrzeug", event.fahrzeug);
   eventObject.set("Fahrschueler", event.fahrschueler);
   eventObject.set("Titel", event.titel);
   eventObject.set("Beschreibung", event.description);
   eventObject.set("Datum", event.fullDate);
   eventObject.set("EndDatum", event.fullEndDate);
+  eventObject.set("Freigeben", event.release);
+
 
   final response = await eventObject.save();
   if (!response.success) {
     return null;
   }
   return createEventData(
+      release: event.release,
       eventId: response.results!.first.objectId,
-      titel: event.titel,
-      beschreibung: event.description,
-      datum: event.fullDate,
-      endDatum: event.fullEndDate,
+      title: event.titel,
+      description: event.description,
+      date: event.fullDate,
+      endDate: event.fullEndDate,
       fahrzeug: event.fahrzeug,
       fahrschueler: event.fahrschueler);
 }
@@ -91,13 +129,14 @@ Future<FahrstundenEvent?> updateFahrstunde(
 /// ### Return value:
 /// - **[FahrstundenEvent]**
 Future<FahrstundenEvent> addFahrstunde({
-  required DateTime datum,
-  required DateTime endDatum,
-  required String titel,
+  required DateTime date,
+  required DateTime endDate,
+  required String title,
+  bool release = false,
   ParseObject? fahrzeug,
   DateTime? pufferZeit,
   ParseObject? fahrschueler,
-  String? beschreibung,
+  String? description,
 }) async {
   if (!Benutzer().isFahrlehrer!) {
     throw ("No permission");
@@ -110,19 +149,20 @@ Future<FahrstundenEvent> addFahrstunde({
 
   final termin = ParseObject("Fahrstunden")
     ..set('Fahrlehrer', Benutzer().dbUser)
-    ..set('Titel', titel)
-    ..set("Datum", datum);
+    ..set('Titel', title)
+    ..set('Freigeben', release)
+    ..set("Datum", date);
 
   if (fahrzeug != null) {
     termin.set("Fahrzeug", fahrzeug);
   }
-  if (beschreibung != null) {
-    termin.set("Beschreibung", beschreibung);
+  if (description != null) {
+    termin.set("Beschreibung", description);
   }
 
-  DateTime dbEndDate = endDatum;
+  DateTime dbEndDate = endDate;
   if (pufferZeit != null) {
-    dbEndDate = endDatum.add(Duration(minutes: pufferZeit.minute));
+    dbEndDate = endDate.add(Duration(minutes: pufferZeit.minute));
   }
   termin.set("EndDatum", dbEndDate);
 
@@ -141,59 +181,65 @@ Future<FahrstundenEvent> addFahrstunde({
 
   // Event erstellen für calender_view package
   return createEventData(
+      release: release,
       eventId: response.results!.first.objectId,
-      titel: titel,
-      beschreibung: beschreibung,
-      datum: datum,
-      endDatum: endDatum,
+      title: title,
+      description: description,
+      date: date,
+      endDate: endDate,
       fahrzeug: fahrzeug,
       fahrschueler: fahrschueler);
 }
 
-//TODO evtl async?
 /// Wandelt die gegebenen Daten zu einem [FahrstundenEvent] um und gibt sie zurück.
 ///
 /// ### Return value:
 /// - **[FahrstundenEvent]**
 FahrstundenEvent createEventData({
   required String eventId,
-  required String titel,
-  required DateTime datum,
-  required DateTime endDatum,
-  String? beschreibung,
+  required String title,
+  required DateTime date,
+  required DateTime endDate,
+  bool release = false,
+  String? description,
   ParseObject? fahrzeug,
   ParseObject? fahrschueler,
 }) {
   late Color tileColor;
-  if (fahrzeug != null && fahrschueler != null) {
-    tileColor = mainColor;
-  } else if (fahrzeug != null && fahrschueler == null) {
-    tileColor = mainColorComplementaryFirst;
-  } else if (fahrzeug == null && fahrschueler != null) {
-    tileColor = mainColorComplementarySecond;
+  if (release) {
+    tileColor = tabBarRedShade300;
+  } else {
+    if (fahrzeug != null && fahrschueler != null) {
+      tileColor = mainColor;
+    } else if (fahrzeug != null && fahrschueler == null) {
+      tileColor = mainColorComplementaryFirst;
+    } else if (fahrzeug == null && fahrschueler != null) {
+      tileColor = mainColorComplementarySecond;
+    }
   }
 
   return FahrstundenEvent(
+    release:  release,
       eventID: eventId,
       fahrzeug: fahrzeug,
       fahrschueler: fahrschueler,
-      title: titel,
-      date: datum,
-      description: beschreibung,
-      endDate: endDatum,
+      title: title,
+      date: date,
+      description: description,
+      endDate: endDate,
       startTime: DateTime(
-        datum.year,
-        datum.month,
-        datum.day,
-        datum.hour,
-        datum.minute,
+        date.year,
+        date.month,
+        date.day,
+        date.hour,
+        date.minute,
       ),
       endTime: DateTime(
-        endDatum.year,
-        endDatum.month,
-        endDatum.day,
-        endDatum.hour,
-        endDatum.minute,
+        endDate.year,
+        endDate.month,
+        endDate.day,
+        endDate.hour,
+        endDate.minute,
       ),
       color: tileColor,
       titleStyle: const TextStyle(
@@ -232,18 +278,19 @@ Future<List<FahrstundenEvent>> getUserFahrstunden() async {
   }
 
   for (ParseObject result in apiResponse.results!) {
-    if(result.get<ParseObject?>("Fahrzeug") == null && result.get<ParseObject?>("Fahrschueler") == null )
-    {
+    if (result.get<ParseObject?>("Fahrzeug") == null &&
+        result.get<ParseObject?>("Fahrschueler") == null && result.get<bool>('Freigeben') == false) {
       await result.delete();
-    }else{
-    events.add(createEventData(
-        eventId: result.objectId!,
-        titel: result.get<String>("Titel")!,
-        datum: result.get<DateTime>("Datum")!,
-        endDatum: result.get<DateTime>("EndDatum")!,
-        beschreibung: result.get<String?>("Beschreibung"),
-        fahrschueler: result.get<ParseObject?>("Fahrschueler"),
-        fahrzeug: result.get<ParseObject?>("Fahrzeug")));
+    } else {
+      events.add(createEventData(
+          release: result.get<bool>('Freigeben')!,
+          eventId: result.objectId!,
+          title: result.get<String>("Titel")!,
+          date: result.get<DateTime>("Datum")!,
+          endDate: result.get<DateTime>("EndDatum")!,
+          description: result.get<String?>("Beschreibung"),
+          fahrschueler: result.get<ParseObject?>("Fahrschueler"),
+          fahrzeug: result.get<ParseObject?>("Fahrzeug")));
     }
   }
   return events;
@@ -255,7 +302,7 @@ Stream<List<FahrstundenEvent>> getUserFahrstundenStream() async* {
   yield await getUserFahrstunden();
 
   // Regelmäßige Aktualisierungen nach dem ersten Abruf starten
-  yield* Stream.periodic(Duration(seconds: 90000), (_) => getUserFahrstunden())
+  yield* Stream.periodic(const Duration(seconds: 5), (_) => getUserFahrstunden())
       .asyncMap((future) => future);
 }
 
@@ -281,7 +328,6 @@ Future<Map<String, List<ParseObject>>> fetchAvailableResourcesInRange(
   List<String> unavailableSchuelerIds = [];
   List<ParseObject> availableFahrzeuge = [];
   List<ParseObject> availableSchueler = [];
-  //TODO brauche alle fahrstunden der Fahrschule ------> TO TEST
   final List<ParseObject> fahrlehrerList =
       await fetchAllFahrlehrerFromFahrschule(Benutzer().fahrschule!.objectId!);
   final QueryBuilder<ParseObject> query =
@@ -328,8 +374,10 @@ Future<Map<String, List<ParseObject>>> fetchAvailableResourcesInRange(
         .where((item) => seenFahrschueler.add(item))
         .toList();
   }
-  availableFahrzeuge.addAll(await fetchAvailableFahrzeugExcludingIds(unavailableFahrzeugeIds));
-  availableSchueler = await fetchAvailableFahrschuelerExcludingIds(unavailableSchuelerIds);
+  availableFahrzeuge.addAll(
+      await fetchAvailableFahrzeugExcludingIds(unavailableFahrzeugeIds));
+  availableSchueler =
+      await fetchAvailableFahrschuelerExcludingIds(unavailableSchuelerIds);
 
   return {
     "Fahrzeuge": availableFahrzeuge,
@@ -345,11 +393,43 @@ List<ParseObject> getUniqueObjectsByField(
       .toList();
 }
 
+Future<List<ParseObject>> fetchFahrstundenFromFahrlehrer() async {
+  // Create the query for the Fahrstunde class using the given objectId
+  if(Benutzer().dbUser!.get<ParseObject>("Fahrlehrer") == null)
+  {
+    return [];
+  }
+  final QueryBuilder<ParseObject> queryBuilder =
+      QueryBuilder<ParseObject>(ParseObject('Fahrstunden'))
+        ..whereEqualTo('Fahrlehrer', Benutzer().dbUser!.get<ParseObject>("Fahrlehrer")!.objectId!)
+        ..whereEqualTo('Freigeben', true)
+        ..whereGreaterThan('Datum', DateTime.now())
+        ..orderByAscending('Datum'); // Filter by objectId
+
+  final ParseResponse response = await queryBuilder.query();
+
+  if (response.success && response.results != null) {
+    return response.results as List<ParseObject>;
+  }
+
+  return [];
+}
+
+Stream<List<ParseObject>> fetchFahrstundenFromFahrlehrerStream() async* {
+  // initital fetch
+  yield await fetchFahrstundenFromFahrlehrer();
+
+  // Regelmäßige Aktualisierungen nach dem ersten Abruf starten
+  yield* Stream.periodic(const Duration(seconds: 1), (_) => fetchFahrstundenFromFahrlehrer())
+      .asyncMap((future) => future);
+}
+
 class Fahrstunde {
   final DateTime date;
   final DateTime endDate;
   final ParseObject? fahrschueler;
   final ParseObject? fahrzeug;
+  final String? eventId;
 
   // Constructor with required named parameters
   Fahrstunde({
@@ -357,18 +437,17 @@ class Fahrstunde {
     required this.endDate,
     this.fahrschueler,
     this.fahrzeug,
+    this.eventId,
   });
 
   // Optional: Add a method to calculate the difference between the two DateTimes
   Duration get duration => endDate.difference(date);
 
-  String dateToString()
-  {
+  String dateToString() {
     return "${date.day}.${date.month}.${date.year} - ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
   }
 
-  String endDateToString()
-  {
+  String endDateToString() {
     return "${endDate.day}.${endDate.month}.${endDate.year} - ${endDate.hour.toString().padLeft(2, '0')}:${endDate.minute.toString().padLeft(2, '0')}";
   }
 
@@ -377,27 +456,23 @@ class Fahrstunde {
   //   return generateDateTimeSummary(date: date, endDate: endDate, startTime: date, endTime: endDate);
   // }
 
-  String getDateRange()
-  {
+  String getDateRange() {
     return generateDateRangeText(start: date, end: endDate);
   }
 
-   String getTimeRange()
-  {
+  String getTimeRange() {
     return generateTimeRangeText(start: date, end: endDate);
   }
 
-  String getFahrzeug(){
-    if(fahrzeug == null)
-    {
+  String getFahrzeug() {
+    if (fahrzeug == null) {
       return "-";
     }
     return "${fahrzeug!.get<ParseObject>("Marke")!.get<String>("Name")} (${fahrzeug!.get<String>("Label")})";
   }
 
-  String getFahrschueler(){
-    if(fahrschueler == null)
-    {
+  String getFahrschueler() {
+    if (fahrschueler == null) {
       return "-";
     }
     return "${fahrschueler!.get<String>("Name")}, ${fahrschueler!.get<String>("Vorname")}";

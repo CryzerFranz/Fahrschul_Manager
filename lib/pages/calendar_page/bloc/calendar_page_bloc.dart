@@ -75,8 +75,8 @@ class CalendarEventBloc extends Bloc<CalendarEvent, CalendarEventState> {
           throw ();
         }
       }else{
-       final createdEvent =  await addFahrstunde(datum: event.fullDate, endDatum: event.fullEndDate, titel: event.titel,
-        beschreibung: event.description, fahrschueler: event.fahrschueler, fahrzeug: event.fahrzeug);
+       final createdEvent =  await addFahrstunde(date: event.fullDate, endDate: event.fullEndDate, title: event.titel,
+        description: event.description, fahrschueler: event.fahrschueler, fahrzeug: event.fahrzeug);
           add(PrepareCalendarEventViewData(createdEvent));
         
       }
@@ -155,6 +155,10 @@ class CalendarEventBloc extends Bloc<CalendarEvent, CalendarEventState> {
       "background": mainColorComplementarySecondShade100,
       "border": mainColorComplementarySecond,
     },
+    tabBarRedShade300: {
+      "background": tabBarRedShade100,
+      "border": tabBarRedShade300,
+    }
   };
 
   // default Color falls keine passende gefunden

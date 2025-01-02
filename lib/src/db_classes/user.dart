@@ -88,7 +88,7 @@ class Benutzer {
       } else {
         parseQuery = QueryBuilder<ParseObject>(ParseObject('Fahrschueler'))
           ..whereContains('UserObject', _parseUser!.objectId!)
-          ..includeObject(['Fahrlehrer', 'Fahrschule']);
+          ..includeObject(['Fahrlehrer', 'Fahrschule', 'Status']);
       }
       final apiResponse = await parseQuery.query();
       if (apiResponse.success &&

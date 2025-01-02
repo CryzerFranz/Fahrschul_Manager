@@ -48,12 +48,25 @@ class AsyncEventDataValidationFormBloc extends FormBloc<String, String> {
         ]);
   SelectFieldBloc<ParseObject, String> fahrzeugDropDownBloc = SelectFieldBloc<ParseObject, String>();
   SelectFieldBloc<ParseObject, String> fahrschuelerDropDownBloc = SelectFieldBloc<ParseObject, String>();
+  final releaseFieldBloc = BooleanFieldBloc();
+
 
   //------------------------------------------------------------------
   @override
   Future<void> onSubmitting() async {
     try {
-      emitSuccess();
+      if(fahrschuelerDropDownBloc.value == null && fahrzeugDropDownBloc.value == null && releaseFieldBloc.value == false)
+      {
+        String message = "Fahrzeug oder ein Fahrschüler muss ausgewählt werden.\nOder Termin freigeben ankreuzen";
+        fahrzeugDropDownBloc.addFieldError(message);
+        fahrschuelerDropDownBloc.addFieldError(message);
+        releaseFieldBloc.addFieldError("Oder Termin freigeben ankreuzen");
+        emitFailure(failureResponse: message);
+      }
+      else
+      {
+        emitSuccess();
+      }
     } catch (e) {
       emitFailure(failureResponse: "Netzwerk fehler");
     }
@@ -63,6 +76,7 @@ class AsyncEventDataValidationFormBloc extends FormBloc<String, String> {
   AsyncEventDataValidationFormBloc() {
 
     addFieldBlocs(fieldBlocs: [
+      releaseFieldBloc,
       titleFormBloc,
       descriptionFormBloc,
       startDateTimeFormBloc,

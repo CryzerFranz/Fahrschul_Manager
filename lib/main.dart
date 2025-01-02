@@ -7,6 +7,7 @@ import 'package:fahrschul_manager/pages/fahrzeug_add/bloc/fahrzeug_add_bloc.dart
 import 'package:fahrschul_manager/pages/fuhrpark/bloc/fuhrpark_bloc.dart';
 import 'package:fahrschul_manager/pages/home/Home_page.dart';
 import 'package:fahrschul_manager/pages/home/bloc/homePage_Bloc.dart';
+import 'package:fahrschul_manager/pages/home/cubit/homepage_fahrschueler_cubit.dart';
 import 'package:fahrschul_manager/pages/profil_page/bloc/profil_page_bloc.dart';
 import 'package:fahrschul_manager/src/db_classes/user.dart';
 import 'package:fahrschul_manager/pages/authentication/Login_page.dart';
@@ -121,6 +122,8 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (context) => FahrzeugAddBloc()),
         BlocProvider(create: (context) => FahrschulePageBloc()),
         BlocProvider(create: (context) => FuhrparkBloc()),
+        BlocProvider(create: (context) => HomepageFahrschuelerCubit()),
+
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,

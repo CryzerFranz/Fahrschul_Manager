@@ -26,10 +26,11 @@ class CreateEvent extends CalendarEvent {
 class ExecuteChangeCalendarEventData extends CalendarEvent {
   final ParseObject? fahrzeug;
   final ParseObject? fahrschueler;
+  final bool release;
   final String? eventId;
   final String titel;
   final String description;
   final DateTime fullDate;
   final DateTime fullEndDate;
-  ExecuteChangeCalendarEventData(this.eventId, this.titel, this.description, this.fullDate, this.fullEndDate, this.fahrschueler, this.fahrzeug);
+  ExecuteChangeCalendarEventData(this.eventId, this.titel, this.description, this.fullDate, this.fullEndDate, this.fahrschueler, this.fahrzeug, this.release);
 }

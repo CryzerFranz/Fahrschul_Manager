@@ -2,6 +2,7 @@ import 'package:fahrschul_manager/constants.dart';
 import 'package:fahrschul_manager/pages/home/bloc/homePage_Bloc.dart';
 import 'package:fahrschul_manager/pages/home/bloc/homePage_Event.dart';
 import 'package:fahrschul_manager/pages/home/bloc/homePage_State.dart';
+import 'package:fahrschul_manager/pages/home/widgets.dart';
 import 'package:fahrschul_manager/src/db_classes/fahrstunde.dart';
 import 'package:fahrschul_manager/widgets/3dCard.dart';
 import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
@@ -91,9 +92,9 @@ class HomePageFahrlehrer extends StatelessWidget {
                                     width: constraints.maxWidth,
                                     alignment: Alignment.center,
                                     child: nextFahrstundeContent(
-                                        state.appointments[index],
-                                        index,
-                                        state.appointments.length));
+                                        next: state.appointments[index],
+                                        currentIndex: index,
+                                        length: state.appointments.length));
                               },
                             ),
                           ),
@@ -122,103 +123,7 @@ class HomePageFahrlehrer extends StatelessWidget {
     });
   }
 
-  Widget nextFahrstundeContent(Fahrstunde next, int currentIndex, int length) {
-    String fahrschuelerText = next.getFahrschueler();
-    String fahrzeugText = next.getFahrzeug();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  Icon(
-                    fahrschuelerText == "-"
-                        ? FontAwesomeIcons.userXmark
-                        : FontAwesomeIcons.user,
-                    size: 18,
-                    color: fahrschuelerText == "-"
-                        ? tabBarRedShade300
-                        : Colors.white,
-                  ),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Fahrschüler:",
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600),
-                      ),
-                      Text(
-                        fahrschuelerText,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Row(
-                children: [
-                  Icon(
-                    fahrzeugText == "-"
-                        ? Icons.car_crash
-                        : FontAwesomeIcons.car,
-                    size: fahrzeugText == "-" ? 24 : 18,
-                    color:
-                        fahrzeugText == "-" ? tabBarRedShade300 : Colors.white,
-                  ),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Fahrzeug:",
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600),
-                      ),
-                      Text(
-                        next.getFahrzeug(),
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Center(
-            child: Column(children: [
-          const Icon(Icons.access_time_outlined, size: 20, color: Colors.white),
-          const SizedBox(height: 3),
-          Text(
-            next.getDateRange(),
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            next.getTimeRange(),
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-          ),
-        ])),
-        const SizedBox(height: 5),
-        Center(
-            child: Text("${++currentIndex} von $length",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                )))
-      ],
-    );
-  }
+  
 
   List<PieChartSectionData> showingSections(DataLoaded state) {
     return List.generate(2, (i) {
