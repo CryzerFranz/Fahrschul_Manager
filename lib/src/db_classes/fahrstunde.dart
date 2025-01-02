@@ -141,7 +141,7 @@ Future<FahrstundenEvent> addFahrstunde({
   if (!Benutzer().isFahrlehrer!) {
     throw ("No permission");
   }
-  if (fahrzeug == null && fahrschueler == null) {
+  if (fahrzeug == null && fahrschueler == null && release == false) {
     throw ("Fahrzeug or Fahrschueler has to be at least choosed");
   }
   // Event in die Datenbank abspeichern

@@ -76,7 +76,7 @@ class CalendarEventBloc extends Bloc<CalendarEvent, CalendarEventState> {
         }
       }else{
        final createdEvent =  await addFahrstunde(date: event.fullDate, endDate: event.fullEndDate, title: event.titel,
-        description: event.description, fahrschueler: event.fahrschueler, fahrzeug: event.fahrzeug);
+        description: event.description, fahrschueler: event.fahrschueler, fahrzeug: event.fahrzeug, release: event.release);
           add(PrepareCalendarEventViewData(createdEvent));
         
       }
