@@ -404,7 +404,8 @@ Future<List<ParseObject>> fetchFahrstundenFromFahrlehrer() async {
         ..whereEqualTo('Fahrlehrer', Benutzer().dbUser!.get<ParseObject>("Fahrlehrer")!.objectId!)
         ..whereEqualTo('Freigeben', true)
         ..whereGreaterThan('Datum', DateTime.now())
-        ..orderByAscending('Datum'); // Filter by objectId
+        ..orderByAscending('Datum')
+        ..includeObject(['Fahrzeug', 'Fahrzeug.Marke']); // Filter by objectId
 
   final ParseResponse response = await queryBuilder.query();
 
@@ -468,7 +469,7 @@ class Fahrstunde {
     if (fahrzeug == null) {
       return "-";
     }
-    return "${fahrzeug!.get<ParseObject>("Marke")!.get<String>("Name")} (${fahrzeug!.get<String>("Label")})";
+    return "${fahrzeug!.get<ParseObject>("Marke")!.get<String>("Name")!} (${fahrzeug!.get<String>("Label")})";
   }
 
   String getFahrschueler() {
