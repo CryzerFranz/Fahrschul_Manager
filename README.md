@@ -26,18 +26,27 @@ This app will significantly reduce the administrative workload at driving school
 communication between learner drivers and driving instructors. The efficient
 and vehicle management, the driving school will become more productive and better organized.
 
-# Database schema
+# Tech Stack
+Database: Back4App
 
+Architecture: Implemented using BloC (Business Logic Component)
+
+# Database schema
 
 ![datenbank_designschema](https://github.com/user-attachments/assets/efd37b05-8b09-4834-8b8d-415d48b93d53)
 
+# Flutter packages
+
+| Package Name                | Version | License      
+|-----------------------------|---------|-------------|
+| animations                  | 2.0.11  | MIT         |
+| awesome_snackbar_content    | 0.1.3   | MIT         |
+| calendar_view               | 1.2.0   | MIT         |
+| flutter_bloc                | 8.1.6   | MIT         |
+| flutter_slidable            | 3.1.1   | MIT         |
+| logger                      | 2.4.0   | MIT         |
+| package_info_plus           | 4.2.0   | MIT         |
+| parse_server_sdk_flutter    | 8.0.0   | MIT         |
 
 
-# Packages in this project
 
-* animations: https://pub.dev/packages/animations
-* flutter_slidable: https://pub.dev/packages/flutter_slidable
-* awesome_snackbar_content: https://pub.dev/packages/awesome_snackbar_content
-
-## APIs (have to look)
-*  https://www.carqueryapi.com/api/0.3/?cmd=getMakes -> _JSON Format vehicle list_
