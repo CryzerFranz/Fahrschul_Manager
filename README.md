@@ -18,10 +18,9 @@ Driving instructors who register for the first time can either create a new
 company with the name of the driving school and the head of this driving school
 or register with an existing driving school.
 
-If learner drivers cancel driving lessons, driving instructors can release the corresponding
-release the corresponding "timeslots". The learner drivers are then notified that they can register for these free timeslots.
-can register for these free timeslots. In addition, vehicles and trailers that
-shared can be booked via the app.
+If learner drivers cancel driving lessons, driving instructors can release the corresponding "timeslots". 
+The learner drivers are then notified that they can register for these free timeslots.
+In addition, vehicles and trailers that shared can be booked via the app.
 
 This app will significantly reduce the administrative workload at driving schools and improve
 communication between learner drivers and driving instructors. The efficient
