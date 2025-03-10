@@ -1,217 +1,157 @@
-//import 'package:fahrschul_manager/src/authentication.dart';
+import 'package:fahrschul_manager/pages/authentication/first_login/AsyncPasswordResetValidationFormBloc.dart';
+import 'package:fahrschul_manager/pages/authentication/first_login/bloc/password_change_bloc.dart';
+import 'package:fahrschul_manager/pages/calendar_page/bloc/calendar_page_bloc.dart';
+import 'package:fahrschul_manager/pages/fahrschueler_liste/AsyncPersonDataValidationFormBloc.dart';
+import 'package:fahrschul_manager/pages/fahrschueler_liste/bloc/fahrschueler_liste_bloc.dart';
+import 'package:fahrschul_manager/pages/fahrzeug_add/bloc/fahrzeug_add_bloc.dart';
+import 'package:fahrschul_manager/pages/fuhrpark/bloc/fuhrpark_bloc.dart';
+import 'package:fahrschul_manager/pages/home/Home_page.dart';
+import 'package:fahrschul_manager/pages/home/bloc/homePage_Bloc.dart';
+import 'package:fahrschul_manager/pages/home/cubit/homepage_fahrschueler_cubit.dart';
+import 'package:fahrschul_manager/pages/profil_page/bloc/profil_page_bloc.dart';
+import 'package:fahrschul_manager/src/db_classes/user.dart';
+import 'package:fahrschul_manager/pages/authentication/Login_page.dart';
+import 'package:fahrschul_manager/src/form_blocs/AsyncLoginValidationFormBloc.dart';
+import 'package:fahrschul_manager/src/form_blocs/AsyncRegistrationValidationFormBloc.dart';
+import 'package:fahrschul_manager/src/form_blocs/AsyncFahrzeugAddValidationFormBloc.dart';
+import 'package:fahrschul_manager/widgets/loadingIndicator.dart';
+import 'package:fahrschul_manager/widgets/navBar/navBarBloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
+
+import 'pages/fahrschule/bloc/fahrschule_page_bloc.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   const keyParseServerUrl = 'https://parseapi.back4app.com';
 
-  final String? _clientKey = await getClientID();
-  final String? _applicationID = await getApplicationID();
+  final String? clientKey = await getClientID();
+  final String? applicationID = await getApplicationID();
 
-  if(_applicationID != null && _clientKey != null)
-  {
+  if (applicationID != null && clientKey != null) {
     await Parse().initialize(
-      _applicationID, 
+      applicationID,
       keyParseServerUrl,
-      clientKey: _clientKey, 
-      debug: true
+      clientKey: clientKey,
+      debug: true,
     );
+    Benutzer().initialize();
+    //await Benutzer().login("cp@gmail.com", "Admin12345.");
+
     runApp(MyApp());
-  }
-  else{
+  } else {
     runApp(ErrorApp());
   }
-
 }
-
 
 Future<String?> getApplicationID() async {
   const platform = MethodChannel('com.example.fahrschul_manager/keys');
   try {
-    final String applicationID = await platform.invokeMethod('getGradleApplicationIDValue'); // Match Kotlin method name
+    final String applicationID = await platform.invokeMethod(
+        'getGradleApplicationIDValue'); // Match Kotlin method name
     return applicationID;
   } on PlatformException catch (e) {
-    return null; 
+    return null;
   }
 }
 
 Future<String?> getClientID() async {
   const platform = MethodChannel('com.example.fahrschul_manager/keys');
   try {
-    final String clientID = await platform.invokeMethod('getGradleClientIDValue'); // Match Kotlin method name
+    final String clientID = await platform
+        .invokeMethod('getGradleClientIDValue'); // Match Kotlin method name
     return clientID;
   } on PlatformException catch (e) {
-    return null; 
+    return null;
   }
 }
 
 class ErrorApp extends StatelessWidget {
-   @override
-   Widget build(BuildContext context) {
-     return MaterialApp(
-       title: 'Internal Error',
-       theme: ThemeData(
-         primarySwatch: Colors.red,
-         visualDensity: VisualDensity.adaptivePlatformDensity,
-       ),
-       home:const Scaffold(body: Center(child: Text("!Internal Error!", style: TextStyle(color: Colors.red)))),
-     );
-   }
- }
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+          title: 'Internal Error',
+          theme: ThemeData(
+            primarySwatch: Colors.red,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          home: const Scaffold(
+              body: Center(
+                  child: Text("!Internal Error!",
+                      style: TextStyle(color: Colors.red)))),
+        );
+  }
+}
 
-class MyApp extends StatelessWidget {
-   @override
-   Widget build(BuildContext context) {
-     return MaterialApp(
-       title: 'Flutter SignUp',
-       theme: ThemeData(
-         primarySwatch: Colors.blue,
-         visualDensity: VisualDensity.adaptivePlatformDensity,
-       ),
-       home: HomePage(),
-     );
-   }
- }
- 
- class HomePage extends StatefulWidget {
-   @override
-   _HomePageState createState() => _HomePageState();
- }
- 
- class _HomePageState extends State<HomePage> {
-   final controllerUsername = TextEditingController();
-   final controllerPassword = TextEditingController();
-   final controllerEmail = TextEditingController();
- 
-   @override
-   Widget build(BuildContext context) {
-     return Scaffold(
-         appBar: AppBar(
-           title: const Text('Flutter SignUp'),
-         ),
-         body: Center(
-           child: SingleChildScrollView(
-             padding: const EdgeInsets.all(8),
-             child: Column(
-               crossAxisAlignment: CrossAxisAlignment.stretch,
-               children: [
-                 Container(
-                   height: 200,
-                   child: Image.network(
-                       'http://blog.back4app.com/wp-content/uploads/2017/11/logo-b4a-1-768x175-1.png'),
-                 ),
-                 Center(
-                   child: const Text('Flutter on Back4App',
-                       style:
-                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                 ),
-                 SizedBox(
-                   height: 16,
-                 ),
-                 Center(
-                   child: const Text('User registration',
-                      style: TextStyle(fontSize: 16)),
-                 ),
-                 SizedBox(
-                   height: 16,
-                 ),
-                 TextField(
-                   controller: controllerUsername,
-                   keyboardType: TextInputType.text,
-                   textCapitalization: TextCapitalization.none,
-                   autocorrect: false,
-                   decoration: InputDecoration(
-                       border: OutlineInputBorder(
-                           borderSide: BorderSide(color: Colors.black)),
-                       labelText: 'Username'),
-                 ),
-                 SizedBox(
-                   height: 8,
-                 ),
-                 TextField(
-                   controller: controllerEmail,
-                   keyboardType: TextInputType.emailAddress,
-                   textCapitalization: TextCapitalization.none,
-                   autocorrect: false,
-                   decoration: InputDecoration(
-                       border: OutlineInputBorder(
-                           borderSide: BorderSide(color: Colors.black)),
-                       labelText: 'E-mail'),
-                 ),
-                 SizedBox(
-                   height: 8,
-                 ),
-                 TextField(
-                   controller: controllerPassword,
-                   obscureText: true,
-                   keyboardType: TextInputType.text,
-                   textCapitalization: TextCapitalization.none,
-                   autocorrect: false,
-                   decoration: InputDecoration(
-                       border: OutlineInputBorder(
-                           borderSide: BorderSide(color: Colors.black)),
-                       labelText: 'Password'),
-                 ),
-                 SizedBox(
-                   height: 8,
-                 ),
-                 Container(
-                   height: 50,
-                   child: TextButton(
-                     child: const Text('Sign Up'),
-                     onPressed: () => doUserRegistration(),
-                   ),
-                 )
-               ],
-             ),
-           ),
-         ));
-   }
- 
-   void showSuccess() {
-     showDialog(
-       context: context,
-       builder: (BuildContext context) {
-         return AlertDialog(
-           title: const Text("Success!"),
-           content: const Text("User was successfully created!"),
-           actions: <Widget>[
-             new ElevatedButton(
-               child: const Text("OK"),
-               onPressed: () {
-                 Navigator.of(context).pop();
-               },
-             ),
-           ],
-         );
-       },
-     );
-   }
- 
-   void showError(String errorMessage) {
-     showDialog(
-       context: context,
-       builder: (BuildContext context) {
-         return AlertDialog(
-           title: const Text("Error!"),
-           content: Text(errorMessage),
-           actions: <Widget>[
-             new ElevatedButton(
-               child: const Text("OK"),
-               onPressed: () {
-                 Navigator.of(context).pop();
-               },
-             ),
-           ],
-         );
-       },
-     );
-   }
- 
-   void doUserRegistration() async {
- 		//Sigup code here
-   }
- }
+
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late Future<bool> _userLoggedFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _userLoggedFuture = Benutzer().hasUserLogged();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => NavBarBloc()),
+        BlocProvider(create: (context) => AsyncRegistrationValidationFormBloc()),
+        BlocProvider(create: (context) => AsyncLoginValidationFormBloc()),
+        BlocProvider(create: (context) => FahrschuelerListBloc()),
+        BlocProvider(create: (context) => PasswordChangeBloc()),
+        BlocProvider(create: (context) => ProfilPageBloc()),
+        BlocProvider(create: (context) => CalendarEventBloc()),
+        BlocProvider(create: (context) => HomePageBloc()),
+        BlocProvider(create: (context) => AsyncFahrzeugAddValidationFormBloc()),
+        BlocProvider(create: (context) => AsyncPersonDataValidationFormBloc()),
+        BlocProvider(create: (context) => AsyncPasswordResetValidationFormBloc()),
+        BlocProvider(create: (context) => FahrzeugAddBloc()),
+        BlocProvider(create: (context) => FahrschulePageBloc()),
+        BlocProvider(create: (context) => FuhrparkBloc()),
+        BlocProvider(create: (context) => HomepageFahrschuelerCubit()),
+
+      ],
+      child: MaterialApp(
+        navigatorKey: navigatorKey,
+        title: 'Flutter - Parse Server',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: FutureBuilder<bool>(
+          future: _userLoggedFuture,
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+              case ConnectionState.waiting:
+                return ScaffoldLoadingScreen();
+              default:
+                if (snapshot.hasData && snapshot.data!) {
+                  return const HomePage();
+                } else {
+                  return SignInPage();
+                }
+            }
+          },
+        ),
+      ),
+    );
+  }
+}
+
+
+
