@@ -35,6 +35,9 @@ Architecture: Implemented using BloC (Business Logic Component)
 
 ![datenbank_designschema](https://github.com/user-attachments/assets/efd37b05-8b09-4834-8b8d-415d48b93d53)
 
+# Project documentation (German):
+https://cryzerfranz.github.io/Fahrschul_Manager/
+
 # Flutter packages
 
 | Package Name                | Version | License      
